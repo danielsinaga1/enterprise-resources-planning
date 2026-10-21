@@ -2,23 +2,16 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
 
-rootProject.name = 'irms'
+rootProject.name = 'enterprise-apps'
 
 // ─────────────────────────────────────────────────────────────────────
-// Modular monolith — first vertical slice of the SaaS modularization.
-// The root project remains the bootable Spring Boot app and depends on
-// these library modules. Dependency direction is one-way:
-//     :lims       -> :shared
-//     :smartdocs -> :shared
-//     :erp       -> :shared
-//     (root)     -> :shared, :lims, :smartdocs, :erp
-// No module depends back on the root app, and :irms (next slice) will
-// also depend only on :shared. All modules keep the id.enterpriseapps.*
-// package namespace so Spring component/entity/repository scanning keeps
-// working without extra configuration.
+// Modular monolith. The root project is the bootable Spring Boot app
+// (auth, RBAC/menu, profil) and depends on these library modules:
+//     :erp    -> :shared
+//     (root)  -> :shared, :erp
+// No module depends back on the root app. All modules keep the
+// id.enterpriseapps.* namespace so component/entity scanning just works.
 // ─────────────────────────────────────────────────────────────────────
 include 'shared'
-include 'lims'
-include 'smartdocs'
 include 'erp'
 include 'gateway'

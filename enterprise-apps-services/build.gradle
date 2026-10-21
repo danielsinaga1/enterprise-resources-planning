@@ -38,8 +38,6 @@ dependencies {
 	// The root project is the bootable app; domain logic lives in modules.
 	// ──────────────────────────────────────────────────────────────
 	implementation(project(':shared'))
-	implementation(project(':lims'))
-	implementation(project(':smartdocs'))
 	implementation(project(':erp'))
 
 	// Spring Boot Dependencies
@@ -49,11 +47,6 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-
-	// Kafka event backbone — incident/safety lifecycle events, async
-	// notification pipeline, auth→LIMS user snapshot sync. Version managed
-	// by the Spring Boot BOM.
-	implementation("org.springframework.kafka:spring-kafka")
 
 	// ──────────────────────────────────────────────────────────────
 	// OBSERVABILITY (OpenTelemetry / Micrometer / Loki)
@@ -76,8 +69,6 @@ dependencies {
 	implementation 'org.postgresql:postgresql:42.7.3'
 	// Database MySQL (dev)
 	runtimeOnly 'com.mysql:mysql-connector-j:9.1.0'
-	// SQL Server — read-only lookup against Avantis (kpi_wr_irms view), Work Request search
-	implementation 'com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11'
 
 	// Lombok
 	compileOnly("org.projectlombok:lombok:1.18.34")
@@ -88,12 +79,6 @@ dependencies {
 	// HTTP Client
 	implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-	// SDK resmi Anthropic - dipakai ClaudeClient sebagai penyedia LLM alternatif
-	// untuk KPIntar. Gemini tetap ada; pilihannya lewat properti assistant.provider.
-	implementation("com.anthropic:anthropic-java:2.34.0")
-
-	// Resilience4j (retry w/ exponential backoff + jitter, circuit breaker) — used by the AI assistant client
-	implementation("io.github.resilience4j:resilience4j-spring-boot3:2.2.0")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 
 	// JSON and Mapping Libraries
@@ -115,21 +100,10 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
 
-	// Apache POI for Word document generation
-	implementation 'org.apache.poi:poi-ooxml:5.2.5'
-
-	// Firebase Admin SDK for push notifications (FCM)
-	implementation 'com.google.firebase:firebase-admin:9.3.0'
-
-	// Email (Spring Mail)
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	// Testing Dependencies
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
-	// Broker Kafka in-JVM untuk menguji event backbone tanpa Docker
-	// (Testcontainers tidak dipakai di sini — EmbeddedKafka jauh lebih cepat).
-	testImplementation("org.springframework.kafka:spring-kafka-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
 	// H2 in-memory database for tests (no need to run MySQL/PostgreSQL)
@@ -145,42 +119,12 @@ dependencies {
 	testImplementation("io.rest-assured:rest-assured:5.5.0")
 	testImplementation("io.rest-assured:spring-mock-mvc:5.5.0")
 
-	// ArchUnit — enforces modular-monolith boundaries at build time so the
-	// SaaS modularization can't silently regress (e.g. someone importing LIMS
-	// from the core, which would block extracting LIMS as a microservice).
+	// ArchUnit — menjaga batas modular monolith (modul :erp tidak boleh bergantung
+	// pada aplikasi inti) agar tidak mundur diam-diam.
 	testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
 
 	// Annotation Processor
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-}
-
-// Exclude incomplete procurement module source files (missing entities/repositories)
-sourceSets {
-	main {
-		java {
-			exclude 'id/enterpriseapps/controller/AuditLogController.java'
-			exclude 'id/enterpriseapps/controller/DocumentReadinessController.java'
-			exclude 'id/enterpriseapps/controller/GoodsReceiptController.java'
-			exclude 'id/enterpriseapps/service/BastDocumentService.java'
-			exclude 'id/enterpriseapps/service/DocumentReadinessService.java'
-			exclude 'id/enterpriseapps/service/GoodsReceiptService.java'
-			exclude 'id/enterpriseapps/service/PaymentApprovalService.java'
-			exclude 'id/enterpriseapps/service/PoAmendmentService.java'
-			exclude 'id/enterpriseapps/service/PoApprovalService.java'
-			exclude 'id/enterpriseapps/service/PurchaseOrderService.java'
-			exclude 'id/enterpriseapps/repository/InventoryStockRepository.java'
-			exclude 'id/enterpriseapps/repository/InventoryStockCardRepository.java'
-		}
-	}
-	test {
-		java {
-			// Stale since the auth extraction: renamed RoleEntity/UserRoleEntity to
-			// AuthRole/AuthUserRole and stripped password/login state off the shared
-			// UserEntity — these no longer compile and block the whole suite.
-			exclude 'id/enterpriseapps/service/AuthServiceTest.java'
-			exclude 'id/enterpriseapps/repository/UserRepositoryTest.java'
-		}
-	}
 }
 
 springBoot {

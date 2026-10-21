@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * ERP datasource — db_erp (DB-per-service, pola yang sama dengan LIMS/SmartDocs).
+ * ERP datasource — db_erp (DB-per-service; terpisah dari db_auth).
  *
  * <p>Modul :erp (port fitur ENTARIS) memiliki 114 tabel sendiri; skema dikelola skrip
  * {@code sql/erp_service/} — {@code hbm2ddl} dikunci "none". Repository ERP diberi nama bean
@@ -34,7 +34,7 @@ import java.util.Map;
  * (endpoint ERP yang gagal terhubung akan mengembalikan 503).
  *
  * <p>Semua parameter {@code @Bean} wajib memakai {@code @Qualifier} (lihat catatan di
- * {@link SmartDocsDataSourceConfig}). Properti dari {@code app.datasource.erp.*}.
+ * {@link AuthDataSourceConfig}). Properti dari {@code app.datasource.erp.*}.
  */
 @Configuration
 @EnableJpaRepositories(

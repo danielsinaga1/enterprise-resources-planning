@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Logback configuration for the IRMS backend.
+  Logback configuration for the Enterprise Apps backend.
 
   Goals:
     * Console output for humans, with the active trace correlation IDs
@@ -15,7 +15,7 @@
 <configuration scan="true" scanPeriod="30 seconds">
 
     <!-- Pull values from Spring so they respect application.yaml / env vars. -->
-    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="IRMS"/>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="enterprise-apps"/>
     <springProperty scope="context" name="springProfile" source="spring.profiles.active" defaultValue="dev"/>
 
     <!-- Loki endpoint. Docker overrides to http://loki:3100/loki/api/v1/push. -->

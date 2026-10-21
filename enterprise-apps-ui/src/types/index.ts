@@ -1,9 +1,9 @@
 ﻿// ============================================================
-// COMMON TYPES — Adapted for irms-service backend
+// COMMON TYPES — Adapted for the platform backend
 // ============================================================
 
 /**
- * Matches irms-service Response.java wrapper:
+ * Matches backend Response.java wrapper:
  * { status, httpStatus, errorCode, errorMessage, page, countData, totalPage, data, message }
  */
 export interface ApiResponse<T> {

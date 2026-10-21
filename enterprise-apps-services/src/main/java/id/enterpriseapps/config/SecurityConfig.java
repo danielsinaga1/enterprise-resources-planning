@@ -62,15 +62,11 @@ public class SecurityConfig {
                         "/api/v1/auth/login",
                         "/api/v1/auth/refresh-token",
                         "/api/v1/profile/**",
-                        "/api/v1/assets/**",
                         "/api/rbac/**",
-                        "/api/procurement/vendor/create",
-                        "/api/lims/health",
                         // ERP: formulir inquiry publik, branding & scan QR aset (tanpa login).
                         "/api/erp/public/**",
                         "/api/erp/ga/public/**",
-                        "/uploads/**",
-                        "/api/v1/uploads/**"
+                        "/uploads/**"
         };
 
         private final String[] BASIC_AUTH = {

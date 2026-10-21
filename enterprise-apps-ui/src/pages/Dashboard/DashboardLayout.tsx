@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import VeronaSidebar from '../../components/verona/VeronaSidebar';
 import VeronaTopbar from '../../components/verona/VeronaTopbar';
 import { useAuth } from '../../context/AuthContext';
-import { useFcm } from '../../hooks/useFcm';
 
 const DESKTOP_BP = 992;
 
@@ -25,13 +24,6 @@ const DashboardLayout = () => {
     if (isDesktop) setSidebarOpen(false);
   }, [isDesktop]);
 
-  // FCM push notification — registers token on mount, listens for foreground messages
-  const handleFcmMessage = useCallback(() => {
-    // Foreground message received — could trigger a toast or badge refresh here
-    // The notification is already shown by the useFcm hook
-  }, []);
-
-  useFcm({ userId: user?.id, onMessage: handleFcmMessage });
 
   return (
     <div

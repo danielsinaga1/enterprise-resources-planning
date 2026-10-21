@@ -2,15 +2,9 @@
 // :shared — the shared kernel.
 //
 // Holds cross-cutting types every domain module needs. It depends on NO
-// other internal module (it is the root of the dependency graph), so it
-// must never import id.enterpriseapps.irms / .lims code.
+// other internal module (it is the root of the dependency graph).
 //
-// First slice contents (the minimum :lims requires):
-//   response.Response, constant.StatusConstant, exception.CustomException,
-//   entity.UserEntity, repository.UserRepository
-//
-// Later slices will migrate the rest of the platform kernel here
-// (auth, RBAC, notification, config, utils, observability, integration).
+// Contents: response.Response, constant.StatusConstant, exception.CustomException.
 // ─────────────────────────────────────────────────────────────────────
 plugins {
     id 'java-library'
@@ -44,13 +38,9 @@ dependencyManagement {
 }
 
 dependencies {
-    // UserEntity (jakarta.persistence) + UserRepository (Spring Data JPA).
     api("org.springframework.boot:spring-boot-starter-data-jpa")
     // Response uses org.springframework.http.HttpStatus.
     api("org.springframework.boot:spring-boot-starter-web")
-    // DomainEventPublisher — the best-effort Kafka producer shared by every
-    // module. Exposed as `api` so feature modules inherit KafkaTemplate too.
-    api("org.springframework.kafka:spring-kafka")
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")

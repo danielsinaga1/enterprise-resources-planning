@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -18,7 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Auth datasource — db_auth.
+ * Auth datasource — db_auth (pengguna, role, menu, struktur organisasi, pengaturan umum).
+ * Datasource utama aplikasi inti, karena itu {@code @Primary}: {@code @Transactional} tanpa nama
+ * transaction manager memakai db_auth. Modul ERP memakai datasource sendiri ({@code @ErpTx}).
  * Uses DataSourceProperties to properly map app.datasource.auth.url → HikariCP jdbcUrl.
  */
 @Configuration
@@ -30,12 +33,14 @@ import java.util.Map;
 public class AuthDataSourceConfig {
 
     @Bean(name = "authDataSourceProperties")
+    @Primary
     @ConfigurationProperties("app.datasource.auth")
     public DataSourceProperties authDataSourceProperties() {
         return new DataSourceProperties();
     }
 
     @Bean(name = "authDataSource")
+    @Primary
     @ConfigurationProperties("app.datasource.auth.hikari")
     public HikariDataSource authDataSource(
             @Qualifier("authDataSourceProperties") DataSourceProperties properties) {
@@ -45,6 +50,7 @@ public class AuthDataSourceConfig {
     }
 
     @Bean(name = "authEntityManagerFactory")
+    @Primary
     public LocalContainerEntityManagerFactoryBean authEntityManagerFactory(
             @Qualifier("authDataSource") DataSource dataSource) {
 
@@ -71,6 +77,7 @@ public class AuthDataSourceConfig {
     }
 
     @Bean(name = "authTransactionManager")
+    @Primary
     public PlatformTransactionManager authTransactionManager(
             @Qualifier("authEntityManagerFactory") EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);

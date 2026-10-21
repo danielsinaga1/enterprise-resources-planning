@@ -7,7 +7,7 @@ const LanguageSwitcher = () => {
   const toggle = () => {
     const next = i18n.language === 'id' ? 'en' : 'id';
     i18n.changeLanguage(next);
-    localStorage.setItem('irms-lang', next);
+    localStorage.setItem('ea-lang', next);
   };
 
   return (

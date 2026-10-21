@@ -5,41 +5,48 @@ persediaan & produksi, aset & pemeliharaan, pengajuan pembayaran, laporan keuang
 
 | Folder | Isi |
 |---|---|
-| [`enterprise-apps-services/`](enterprise-apps-services/) | Backend Java 17 / Spring Boot 3.5 (modular monolith: IRMS, LIMS, SmartDocs, **ERP**) + Spring Cloud Gateway |
-| [`enterprise-apps-ui/`](enterprise-apps-ui/) | Frontend React 19 + Vite + Tailwind (ERP di `src/erp`, rute `/dashboard/erp`) |
+| [`enterprise-apps-services/`](enterprise-apps-services/) | Backend Java 17 / Spring Boot 3.5 — aplikasi inti (auth, pengguna & role, menu, pengaturan; `db_auth`) + modul **ERP** (`db_erp`) + Spring Cloud Gateway |
+| [`enterprise-apps-ui/`](enterprise-apps-ui/) | Frontend React 19 + Vite — shell platform + modul ERP (`src/erp`, rute `/dashboard/erp`) |
 
 ## Modul ERP
 
 - **Backend**: Gradle module [`enterprise-apps-services/erp`](enterprise-apps-services/erp/) — paket
-  `id.enterpriseapps.erp`, database PostgreSQL terpisah `db_erp`, API di `/api/erp/**` (lewat gateway).
-  Panduan porting & konvensi: [`erp/README.md`](enterprise-apps-services/erp/README.md), peta skema:
+  `id.enterpriseapps.erp`, database PostgreSQL `db_erp`, API `/api/erp/**` (lewat gateway).
+  Panduan & konvensi: [`erp/README.md`](enterprise-apps-services/erp/README.md), peta skema:
   [`erp/SCHEMA-MAP.md`](enterprise-apps-services/erp/SCHEMA-MAP.md).
 - **Frontend**: [`enterprise-apps-ui/src/erp`](enterprise-apps-ui/src/erp/) — dimuat lazy di
-  `/dashboard/erp/*`; halaman publik (formulir pertanyaan, scan QR aset) di `/erp/*`.
-- **Identitas & akses**: login memakai akun platform (JWT). Hak akses ERP = gabungan izin modul dari
-  semua role platform pengguna yang dikonfigurasi di *ERP → Pengaturan → Peran & Izin*.
-  `SUPER_ADMIN` dan `ERP_ADMIN` = akses penuh. Menu ERP muncul di sidebar platform sesuai izin.
+  `/dashboard/erp/*` (beranda `/dashboard` langsung membuka Dashboard ERP); halaman publik (formulir
+  pertanyaan, scan QR aset) di `/erp/*`.
+- **Identitas & akses**: login memakai akun platform (JWT, LDAP/AD opsional). Hak akses ERP = gabungan izin
+  modul dari semua role platform pengguna yang dikonfigurasi di *ERP → Sistem ERP → Peran & Izin*.
+  `SUPER_ADMIN` dan `ERP_ADMIN` = akses penuh. Menu ERP muncul di sidebar sesuai izin.
 
 ## Menjalankan (dev)
 
-1. PostgreSQL: buat database `db_erp` (`CREATE DATABASE db_erp;`). Dengan `ERP_AUTO_INIT=true` (bawaan
-   dev) skema dan data awal (bagan akun PSAK, pemetaan akun sistem, tahun fiskal, gudang utama, dsb.)
-   dibuat otomatis saat aplikasi start.
-2. Jalankan [`sql/31_erp_rbac.sql`](enterprise-apps-services/sql/31_erp_rbac.sql) pada `db_auth` untuk
-   role `ERP_ADMIN`, `ERP_ACCOUNTANT`, `ERP_PRODUCTION`, `ERP_VIEWER`, lalu beri role tersebut ke user
-   di *Pengaturan → Pengguna*.
-3. Backend: `cd enterprise-apps-services && ./gradlew bootRun` (profil dev, port 8082).
-4. Frontend: `cd enterprise-apps-ui && npm install && npm run dev` (CSS ERP dibangun otomatis lewat
-   `npm run erp:css`).
-5. Buka `http://localhost:5173/dashboard/erp`.
+Prasyarat: PostgreSQL (`localhost:5432`), Redis (`localhost:6379`), JDK 17, Node 20+.
+
+1. Database:
+   ```bash
+   psql -U postgres -c "CREATE DATABASE db_auth;"
+   psql -U postgres -d db_auth -f enterprise-apps-services/sql/auth_service/01_schema.sql
+   psql -U postgres -d db_auth -f enterprise-apps-services/sql/auth_service/02_seed_data.sql
+   psql -U postgres -c "CREATE DATABASE db_erp;"
+   ```
+   Skema & data awal `db_erp` (bagan akun PSAK, pemetaan akun sistem, tahun fiskal, gudang utama, dsb.)
+   dipasang otomatis saat backend start (`ERP_AUTO_INIT=true`, bawaan dev). Role platform bawaan termasuk
+   `ERP_ADMIN`, `ERP_ACCOUNTANT`, `ERP_PRODUCTION`, `ERP_VIEWER` dibuat otomatis di `db_auth`.
+2. Backend: `cd enterprise-apps-services && DB_PASSWORD=<password-postgres> ./gradlew bootRun` (port 8082).
+3. Frontend: `cd enterprise-apps-ui && npm install && npm run dev`.
+4. Buka `http://localhost:5173`, login dengan admin awal **NPK `admin` / `Admin@12345`** (ganti setelah
+   login pertama), lalu beri role ERP ke pengguna lain di *Pengaturan → Manajemen User*.
 
 ### Produksi
 
-Variabel lingkungan backend: `ERP_DB_URL` (bawaan `jdbc:postgresql://${DB_HOST}:${DB_PORT}/db_erp`),
-`ERP_DB_USERNAME` / `ERP_DB_PASSWORD` (bawaan ikut `DB_USERNAME` / `DB_PASSWORD`), `ERP_AUTO_INIT`
-(bawaan `false` — jalankan `sql/erp_service/01_schema.sql` lalu `02_seed.sql` secara manual),
-`APP_UTC_OFFSET` (zona waktu bisnis, bawaan `+07:00`), `ERP_STORAGE_DIR` (lampiran privat, bawaan
-`./erp-files`, di luar folder `uploads/` publik).
+Backend: `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` wajib; `AUTH_DB_URL` /
+`ERP_DB_URL` (+ `_USERNAME` / `_PASSWORD`) opsional untuk memisahkan database; `ERP_AUTO_INIT` (bawaan
+`false` — jalankan `sql/auth_service/*.sql` dan `sql/erp_service/*.sql` manual), `APP_UTC_OFFSET` (zona waktu
+bisnis, bawaan `+07:00`), `ERP_STORAGE_DIR` (lampiran privat, bawaan `./erp-files`).
+Gateway: `BACKEND_SERVICE_URL` (bawaan `http://localhost:8082`).
 
 ## Pengujian
 

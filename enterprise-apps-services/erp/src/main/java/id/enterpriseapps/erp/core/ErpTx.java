@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * Transaksi db_erp.
  *
  * <p>WAJIB dipakai (bukan {@code @Transactional} polos) di semua service ERP. Tanpa
- * {@code transactionManager} eksplisit Spring memakai manager {@code @Primary} (db_irms),
+ * {@code transactionManager} eksplisit Spring memakai manager {@code @Primary} (db_auth),
  * sehingga tulisan ke db_erp tidak ikut transaksi dan rollback tidak terjadi — kesalahan
  * yang baru terlihat ketika ada error di tengah posting jurnal. Setara
  * {@code prisma.$transaction(...)} di sumber ENTARIS; rollback juga untuk checked exception.

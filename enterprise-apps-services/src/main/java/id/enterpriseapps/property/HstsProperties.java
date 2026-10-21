@@ -17,7 +17,7 @@ import lombok.Data;
  * skenario itu sangat mungkin terjadi. Jadi saklarnya harus ada SEBELUM TLS dinyalakan,
  * bukan sesudah.
  *
- * <p>Lihat {@code deploy/nginx/irms-tls.conf} untuk urutan pemasangan TLS yang aman.
+ * <p>Pasang TLS di reverse proxy (nginx) lebih dulu sebelum menyalakan HSTS.
  */
 @Data
 @Configuration
@@ -35,8 +35,8 @@ public class HstsProperties {
     /**
      * Menandai domain untuk daftar HSTS preload browser. Default {@code false}: preload hanya
      * berlaku untuk domain publik yang terdaftar, jadi pada host internal seperti
-     * {@code irms.kpi.local} penanda ini tidak pernah bisa dipenuhi — ia hanya menambah
-     * kekakuan tanpa manfaat. Nyalakan hanya bila IRMS benar-benar tayang di domain publik.
+     * domain internal (mis. {@code *.kpi.local}) penanda ini tidak pernah bisa dipenuhi — ia hanya menambah
+     * kekakuan tanpa manfaat. Nyalakan hanya bila aplikasi benar-benar tayang di domain publik.
      */
     private boolean preload = false;
 
@@ -47,7 +47,7 @@ public class HstsProperties {
      * Sebelumnya kode memaksa {@code AnyRequestMatcher.INSTANCE} sehingga header dikirim pada
      * SEMUA request termasuk HTTP biasa. Itu tidak menambah keamanan apa pun: RFC 6797 §7.2
      * mewajibkan browser MENGABAIKAN header HSTS yang datang lewat transport tidak aman, jadi
-     * selama IRMS masih di port 80 header itu tidak pernah berefek. Yang tersisa hanyalah
+     * selama aplikasi masih di port 80 header itu tidak pernah berefek. Yang tersisa hanyalah
      * jebakan: ia langsung aktif begitu TLS dinyalakan, bahkan sebelum sertifikatnya tepercaya.
      */
     private boolean allRequests = false;

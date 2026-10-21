@@ -22,7 +22,7 @@ export interface GroupedExportPayload {
 }
 
 interface ExportButtonsProps {
-  /** RBAC permission code, e.g. 'INCIDENT_REPORT' */
+  /** RBAC permission code, e.g. 'USER' */
   permissionCode: string;
   /** Column definitions for export. Tidak dipakai bila `fetchGroups` diisi. */
   columns?: ExportColumn[];

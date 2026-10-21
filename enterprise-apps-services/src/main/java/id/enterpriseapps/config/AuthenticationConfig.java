@@ -42,7 +42,6 @@ public class AuthenticationConfig extends OncePerRequestFilter {
             "/api/v1/auth/register",
             "/api/v1/auth/refresh-token",
             "/api/procurement/vendor/create",
-            "/api/lims/health",
             // ERP: formulir inquiry publik, branding & scan QR aset (tanpa login).
             "/api/erp/public/",
             "/api/erp/ga/public/"
@@ -54,7 +53,6 @@ public class AuthenticationConfig extends OncePerRequestFilter {
         String method = request.getMethod();
         // Skip auth filter for static file serving and GET file requests
         if (path.startsWith("/uploads/")) return true;
-        if (path.startsWith("/api/v1/uploads/") && "GET".equalsIgnoreCase(method)) return true;
         // Branding (Pengaturan Umum) is shown on the login page before a token exists.
         // GET only — the PUT stays token-guarded so this filter must still run for it.
         if (path.equals("/api/v1/settings/general") && "GET".equalsIgnoreCase(method)) return true;

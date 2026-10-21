@@ -6,7 +6,6 @@ import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
 import { Avatar } from 'primereact/avatar';
 import { useAuth } from '../../context/AuthContext';
-import NotificationBell from '../NotificationBell';
 import LanguageSwitcher from '../shared/LanguageSwitcher';
 
 /* ============================================================
@@ -133,7 +132,6 @@ const VeronaTopbar = ({ onMenuToggle, isDesktop }: VeronaTopbarProps) => {
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <LanguageSwitcher />
-        <NotificationBell />
 
         <Menu model={profileItems} popup ref={profileMenu} />
         <button

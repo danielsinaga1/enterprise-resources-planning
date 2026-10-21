@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>Pemeriksaan dilakukan <b>sebelum</b> kredensial diteruskan ke Active Directory. Itu bukan
  * kebetulan: AD punya kebijakan lockout sendiri, jadi tanpa penjaga ini serangan tebak-password
- * akan mengunci akun domain korban — yang ikut memblokir login Windows mereka, bukan hanya IRMS.
+ * akan mengunci akun domain korban — yang ikut memblokir login Windows mereka, bukan hanya aplikasi ini.
  *
  * <p>Bila Redis tidak bisa dihubungi, penjaga ini <b>membiarkan login lewat</b> (fail-open) dan
  * mencatat WARN + metrik. Fail-closed terdengar lebih aman tapi artinya satu gangguan Redis

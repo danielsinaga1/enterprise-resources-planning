@@ -340,3 +340,26 @@ export const rbacAdminService = {
     await api.post(`${PREFIX}/sync`);
   },
 };
+
+// ============================================================
+// STRUKTUR ORGANISASI (db_auth) — opsi dropdown form pengguna
+// ============================================================
+export interface OrgOption {
+  id: number;
+  name: string;
+}
+
+export const orgService = {
+  async departments(): Promise<OrgOption[]> {
+    const { data } = await api.get<ApiResponse<OrgOption[]>>(`${PREFIX}/org/departments`);
+    return data.data;
+  },
+  async divisions(): Promise<OrgOption[]> {
+    const { data } = await api.get<ApiResponse<OrgOption[]>>(`${PREFIX}/org/divisions`);
+    return data.data;
+  },
+  async jobTitles(): Promise<OrgOption[]> {
+    const { data } = await api.get<ApiResponse<OrgOption[]>>(`${PREFIX}/org/job-titles`);
+    return data.data;
+  },
+};

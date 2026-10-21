@@ -55,14 +55,10 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         "/api/erp/ga/public/"
     );
 
-    // Uploaded files (incident photos) are rendered by <img> tags, and a browser cannot attach
-    // an Authorization header to an image request — behind the filter every photo came back 401.
-    //
-    // READ ONLY. The same prefix also serves POST (upload) and DELETE (remove file), so this is
-    // matched on GET alone: opening the whole prefix would let anyone delete any photo without
-    // logging in. Reads are guarded only by the unguessable UUID filename.
+    // Foto publik ERP (/uploads/erp/...: aset/kendaraan, juga tampil di halaman scan QR) dirender
+    // lewat <img>, dan browser tidak bisa menyisipkan header Authorization ke permintaan gambar.
+    // HANYA GET; nama berkas berupa UUID yang tidak bisa ditebak.
     private static final List<String> PUBLIC_GET_PREFIXES = List.of(
-        "/api/v1/uploads/",
         "/uploads/"
     );
 

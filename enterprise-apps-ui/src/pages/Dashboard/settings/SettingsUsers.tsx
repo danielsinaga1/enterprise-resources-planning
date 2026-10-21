@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { userRoleService, roleService, masterJobTitleService, masterOriginDeptService, masterDivisionService } from '../../../services';
+import { userRoleService, roleService, orgService } from '../../../services';
 import ExportButtons from '../../../components/common/ExportButtons';
 import type { ExportColumn } from '../../../utils/exportUtils';
 import type { User } from '../../../types';
@@ -118,9 +118,9 @@ const SettingsUsers = () => {
   useEffect(() => {
     roleService.list().then(setAvailableRoles).catch(() => {});
     userRoleService.getUsersDropdown().then(setUsersDropdown).catch(() => {});
-    masterJobTitleService.list().then(setJobTitles).catch(() => {});
-    masterOriginDeptService.list().then(setDepartments).catch(() => {});
-    masterDivisionService.list().then(setDivisions).catch(() => {});
+    orgService.jobTitles().then(setJobTitles).catch(() => {});
+    orgService.departments().then(setDepartments).catch(() => {});
+    orgService.divisions().then(setDivisions).catch(() => {});
   }, []);
 
   // Debounced search: reset page to 1 when search or filters change

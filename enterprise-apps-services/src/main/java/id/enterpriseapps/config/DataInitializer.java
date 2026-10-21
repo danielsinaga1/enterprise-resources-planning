@@ -3,9 +3,6 @@ package id.enterpriseapps.config;
 import id.enterpriseapps.auth.entity.AuthUserRole;
 import id.enterpriseapps.auth.repository.AuthRoleRepository;
 import id.enterpriseapps.auth.repository.AuthUserRoleRepository;
-import id.enterpriseapps.entity.JobTitleEntity;
-import id.enterpriseapps.repository.JobTitleRepository;
-import id.enterpriseapps.service.AuthJobTitleSyncService;
 import id.enterpriseapps.service.RolePermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +20,6 @@ public class DataInitializer implements ApplicationRunner {
     private final RolePermissionService rolePermissionService;
     private final AuthRoleRepository authRoleRepository;
     private final AuthUserRoleRepository authUserRoleRepository;
-    private final JobTitleRepository jobTitleRepository;
-    private final AuthJobTitleSyncService authJobTitleSyncService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -34,24 +29,9 @@ public class DataInitializer implements ApplicationRunner {
             log.info("DataInitializer: roles and permissions ready.");
 
             ensureAdminHasSuperAdminRole();
-            backfillAuthJobTitles();
         } catch (Exception e) {
             log.error("DataInitializer: failed to initialize roles and permissions", e);
         }
-    }
-
-    /**
-     * Self-healing backfill: mirrors every irms_job_titles row into
-     * auth_job_titles so auth_users.job_id (FK'd to auth_job_titles) never
-     * rejects a title that exists in the Master Data screen. Idempotent
-     * upsert — cheap to run on every startup, also covers rows created
-     * before AuthJobTitleSyncService existed.
-     */
-    private void backfillAuthJobTitles() {
-        for (JobTitleEntity jt : jobTitleRepository.findAll()) {
-            authJobTitleSyncService.sync(jt.getId(), jt.getName());
-        }
-        log.info("DataInitializer: auth_job_titles backfilled from irms_job_titles.");
     }
 
     private void ensureAdminHasSuperAdminRole() {

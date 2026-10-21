@@ -2,7 +2,7 @@
 // :erp — ERP (penjualan, pembelian, persediaan, produksi, keuangan, aset/EAM),
 // port fitur ENTARIS ke platform Enterprise Apps.
 //
-// Mengikuti pola :lims / :smartdocs: paket terisolasi (id.enterpriseapps.erp.*)
+// Modul library: paket terisolasi (id.enterpriseapps.erp.*)
 // dengan database sendiri (db_erp). Identitas pengguna datang dari auth platform
 // (JWT berisi email + kode role); modul ini menyimpan snapshot pengguna sendiri
 // di tabel users db_erp, tanpa foreign key lintas database.

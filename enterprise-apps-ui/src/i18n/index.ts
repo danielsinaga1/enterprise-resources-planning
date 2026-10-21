@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import id from './locales/id.json';
 import en from './locales/en.json';
 
-const savedLang = localStorage.getItem('irms-lang') || 'id';
+const savedLang = localStorage.getItem('ea-lang') || 'id';
 
 i18n.use(initReactI18next).init({
   resources: {

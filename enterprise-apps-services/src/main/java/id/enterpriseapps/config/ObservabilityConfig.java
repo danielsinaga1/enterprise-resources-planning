@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ObservabilityConfig {
 
-    @Value("${spring.application.name:IRMS}")
+    @Value("${spring.application.name:enterprise-apps}")
     private String applicationName;
 
     @Value("${DEPLOY_ENV:dev}")

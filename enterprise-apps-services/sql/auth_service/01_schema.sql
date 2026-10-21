@@ -1,185 +1,151 @@
 -- ============================================================================
--- db_auth — Auth / Identity Service DDL
--- Owns: users, roles, permissions, user-role assignments, departments (org)
--- ALL downstream services (IRMS, LIMS) store only plain BIGINT refs to user IDs
--- and maintain their own lean read-side snapshots (lims_users, irms_users).
+-- db_auth — Auth / Identity (PostgreSQL)
+-- Owns: pengguna, role, permission, assignment, struktur organisasi, pengaturan umum.
+-- Hak akses fitur ERP disimpan terpisah di db_erp (matriks per KODE role di bawah).
 --
--- Naming convention: every table is prefixed with auth_
--- Constraints:  fk_auth_* | ix_auth_* | ux_auth_*
--- Charset:      utf8mb4 / utf8mb4_unicode_ci
+-- Idempoten. Jalankan pada database db_auth:  psql -d db_auth -f 01_schema.sql
+-- Role & permission bawaan dibuat otomatis saat aplikasi start (DataInitializer).
 -- ============================================================================
 
-CREATE DATABASE IF NOT EXISTS db_auth
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE db_auth;
-
-SET FOREIGN_KEY_CHECKS = 0;
-
 -- ----------------------------------------------------------------------------
--- Organisation units (owned by Auth; snapshots pushed to each service)
+-- Struktur organisasi
 -- ----------------------------------------------------------------------------
-
 CREATE TABLE IF NOT EXISTS auth_departments (
-    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    code        VARCHAR(50)     NULL,
-    name        VARCHAR(191)    NOT NULL,
-    created_at  DATETIME        NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  DATETIME        NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at  DATETIME        NULL,
-    PRIMARY KEY (id),
-    KEY ix_auth_departments_code (code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    id          BIGSERIAL PRIMARY KEY,
+    code        VARCHAR(50),
+    name        VARCHAR(191) NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS ix_auth_departments_code ON auth_departments (code);
 
 CREATE TABLE IF NOT EXISTS auth_divisions (
-    id                        BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    code                      VARCHAR(50)     NULL,
-    name                      VARCHAR(191)    NOT NULL,
-    dept_id                   BIGINT UNSIGNED NULL,
-    created_at                DATETIME        NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at                DATETIME        NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at                DATETIME        NULL,
-    PRIMARY KEY (id),
-    KEY ix_auth_divisions_dept (dept_id),
-    CONSTRAINT fk_auth_divisions_dept FOREIGN KEY (dept_id) REFERENCES auth_departments (id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    id          BIGSERIAL PRIMARY KEY,
+    code        VARCHAR(50),
+    name        VARCHAR(191) NOT NULL,
+    dept_id     BIGINT REFERENCES auth_departments (id) ON DELETE SET NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS ix_auth_divisions_dept ON auth_divisions (dept_id);
 
 CREATE TABLE IF NOT EXISTS auth_job_titles (
-    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    name        VARCHAR(191)    NOT NULL,
-    created_at  DATETIME        NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  DATETIME        NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at  DATETIME        NULL,
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    id          BIGSERIAL PRIMARY KEY,
+    name        VARCHAR(191) NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP
+);
 
 -- ----------------------------------------------------------------------------
--- Users  (master record — password hash lives ONLY here)
+-- Pengguna (hash password hanya disimpan di sini; LDAP/AD opsional)
 -- ----------------------------------------------------------------------------
-
 CREATE TABLE IF NOT EXISTS auth_users (
-    id                    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    npp                   VARCHAR(50)     NULL,
-    npk                   VARCHAR(50)     NULL,
-    name                  VARCHAR(191)    NOT NULL,
-    email                 VARCHAR(191)    NOT NULL,
-    mobile_phone          VARCHAR(50)     NULL,
-    rf_id                 VARCHAR(100)    NULL,
-    parent_id             BIGINT UNSIGNED NULL,
-    job_id                BIGINT UNSIGNED NULL,
-    dept_id               BIGINT UNSIGNED NULL,
-    division_id           BIGINT UNSIGNED NULL,
-    password              VARCHAR(255)    NOT NULL,
-    pass_salt             TEXT            NULL,
-    status                TINYINT         NOT NULL DEFAULT 1 COMMENT '1=active 0=inactive',
-    last_login            DATETIME        NULL,
-    last_login_failed     DATETIME        NULL,
-    attempt_login_failed  INT             NOT NULL DEFAULT 0,
-    created_at            DATETIME        NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by            VARCHAR(100)    NULL,
-    updated_at            DATETIME        NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updated_by            VARCHAR(100)    NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY ux_auth_users_email (email),
-    KEY ix_auth_users_npk      (npk),
-    KEY ix_auth_users_npp      (npp),
-    KEY ix_auth_users_parent   (parent_id),
-    KEY ix_auth_users_dept     (dept_id),
-    KEY ix_auth_users_division (division_id),
-    KEY ix_auth_users_job      (job_id),
-    CONSTRAINT fk_auth_users_parent   FOREIGN KEY (parent_id)   REFERENCES auth_users      (id) ON DELETE SET NULL,
-    CONSTRAINT fk_auth_users_dept     FOREIGN KEY (dept_id)     REFERENCES auth_departments (id) ON DELETE SET NULL,
-    CONSTRAINT fk_auth_users_division FOREIGN KEY (division_id) REFERENCES auth_divisions   (id) ON DELETE SET NULL,
-    CONSTRAINT fk_auth_users_job      FOREIGN KEY (job_id)      REFERENCES auth_job_titles  (id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    id                    BIGSERIAL PRIMARY KEY,
+    npp                   VARCHAR(50),
+    npk                   VARCHAR(50),
+    name                  VARCHAR(191) NOT NULL,
+    email                 VARCHAR(191) NOT NULL,
+    mobile_phone          VARCHAR(50),
+    rf_id                 VARCHAR(100),
+    parent_id             BIGINT REFERENCES auth_users (id) ON DELETE SET NULL,
+    job_id                BIGINT REFERENCES auth_job_titles (id) ON DELETE SET NULL,
+    dept_id               BIGINT REFERENCES auth_departments (id) ON DELETE SET NULL,
+    division_id           BIGINT REFERENCES auth_divisions (id) ON DELETE SET NULL,
+    password              VARCHAR(255) NOT NULL,
+    pass_salt             TEXT,
+    status                SMALLINT NOT NULL DEFAULT 1,   -- 1 = aktif, 0 = nonaktif
+    last_login            TIMESTAMP,
+    last_login_failed     TIMESTAMP,
+    attempt_login_failed  INTEGER NOT NULL DEFAULT 0,
+    created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by            VARCHAR(100),
+    updated_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by            VARCHAR(100),
+    CONSTRAINT ux_auth_users_email UNIQUE (email)
+);
+CREATE INDEX IF NOT EXISTS ix_auth_users_npk      ON auth_users (npk);
+CREATE INDEX IF NOT EXISTS ix_auth_users_npp      ON auth_users (npp);
+CREATE INDEX IF NOT EXISTS ix_auth_users_parent   ON auth_users (parent_id);
+CREATE INDEX IF NOT EXISTS ix_auth_users_dept     ON auth_users (dept_id);
+CREATE INDEX IF NOT EXISTS ix_auth_users_division ON auth_users (division_id);
+CREATE INDEX IF NOT EXISTS ix_auth_users_job      ON auth_users (job_id);
 
 -- ----------------------------------------------------------------------------
--- RBAC — Roles
+-- RBAC
 -- ----------------------------------------------------------------------------
-
 CREATE TABLE IF NOT EXISTS auth_roles (
-    id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    code           VARCHAR(50)     NOT NULL,
-    name           VARCHAR(100)    NOT NULL,
-    title          VARCHAR(200)    NULL,
-    description    TEXT            NULL,
-    department_id  BIGINT UNSIGNED NULL COMMENT 'optional scope to a department',
-    is_system_role TINYINT(1)      NOT NULL DEFAULT 0,
-    is_active      TINYINT(1)      NOT NULL DEFAULT 1,
-    priority       INT             NOT NULL DEFAULT 0,
-    created_at     DATETIME        NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by     VARCHAR(100)    NULL,
-    updated_at     DATETIME        NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updated_by     VARCHAR(100)    NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY ux_auth_roles_code (code),
-    KEY ix_auth_roles_dept (department_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ----------------------------------------------------------------------------
--- RBAC — Permissions
--- ----------------------------------------------------------------------------
+    id              BIGSERIAL PRIMARY KEY,
+    code            VARCHAR(50)  NOT NULL,
+    name            VARCHAR(100) NOT NULL,
+    title           VARCHAR(200),
+    description     TEXT,
+    department_id   BIGINT REFERENCES auth_departments (id) ON DELETE SET NULL,
+    is_system_role  BOOLEAN DEFAULT FALSE,
+    is_active       BOOLEAN DEFAULT TRUE,
+    priority        INTEGER DEFAULT 0,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by      VARCHAR(100),
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by      VARCHAR(100),
+    CONSTRAINT ux_auth_roles_code UNIQUE (code)
+);
 
 CREATE TABLE IF NOT EXISTS auth_permissions (
-    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    code        VARCHAR(100)    NOT NULL,
-    name        VARCHAR(150)    NOT NULL,
-    title       VARCHAR(200)    NULL,
-    description TEXT            NULL,
-    module      VARCHAR(50)     NOT NULL,
-    sub_module  VARCHAR(50)     NULL,
-    action      VARCHAR(50)     NULL,
-    is_active   TINYINT(1)      NOT NULL DEFAULT 1,
-    created_at  DATETIME        NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by  VARCHAR(100)    NULL,
-    updated_at  DATETIME        NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updated_by  VARCHAR(100)    NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY ux_auth_permissions_code   (code),
-    KEY ix_auth_permissions_module (module)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ----------------------------------------------------------------------------
--- RBAC — Role ↔ Permission pivot (with fine-grained CRUD/approve/export flags)
--- ----------------------------------------------------------------------------
+    id           BIGSERIAL PRIMARY KEY,
+    code         VARCHAR(100) NOT NULL,
+    name         VARCHAR(150) NOT NULL,
+    title        VARCHAR(200),
+    description  TEXT,
+    module       VARCHAR(50)  NOT NULL,
+    sub_module   VARCHAR(50),
+    action       VARCHAR(50),
+    is_active    BOOLEAN DEFAULT TRUE,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by   VARCHAR(100),
+    updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by   VARCHAR(100),
+    CONSTRAINT ux_auth_permissions_code UNIQUE (code)
+);
+CREATE INDEX IF NOT EXISTS ix_auth_permissions_module ON auth_permissions (module);
 
 CREATE TABLE IF NOT EXISTS auth_role_permissions (
-    id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    role_id       BIGINT UNSIGNED NOT NULL,
-    permission_id BIGINT UNSIGNED NOT NULL,
-    can_create    TINYINT(1)      NOT NULL DEFAULT 0,
-    can_read      TINYINT(1)      NOT NULL DEFAULT 0,
-    can_update    TINYINT(1)      NOT NULL DEFAULT 0,
-    can_delete    TINYINT(1)      NOT NULL DEFAULT 0,
-    can_approve   TINYINT(1)      NOT NULL DEFAULT 0,
-    can_export    TINYINT(1)      NOT NULL DEFAULT 0,
-    created_at    DATETIME        NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by    VARCHAR(100)    NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY ux_auth_role_permissions (role_id, permission_id),
-    KEY ix_auth_rp_permission (permission_id),
-    CONSTRAINT fk_auth_rp_role       FOREIGN KEY (role_id)       REFERENCES auth_roles       (id) ON DELETE CASCADE,
-    CONSTRAINT fk_auth_rp_permission FOREIGN KEY (permission_id) REFERENCES auth_permissions (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ----------------------------------------------------------------------------
--- RBAC — User ↔ Role pivot
--- ----------------------------------------------------------------------------
+    id             BIGSERIAL PRIMARY KEY,
+    role_id        BIGINT NOT NULL REFERENCES auth_roles (id) ON DELETE CASCADE,
+    permission_id  BIGINT NOT NULL REFERENCES auth_permissions (id) ON DELETE CASCADE,
+    can_create     BOOLEAN DEFAULT FALSE,
+    can_read       BOOLEAN DEFAULT FALSE,
+    can_update     BOOLEAN DEFAULT FALSE,
+    can_delete     BOOLEAN DEFAULT FALSE,
+    can_approve    BOOLEAN DEFAULT FALSE,
+    can_export     BOOLEAN DEFAULT FALSE,
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by     VARCHAR(100),
+    CONSTRAINT ux_auth_role_permissions UNIQUE (role_id, permission_id)
+);
 
 CREATE TABLE IF NOT EXISTS auth_user_roles (
-    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    user_id     BIGINT UNSIGNED NOT NULL,
-    role_id     BIGINT UNSIGNED NOT NULL,
-    is_primary  TINYINT(1)      NOT NULL DEFAULT 0,
-    is_active   TINYINT(1)      NOT NULL DEFAULT 1,
-    assigned_at DATETIME        NULL,
-    assigned_by VARCHAR(100)    NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY ux_auth_user_roles (user_id, role_id),
-    KEY ix_auth_ur_role (role_id),
-    CONSTRAINT fk_auth_ur_user FOREIGN KEY (user_id) REFERENCES auth_users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_auth_ur_role FOREIGN KEY (role_id) REFERENCES auth_roles  (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    id           BIGSERIAL PRIMARY KEY,
+    user_id      BIGINT NOT NULL REFERENCES auth_users (id) ON DELETE CASCADE,
+    role_id      BIGINT NOT NULL REFERENCES auth_roles (id) ON DELETE CASCADE,
+    is_primary   BOOLEAN DEFAULT FALSE,
+    is_active    BOOLEAN DEFAULT TRUE,
+    assigned_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    assigned_by  VARCHAR(100),
+    CONSTRAINT ux_auth_user_roles UNIQUE (user_id, role_id)
+);
+CREATE INDEX IF NOT EXISTS ix_auth_user_roles_user ON auth_user_roles (user_id);
 
-SET FOREIGN_KEY_CHECKS = 1;
+-- ----------------------------------------------------------------------------
+-- Pengaturan umum (branding halaman login & aplikasi)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS app_settings (
+    id             BIGSERIAL PRIMARY KEY,
+    setting_key    VARCHAR(100) NOT NULL UNIQUE,
+    setting_value  TEXT,
+    updated_by     VARCHAR(191),
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

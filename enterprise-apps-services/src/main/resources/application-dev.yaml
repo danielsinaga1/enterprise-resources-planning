@@ -5,53 +5,10 @@ spring:
     activate:
       on-profile: dev
 
-  datasource:
-    url: jdbc:postgresql://localhost:5432/db_irms
-    username: postgres
-    password:
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      pool-name: PrimaryPool
-      maximum-pool-size: 5
-      minimum-idle: 2
-      idle-timeout: 300000
-      max-lifetime: 1200000
-      connection-timeout: 20000
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-        use_sql_comments: true
-    open-in-view: false
-    show-sql: true
-
   data:
     redis:
       host: localhost
       port: 6379
-
-  mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:noreply@irms.id}
-    password: ${MAIL_PASSWORD:}
-    properties:
-
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
-    from: ${MAIL_USERNAME:noreply@irms.id}
-    from-name: KPI Notification
 
   servlet:
     multipart:
@@ -83,8 +40,7 @@ logging:
       max-history: 7
 
 app:
-  # Public origin of the SPA. Used to build the links inside notification emails,
-  # so it must be reachable by the recipient — not the developer's localhost.
+  # Public origin of the SPA (tautan absolut di teks notifikasi ERP).
   base-url: ${APP_BASE_URL:http://localhost:5173}
 
   # Disable LDAP in dev — use local bcrypt flow instead
@@ -95,27 +51,11 @@ app:
   datasource:
     auth:
       url: jdbc:postgresql://localhost:5432/db_auth
-      username: postgres
-      password:
+      username: ${DB_USERNAME:postgres}
+      password: ${DB_PASSWORD:}
       driver-class-name: org.postgresql.Driver
       hikari:
         pool-name: AuthPool
-        maximum-pool-size: 5
-        minimum-idle: 2
-        idle-timeout: 300000
-        max-lifetime: 1200000
-        connection-timeout: 20000
-
-    # SmartDocs datasource — db_smartdocs (dibagi dengan service OCR Python;
-    # lihat SmartDocsDataSourceConfig). Skema dikelola skrip sql/smartdocs_service/,
-    # bukan Hibernate.
-    smartdocs:
-      url: jdbc:postgresql://localhost:5432/db_smartdocs
-      username: postgres
-      password:
-      driver-class-name: org.postgresql.Driver
-      hikari:
-        pool-name: SmartDocsPool
         maximum-pool-size: 5
         minimum-idle: 2
         idle-timeout: 300000
@@ -127,28 +67,14 @@ app:
     # lihat app.erp.auto-init). Buat database-nya dulu: CREATE DATABASE db_erp;
     erp:
       url: jdbc:postgresql://localhost:5432/db_erp
-      username: postgres
-      password:
+      username: ${DB_USERNAME:postgres}
+      password: ${DB_PASSWORD:}
       driver-class-name: org.postgresql.Driver
       hikari:
         pool-name: ErpPool
         # Kolom waktu db_erp berisi UTC (seperti Prisma); default CURRENT_TIMESTAMP/now() ikut UTC.
         connection-init-sql: SET TIME ZONE 'UTC'
         maximum-pool-size: 10
-        minimum-idle: 2
-        idle-timeout: 300000
-        max-lifetime: 1200000
-        connection-timeout: 20000
-
-    # LIMS datasource — db_lims (DB-per-service; see LimsDataSourceConfig)
-    lims:
-      url: jdbc:postgresql://localhost:5432/db_lims
-      username: postgres
-      password:
-      driver-class-name: org.postgresql.Driver
-      hikari:
-        pool-name: LimsPool
-        maximum-pool-size: 5
         minimum-idle: 2
         idle-timeout: 300000
         max-lifetime: 1200000

@@ -43,7 +43,7 @@ class UserAdminTest extends AdminSetupTestSupport {
         String tag = uniq("prov").toLowerCase();
         PlatformUser boss = platformUser("Atasan " + tag, "NPKB" + tag, "boss." + tag + "@corp.test", null, true, "ERP_ACCOUNTANT");
         PlatformUser staff = platformUser("Staf " + tag, "NPKS" + tag, "staf." + tag + "@corp.test", boss.id(), true,
-                "LIMS_ANALYST", "ERP_VIEWER");
+                "HR_STAFF", "ERP_VIEWER");
         PlatformUser off = platformUser("Nonaktif " + tag, null, "off." + tag + "@corp.test", null, false, "ERP_VIEWER");
 
         assertEquals(0, ok(get("/api/erp/users/platform-search?q=a")).size());
@@ -53,7 +53,7 @@ class UserAdminTest extends AdminSetupTestSupport {
         assertEquals(staff.id().longValue(), hit.get("id").asLong());
         assertEquals("NPKS" + tag, hit.get("npk").asText());
         assertEquals("Staf " + tag, hit.get("name").asText());
-        assertEquals(List.of("LIMS_ANALYST", "ERP_VIEWER"), texts(hit.get("roles")));
+        assertEquals(List.of("HR_STAFF", "ERP_VIEWER"), texts(hit.get("roles")));
         assertTrue(hit.get("active").asBoolean());
         assertFalse(hit.get("provisioned").asBoolean());
         assertTrue(hit.get("erpUserId").isNull());
@@ -67,7 +67,7 @@ class UserAdminTest extends AdminSetupTestSupport {
         assertEquals("NPKS" + tag, row.get("npk").asText());
         assertEquals(staff.email(), row.get("email").asText());
         assertEquals("ERP_VIEWER", row.get("role").asText());
-        assertEquals(List.of("LIMS_ANALYST", "ERP_VIEWER"), texts(row.get("roles")));
+        assertEquals(List.of("HR_STAFF", "ERP_VIEWER"), texts(row.get("roles")));
         assertTrue(row.get("isActive").asBoolean());
         assertTrue(row.get("lastLoginAt").isNull());
         assertTrue(row.get("language").isNull());
@@ -273,7 +273,7 @@ class UserAdminTest extends AdminSetupTestSupport {
 
         PlatformUser boss = platformUser("Bos A " + tag, null, "bos." + tag + "@corp.test", null, true, "ERP_ACCOUNTANT");
         changePlatform(a, "Sinkron A Baru " + tag, "SA2" + tag, "sa.baru." + tag + "@corp.test", boss.id(), true,
-                "ERP_ACCOUNTANT", "LIMS_ANALYST");
+                "ERP_ACCOUNTANT", "HR_STAFF");
         DIRECTORY.remove(b.id());
         changePlatform(d, d.name(), null, d.email(), null, false, "ERP_VIEWER");
         PlatformUser y = platformUser("Atasan Y " + tag, null, "sy." + tag + "@corp.test", null, true, "ERP_VIEWER");
@@ -290,7 +290,7 @@ class UserAdminTest extends AdminSetupTestSupport {
         assertEquals("Sinkron A Baru " + tag, ra.get("full_name"));
         assertEquals("SA2" + tag, ra.get("npk"));
         assertEquals("sa.baru." + tag + "@corp.test", ra.get("email"));
-        assertEquals("ERP_ACCOUNTANT,LIMS_ANALYST", ra.get("roles"));
+        assertEquals("ERP_ACCOUNTANT,HR_STAFF", ra.get("roles"));
         assertEquals("ERP_ACCOUNTANT", ra.get("role"));
         assertEquals(true, ra.get("is_active"));
         String bossId = erpUserId(boss.email());

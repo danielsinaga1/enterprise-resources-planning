@@ -12,12 +12,13 @@ approval) ke platform Enterprise Apps sebagai modul Spring Boot dengan database 
 
 ## Menjalankan
 
-1. `CREATE DATABASE db_erp;` di PostgreSQL yang sama dengan db_irms/db_auth (dev: `localhost:5432`).
+1. `CREATE DATABASE db_erp;` di PostgreSQL yang sama dengan db_auth (dev: `localhost:5432`).
 2. Jalankan backend. Bila db_erp kosong dan `app.erp.auto-init=true` (default dev), skema
    `sql/erp_service/01_schema.sql` + data awal `02_seed.sql` dipasang otomatis. Di produksi jalankan
    kedua skrip itu manual (auto-init default `false` di profil prod).
-3. Jalankan `sql/31_erp_rbac.sql` di **db_auth** (role platform ERP_ADMIN, ERP_ACCOUNTANT,
-   ERP_PRODUCTION, ERP_VIEWER), lalu assign role ke pengguna. SUPER_ADMIN otomatis super-admin ERP.
+3. Role platform ERP_ADMIN, ERP_ACCOUNTANT, ERP_PRODUCTION, ERP_VIEWER dibuat otomatis di db_auth saat
+   boot (`DataInitializer`); assign ke pengguna lewat Pengaturan › Manajemen User. SUPER_ADMIN otomatis
+   super-admin ERP.
 4. Matriks hak akses ERP (Lihat/Edit per modul + hak khusus) dikelola di UI: ERP › Sistem ERP ›
    Pengguna & Hak Akses. Role bawaan dibuat otomatis saat boot (`ErpBootstrap`).
 

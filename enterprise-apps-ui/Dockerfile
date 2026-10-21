@@ -10,11 +10,7 @@ COPY . .
 # nginx proxies /api and /uploads to the gateway. Optional keys can be injected
 # at build time via --build-arg if ever needed.
 ARG VITE_API_URL=""
-ARG VITE_LIMS_API_URL=""
-ARG VITE_FIREBASE_VAPID_KEY=""
-ENV VITE_API_URL=$VITE_API_URL \
-    VITE_LIMS_API_URL=$VITE_LIMS_API_URL \
-    VITE_FIREBASE_VAPID_KEY=$VITE_FIREBASE_VAPID_KEY
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # ========== RUN STAGE ==========

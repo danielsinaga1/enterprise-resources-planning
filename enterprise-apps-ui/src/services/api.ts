@@ -1,12 +1,12 @@
 ﻿import type { ApiResponse, PaginatedResponse } from "../types";
 
 // ============================================================
-// IRMS SERVICE — Requests proxy through gateway (:8080) via Vite dev proxy
+// BACKEND — Requests proxy through gateway (:8080) via Vite dev proxy
 // Production: set VITE_API_URL to the gateway base URL
 // All endpoints include their full path: /api/v1/..., /api/rbac/...
 // ============================================================
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
-const DEFAULT_TIMEOUT = 60000; // 60s to match irms-service timeout
+const DEFAULT_TIMEOUT = 60000; // 60s to match backend timeout
 
 // ============================================================
 // Custom HTTP Error
@@ -252,11 +252,11 @@ const api = {
 export default api;
 
 // ============================================================
-// HELPERS — Adapted for irms-service Response format
+// HELPERS — Adapted for backend Response format
 // ============================================================
 
 /**
- * Map irms-service paginated response:
+ * Map backend paginated response:
  * { status, data: T[], page, countData, totalPage }
  * to the frontend PaginatedResponse<T> shape.
  */
@@ -338,7 +338,7 @@ export function toFormData(
 }
 
 /**
- * Extract data from irms-service ApiResponse wrapper.
+ * Extract data from backend ApiResponse wrapper.
  * Usage: const result = unwrap(response.data);
  */
 export function unwrap<T>(resp: ApiResponse<T>): T {

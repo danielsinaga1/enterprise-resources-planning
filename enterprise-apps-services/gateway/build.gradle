@@ -50,7 +50,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 }
 
-// The gateway is a standalone bootable JAR — do NOT package shared/lims as deps
+// The gateway is a standalone bootable JAR — do NOT package shared/erp as deps
 bootJar {
-    archiveFileName = 'irms-gateway.jar'
+    archiveFileName = 'enterprise-apps-gateway.jar'
 }

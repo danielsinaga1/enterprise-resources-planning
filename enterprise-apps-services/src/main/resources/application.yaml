@@ -1,33 +1,11 @@
 spring:
   application:
-    name: IRMS
+    name: enterprise-apps
   profiles:
     active: dev
   jackson:
     deserialization:
       fail-on-unknown-properties: false
-
-  # =============================================================
-  # KAFKA — event backbone (guarded by app.kafka.enabled below).
-  # JSON on the wire; the producer stamps __TypeId__ headers and
-  # consumers map them back to the id.enterpriseapps.event classes.
-  # =============================================================
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:29092}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: 1
-    consumer:
-      group-id: ${KAFKA_CONSUMER_GROUP:irms-backend}
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      # ErrorHandlingDeserializer so a poison-pill message can't wedge the
-      # listener in an infinite deserialization-failure loop.
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-      properties:
-        "[spring.deserializer.value.delegate.class]": org.springframework.kafka.support.serializer.JsonDeserializer
-        "[spring.json.trusted.packages]": id.enterpriseapps.event
 
 # =============================================================
 # OBSERVABILITY — Actuator + Micrometer Metrics + OTel Tracing
@@ -101,19 +79,6 @@ app:
     auto-init: ${ERP_AUTO_INIT:true}
     # Lampiran dokumen keuangan ERP (privat; JANGAN di dalam folder uploads/ yang publik).
     storage-dir: ${ERP_STORAGE_DIR:}
-  # Kafka master switch. false = boot without a broker: producers no-op,
-  # listeners are not created, notifications deliver synchronously.
-  # docker-compose sets KAFKA_ENABLED=true (broker included there).
-  kafka:
-    enabled: ${KAFKA_ENABLED:false}
-    # Backoff consumer sebelum record menyerah ke topik <topic>.DLT. Default Spring
-    # (10 percobaan TANPA jeda) membakar seluruh percobaan dalam hitungan milidetik,
-    # sehingga gangguan DB sesaat berubah jadi event hilang permanen. Lihat KafkaRetryProperties.
-    retry:
-      max-retries: ${KAFKA_RETRY_MAX:4}
-      initial-interval: ${KAFKA_RETRY_INITIAL_MS:1000}
-      multiplier: ${KAFKA_RETRY_MULTIPLIER:2.0}
-      max-interval: ${KAFKA_RETRY_MAX_MS:10000}
   jwt:
     secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     access-expiration: ${JWT_EXPIRATION:86400000}        # 24 hours
@@ -148,15 +113,6 @@ app:
       ip-max-attempts: ${LOGIN_THROTTLE_IP_MAX_ATTEMPTS:30}
       # nginx -> gateway -> backend: gateway menambahkan IP nginx, jadi 1 hop tepercaya.
       trusted-hop-count: ${LOGIN_THROTTLE_TRUSTED_HOPS:1}
-  # Read-only lookup into Avantis (external EAM/maintenance system, not ours) for the Work
-  # Request autocomplete on the incident/JSO forms. No defaults on purpose — real credentials
-  # must never land in this file (it's committed to git); set via env in /etc/backend.env.
-  # WrDataSourceConfig fails soft if this is unreachable/misconfigured — the search endpoint
-  # just returns an empty list rather than breaking the form.
-  datasource-wr:
-    url: ${WR_DB_URL:}
-    username: ${WR_DB_USERNAME:}
-    password: ${WR_DB_PASSWORD:}
   ldap:
     # When false, login falls back to the local bcrypt password flow (default for dev).
     # Set to true in environments that have an Active Directory reachable.
@@ -192,7 +148,7 @@ app:
     sync-password: ${LDAP_SYNC_PASSWORD:true}
     # NPKs that exist in the local DB but NOT in Active Directory. These bypass the AD bind and
     # authenticate via the local bcrypt password flow even when enabled=true (comma-separated).
-    local-login-npks: ${LDAP_LOCAL_LOGIN_NPKS:2002192,2002195,2002191,2002190,2002193,2002194}
+    local-login-npks: ${LDAP_LOCAL_LOGIN_NPKS:admin}
     # Optional AD group (CN) -> application role code mapping, e.g.
     #   LDAP_GROUP_ROLE_MAPPINGS_0=IT-Admins:ADMIN
     # group-role-mappings:
@@ -201,54 +157,3 @@ app:
 service:
   timeout: ${SERVICE_TIMEOUT:60}
 
-# Facility geographic coordinates — used by the weather integration (Open-Meteo historical API).
-# Default = Balikpapan (KPI RU V). Override via env vars for other plant locations.
-irms:
-  facility:
-    latitude: ${FACILITY_LATITUDE:1.1699}
-    longitude: ${FACILITY_LONGITUDE:116.8312}
-
-assistant:
-  # Backs the global EnterpriseAI widget (KiPlIAI) — see id.enterpriseapps.assistant.
-  #
-  # Penyedia LLM yang dipakai KPIntar: "gemini" atau "claude". Hanya satu bean
-  # AssistantLlmClient yang hidup, dipilih lewat @ConditionalOnProperty, jadi mengganti
-  # nilai ini di /etc/backend.env lalu restart backend sudah cukup — tanpa deploy ulang.
-  provider: ${ASSISTANT_PROVIDER:gemini}
-  claude:
-    # WAJIB lewat env; jangan pernah menulis kunci ke berkas repo.
-    api-key: ${ANTHROPIC_API_KEY:}
-    model: ${CLAUDE_MODEL:claude-opus-5}
-    # Longgar karena Claude Opus 5 berpikir adaptif secara bawaan: anggaran ini juga
-    # menampung penalarannya, dan bila habis lebih dulu balasannya kembali kosong.
-    max-tokens: ${CLAUDE_MAX_TOKENS:16000}
-    timeout-seconds: ${CLAUDE_TIMEOUT_SECONDS:180}
-  gemini:
-    enabled: ${GEMINI_ASSISTANT_ENABLED:true}
-    api-key: ${GEMINI_API_KEY:}
-    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/models}
-    # Varian lite dipilih karena jatah HARIAN free tier dihitung per project per model:
-    # gemini-3.5-flash hanya 20 permintaan/hari, dan satu pertanyaan agentic memakai
-    # beberapa panggilan sekaligus. Tetap segenerasi supaya perilaku tool calling
-    # (termasuk thoughtSignature) sama seperti yang sudah diuji.
-    model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
-    # Longgar karena mode agentic: model thinking memakai anggaran token ini untuk penalaran
-    # juga; bila habis lebih dulu, respons kembali kosong dan asisten terlihat tidak menjawab.
-    max-tokens: ${GEMINI_MAX_TOKENS:4096}
-    temperature: ${GEMINI_TEMPERATURE:0.2}
-    timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:60}
-
-resilience4j:
-  retry:
-    instances:
-      # Outbound FCM push: retry transient Firebase/network failures with backoff + jitter.
-      fcm:
-        max-attempts: 3
-        wait-duration: 2s
-        enable-exponential-backoff: true
-        exponential-backoff-multiplier: 2
-        enable-randomized-wait: true
-        randomized-wait-factor: 0.5
-        retry-exceptions:
-          - com.google.firebase.messaging.FirebaseMessagingException
-          - java.io.IOException

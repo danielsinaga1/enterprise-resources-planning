@@ -8,7 +8,7 @@
  *      memindai hanya src/erp (lihat `source('../')`).
  *   2. Hasilnya diproses PostCSS: blok `@layer` dibuka (urutan tetap) dan setiap selector diberi
  *      prefix `.erp-root` — preflight, utilitas, dan token tema hanya berlaku di dalam wrapper ERP
- *      (dan portal dialog/popover yang diarahkan ke wrapper itu), tidak bocor ke IRMS/LIMS.
+ *      (dan portal dialog/popover yang diarahkan ke wrapper itu), tidak bocor ke shell platform (PrimeReact/PrimeFlex).
  *      Spesifisitas +1 kelas juga membuat utilitas ERP menang atas PrimeFlex (`.grid`, `.w-4`, `.p-4`).
  *
  * Pemakaian: `node scripts/build-erp-css.mjs` (otomatis lewat predev/prebuild). `--watch` untuk dev.

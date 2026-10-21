@@ -47,7 +47,7 @@ abstract class AdminSetupTestSupport extends ErpIntegrationTest {
             new PlatformRole("ERP_ACCOUNTANT", "Akuntan / Keuangan"),
             new PlatformRole("ERP_PRODUCTION", "Staff Produksi"),
             new PlatformRole("ERP_VIEWER", "Viewer ERP"),
-            new PlatformRole("LIMS_ANALYST", "Analis LIMS")));
+            new PlatformRole("HR_STAFF", "Staf HR")));
     private static final AtomicLong SEQ = new AtomicLong(7000);
 
     static {

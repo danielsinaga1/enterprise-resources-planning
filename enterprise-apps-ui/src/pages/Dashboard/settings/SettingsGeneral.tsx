@@ -15,7 +15,7 @@ import {
   saveGeneralSettings,
 } from '../../../hooks/useGeneralSettings';
 
-const MAINTENANCE_KEY = 'irms_maintenance_mode';
+const MAINTENANCE_KEY = 'ea_maintenance_mode';
 
 const SettingsGeneral = () => {
   const navigate = useNavigate();

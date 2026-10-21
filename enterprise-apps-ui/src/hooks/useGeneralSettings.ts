@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 
-export const GENERAL_SETTINGS_KEY = 'irms_general_settings';
-export const GENERAL_SETTINGS_EVENT = 'irms-general-settings-changed';
+export const GENERAL_SETTINGS_KEY = 'ea_general_settings';
+export const GENERAL_SETTINGS_EVENT = 'ea-general-settings-changed';
 
 // Server adalah sumber kebenaran (dipakai juga oleh template email di backend);
 // localStorage hanya cache agar branding tidak berkedip saat halaman dimuat.
@@ -29,9 +29,9 @@ export const defaultGeneralSettings: GeneralSettings = {
 // Diperlakukan sebagai "belum diisi" supaya default baru yang dipakai — tanpa ini
 // pengguna lama harus Reset + Simpan manual agar branding-nya ikut berubah.
 const LEGACY_PLACEHOLDERS: Record<keyof GeneralSettings, string> = {
-  siteName: 'IRMS Hospital',
+  siteName: 'Enterprise Apps',
   siteDesc: 'Sistem Informasi Manajemen Rumah Sakit',
-  email: 'admin@irms.id',
+  email: '',
   phone: '(021) 123456',
   address: 'Jl. Rumah Sakit No. 1',
 };

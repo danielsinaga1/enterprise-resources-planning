@@ -11,60 +11,18 @@ import type { MenuSection, MenuItem } from '../../types';
    ============================================================ */
 const SECTION_KEY_MAP: Record<string, string> = {
   'MAIN': 'main',
-  'IRMS': 'irms',
-  'PENGADAAN': 'pengadaan',
-  'LIMS': 'lims',
+  'ERP': 'erp',
   'PENGATURAN': 'pengaturan',
 };
 
 const ITEM_KEY_MAP: Record<string, string> = {
   'Dashboard': 'dashboard',
-  'Dashboard IRMS': 'dashboardIrms',
-  'Dashboard LIMS': 'dashboardLims',
-  'Laporan Insiden': 'laporanInsiden',
-  'Daftar Insiden': 'daftarInsiden',
-  'Buat Laporan': 'buatLaporan',
-  'Observasi Keselamatan': 'observasiKeselamatan',
-  'Daftar Observasi': 'daftarObservasi',
-  'Buat Observasi': 'buatObservasi',
-  'Tugas Observasi': 'tugasObservasi',
-  'Tugas Laporan Insiden': 'tugasLaporanInsiden',
-  'Monitoring PR': 'monitoringPr',
-
   'Manajemen User': 'manajemenUser',
   'Daftar User': 'daftarUser',
   'Role & Permission': 'rolePermission',
   'Hak Akses': 'hakAkses',
-  'Master Data': 'masterData',
-  'Area': 'area',
-  'Kategori Insiden': 'kategoriInsiden',
-  'Klasifikasi': 'klasifikasi',
-  'Akar Masalah': 'akarMasalah',
-  'Region': 'region',
-  'Dept. Asal': 'deptAsal',
-  'JSO Locations': 'deptTujuan',
   'Sistem': 'sistem',
   'Pengaturan Umum': 'pengaturanUmum',
-  'Audit Log': 'auditLog',
-  'Email Template': 'emailTemplate',
-  'Laporan Laboratorium': 'laporanLaboratorium',
-  'Daftar Laporan Lab': 'daftarLaporanLab',
-  'Buat Laporan Lab': 'buatLaporanLab',
-  'Laporan Harian': 'laporanHarian',
-  'Daftar Laporan Harian': 'daftarLaporanHarian',
-  'Buat Laporan Harian': 'buatLaporanHarian',
-  'Permission Matrix': 'permissionMatrix',
-  'Laboratory Reports': 'laporanLaboratorium',
-  'Daily Reports': 'laporanHarian',
-  'Parameter Uji': 'parameterUji',
-  'Jenis Uji': 'jenisUji',
-  'Metode': 'metode',
-  'Standar': 'standar',
-  'Satuan': 'satuan',
-  'Dept. Lab': 'deptLab',
-  'Hasil Lab': 'hasilLab',
-  'Senyawa Kimia': 'senyawaKimia',
-  'Dept. Tujuan': 'deptTujuan',
 };
 
 interface VeronaSidebarProps {
@@ -122,9 +80,9 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
   }, [user?.id]);
 
   // Auto-expand the section whose submenu contains the active path.
-  // Rute anak ikut dihitung (mis. /smartdocs/documents/425 membuka menu
-  // "SmartDocs"), karena halaman detail justru tempat pengguna paling sering
-  // butuh melompat ke halaman lain dalam modul yang sama.
+  // Rute anak ikut dihitung (mis. /dashboard/erp/sales/invoices/123 membuka grup
+  // menunya), karena halaman detail justru tempat pengguna paling sering butuh
+  // melompat ke halaman lain dalam modul yang sama.
   useEffect(() => {
     const inside = (to?: string) =>
       !!to && (location.pathname === to || location.pathname.startsWith(`${to}/`));

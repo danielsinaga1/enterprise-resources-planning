@@ -50,46 +50,18 @@ interface ModuleGroup {
 
 const MODULE_LABELS: Record<string, string> = {
   DASHBOARD: 'Dashboard',
-  INCIDENT: 'Manajemen Insiden',
-  SAFETY: 'Keselamatan',
-  RISK: 'Manajemen Risiko',
-  LIMS: 'Laboratorium (LIMS)',
   ORGANISASI: 'Organisasi',
   SYSTEM: 'Sistem',
 };
 
 const MODULE_ICONS: Record<string, string> = {
   DASHBOARD: 'pi pi-th-large',
-  INCIDENT: 'pi pi-exclamation-triangle',
-  SAFETY: 'pi pi-shield',
-  RISK: 'pi pi-chart-bar',
-  LIMS: 'pi pi-flask',
   ORGANISASI: 'pi pi-sitemap',
   SYSTEM: 'pi pi-wrench',
 };
 
 const SUB_MODULE_LABELS: Record<string, string> = {
-  REPORT: 'Laporan',
-  INVESTIGATION: 'Investigasi',
-  FOLLOWUP: 'Tindak Lanjut',
-  OBSERVATION: 'Observasi',
-  AUDIT: 'Audit Keselamatan',
-  ASSESSMENT: 'Penilaian Risiko',
-  REGISTER: 'Register Risiko',
-  MATRIX: 'Matriks Risiko',
   DASHBOARD: 'Dashboard',
-  ANALYSIS: 'Detail Analisis',
-  APPROVAL: 'Review & Approval',
-  DAILY: 'Laporan Harian',
-  CALENDAR: 'Kalender',
-  PARAMETER: 'Parameter Uji',
-  TEST_TYPE: 'Tipe Pengujian',
-  METHOD: 'Metode',
-  STANDARD: 'Standar',
-  UNIT: 'Satuan',
-  RESULT: 'Hasil Pengujian',
-  LAB_DEPT: 'Departemen Lab',
-  COMPOUND: 'Senyawa Kimia',
   DEPARTMENT: 'Departemen',
   USER: 'User',
   ROLE: 'Role',
@@ -99,10 +71,6 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
 const MODULE_ORDER = [
   'DASHBOARD',
-  'INCIDENT',
-  'SAFETY',
-  'RISK',
-  'LIMS',
   'ORGANISASI',
   'SYSTEM',
 ];

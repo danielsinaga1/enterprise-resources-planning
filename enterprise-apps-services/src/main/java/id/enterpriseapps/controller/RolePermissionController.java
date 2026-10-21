@@ -22,6 +22,21 @@ public class RolePermissionController {
         private final RolePermissionService rolePermissionService;
 
         // =====================================================
+        // STRUKTUR ORGANISASI (opsi dropdown form pengguna)
+        // =====================================================
+
+        @GetMapping("/org/{type}")
+        @Operation(summary = "Daftar struktur organisasi",
+                        description = "type: departments | divisions | job-titles (db_auth, tidak termasuk yang dihapus)")
+        public ResponseEntity<Response> getOrgOptions(@PathVariable String type) {
+                return ResponseEntity.ok(Response.builder()
+                                .status("SUCCESS")
+                                .httpStatus(HttpStatus.OK)
+                                .data(rolePermissionService.getOrgOptions(type))
+                                .build());
+        }
+
+        // =====================================================
         // ROLE ENDPOINTS
         // =====================================================
 

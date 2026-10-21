@@ -3,7 +3,7 @@
  *
  * The browser's `Date.toISOString()` converts to UTC before formatting, which
  * shifts the calendar day for users east of UTC (e.g. WIB +07:00) when the local
- * time is near midnight. For data captured in *local* business time (incident
+ * time is near midnight. For data captured in *local* business time (transaction
  * date, sampling date), always format from the local fields.
  */
 

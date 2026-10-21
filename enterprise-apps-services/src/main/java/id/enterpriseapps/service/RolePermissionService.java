@@ -5,17 +5,16 @@ import id.enterpriseapps.auth.entity.AuthRole;
 import id.enterpriseapps.auth.entity.AuthRolePermission;
 import id.enterpriseapps.auth.entity.AuthUser;
 import id.enterpriseapps.auth.entity.AuthUserRole;
+import id.enterpriseapps.auth.entity.AuthJobTitle;
 import id.enterpriseapps.auth.repository.AuthPermissionRepository;
 import id.enterpriseapps.auth.repository.AuthRolePermissionRepository;
 import id.enterpriseapps.auth.repository.AuthRoleRepository;
 import id.enterpriseapps.auth.repository.AuthUserRepository;
 import id.enterpriseapps.auth.repository.AuthUserRoleRepository;
-import id.enterpriseapps.entity.JobTitleEntity;
+import id.enterpriseapps.auth.repository.AuthDepartmentRepository;
+import id.enterpriseapps.auth.repository.AuthDivisionRepository;
+import id.enterpriseapps.auth.repository.AuthJobTitleRepository;
 import id.enterpriseapps.erp.core.web.ErpMenuProvider;
-import id.enterpriseapps.event.UserEvent;
-import id.enterpriseapps.repository.DivisionRepository;
-import id.enterpriseapps.repository.JobTitleRepository;
-import id.enterpriseapps.repository.OriginDepartmentRepository;
 import id.enterpriseapps.response.Response;
 import id.enterpriseapps.utils.PaginationFilterUtil;
 import jakarta.persistence.EntityManager;
@@ -46,35 +45,39 @@ public class RolePermissionService {
         private final AuthUserRepository authUserRepository;
         /** Menu modul ERP (db_erp) — difilter matriks izin ERP berdasarkan kode role pengguna. */
         private final ErpMenuProvider erpMenuProvider;
-        private final OriginDepartmentRepository originDepartmentRepository;
-        private final JobTitleRepository jobTitleRepository;
-        private final DivisionRepository divisionRepository;
+        /** Struktur organisasi (departemen/divisi/jabatan) — master di db_auth. */
+        private final AuthDepartmentRepository originDepartmentRepository;
+        private final AuthJobTitleRepository jobTitleRepository;
+        private final AuthDivisionRepository divisionRepository;
         private final PasswordEncoder passwordEncoder;
         private final PaginationFilterUtil paginationFilterUtil;
-        private final IrmsUserSyncService irmsUserSyncService;
-        private final EventPublisher eventPublisher;
 
         // Injected via JPA persistence context, not Lombok constructor
         @PersistenceContext(unitName = "auth")
         private EntityManager entityManager;
 
-        /** Broadcast a user lifecycle change on the auth.user.events topic (best-effort). */
-        private void publishUserEvent(UserEvent.Action action, AuthUser user) {
-                eventPublisher.publishUserEvent(UserEvent.builder()
-                                .action(action)
-                                .id(user.getId())
-                                .npk(user.getNpk())
-                                .npp(user.getNpp())
-                                .name(user.getName())
-                                .email(user.getEmail())
-                                .mobilePhone(user.getMobilePhone())
-                                .rfId(user.getRfId())
-                                .parentId(user.getParentId())
-                                .jobId(user.getJobId())
-                                .deptId(user.getDeptId())
-                                .divisionId(user.getDivisionId())
-                                .status(user.getStatus())
-                                .build());
+        // =====================================================
+        // STRUKTUR ORGANISASI
+        // =====================================================
+
+        /** Opsi dropdown {id, name} untuk departemen / divisi / jabatan (yang belum dihapus), urut nama. */
+        @Transactional(readOnly = true, transactionManager = "authTransactionManager")
+        public List<Map<String, Object>> getOrgOptions(String type) {
+                List<Map<String, Object>> out = new ArrayList<>();
+                switch (type) {
+                        case "departments" -> originDepartmentRepository.findAll().stream()
+                                        .filter(d -> d.getDeletedAt() == null)
+                                        .forEach(d -> out.add(Map.of("id", d.getId(), "name", d.getName())));
+                        case "divisions" -> divisionRepository.findAll().stream()
+                                        .filter(d -> d.getDeletedAt() == null)
+                                        .forEach(d -> out.add(Map.of("id", d.getId(), "name", d.getName())));
+                        case "job-titles" -> jobTitleRepository.findAll().stream()
+                                        .filter(j -> j.getDeletedAt() == null)
+                                        .forEach(j -> out.add(Map.of("id", j.getId(), "name", j.getName())));
+                        default -> throw new IllegalArgumentException("Jenis struktur organisasi tidak dikenal: " + type);
+                }
+                out.sort(Comparator.comparing(m -> String.valueOf(m.get("name")), String.CASE_INSENSITIVE_ORDER));
+                return out;
         }
 
         // =====================================================
@@ -188,7 +191,9 @@ public class RolePermissionService {
 
         private static final Set<String> DEPRECATED_MODULES = Set.of(
                         "PENGADAAN", "INVENTORY", "KEUANGAN", "ASET",
-                        "LAB_REPORT", "DAILY_REPORT", "QUALITY");
+                        "LAB_REPORT", "DAILY_REPORT", "QUALITY",
+                        // Modul aplikasi lama (IRMS, LIMS, SmartDocs, pengadaan PR) yang sudah dihapus.
+                        "INCIDENT", "SAFETY", "RISK", "LIMS", "SMARTDOCS", "PROCUREMENT");
 
         public List<Map<String, Object>> getAllPermissions() {
                 return authPermissionRepository.findByIsActiveTrue().stream()
@@ -219,12 +224,12 @@ public class RolePermissionService {
 
         /**
          * Look up a single user by their job title (case-insensitive).
-         * Cross-datasource: job title lookup in primary (db_nirms), user lookup in auth (db_auth).
+         * Jabatan dan user sama-sama di db_auth.
          */
         @Transactional(readOnly = true, transactionManager = "authTransactionManager")
         public Map<String, Object> findUserByJobTitle(String title) {
                 if (title == null || title.trim().isEmpty()) return null;
-                Optional<JobTitleEntity> jobOpt = jobTitleRepository.findFirstByNameIgnoreCase(title.trim());
+                Optional<AuthJobTitle> jobOpt = jobTitleRepository.findFirstByNameIgnoreCase(title.trim());
                 if (jobOpt.isEmpty()) return null;
                 List<AuthUser> matches = authUserRepository.findByJobId(jobOpt.get().getId());
                 if (matches.isEmpty()) return null;
@@ -469,14 +474,6 @@ public class RolePermissionService {
                 Map<String, Object> result = userToMap(saved);
                 result.put("defaultPassword", defaultPassword);
 
-                // Sync snapshot to irms_users (best-effort, non-blocking)
-                irmsUserSyncService.syncCreate(saved.getId(), saved.getNpk(), saved.getNpp(),
-                        saved.getName(), saved.getEmail(), saved.getMobilePhone(), saved.getRfId(),
-                        saved.getParentId(), saved.getJobId(), saved.getDeptId(), saved.getDivisionId(),
-                        saved.getStatus());
-                // Broadcast for other read-side snapshots (e.g. lims_users)
-                publishUserEvent(UserEvent.Action.CREATED, saved);
-
                 return result;
         }
 
@@ -530,14 +527,6 @@ public class RolePermissionService {
 
                 AuthUser saved = authUserRepository.save(user);
 
-                // Sync snapshot to irms_users (best-effort, non-blocking)
-                irmsUserSyncService.syncUpdate(saved.getId(), saved.getNpk(), saved.getNpp(),
-                        saved.getName(), saved.getEmail(), saved.getMobilePhone(), saved.getRfId(),
-                        saved.getParentId(), saved.getJobId(), saved.getDeptId(), saved.getDivisionId(),
-                        saved.getStatus());
-                // Broadcast for other read-side snapshots (e.g. lims_users)
-                publishUserEvent(UserEvent.Action.UPDATED, saved);
-
                 return userToMap(saved);
         }
 
@@ -547,10 +536,6 @@ public class RolePermissionService {
                                 .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
                 authUserRoleRepository.deleteByUserId(id);
                 authUserRepository.delete(user);
-                // Sync snapshot deletion to irms_users (best-effort)
-                irmsUserSyncService.syncDelete(id);
-                // Broadcast for other read-side snapshots (e.g. lims_users)
-                publishUserEvent(UserEvent.Action.DELETED, user);
         }
 
         @Transactional(transactionManager = "authTransactionManager")
@@ -561,10 +546,6 @@ public class RolePermissionService {
                 user.setStatus(newStatus);
                 user.setUpdatedBy("SYSTEM");
                 AuthUser saved = authUserRepository.save(user);
-                // Sync status snapshot to irms_users (best-effort)
-                irmsUserSyncService.syncStatus(id, newStatus);
-                // Broadcast for other read-side snapshots (e.g. lims_users)
-                publishUserEvent(UserEvent.Action.STATUS_CHANGED, saved);
                 return userToMap(saved);
         }
 
@@ -778,8 +759,7 @@ public class RolePermissionService {
                 Set<String> readableCodes = new LinkedHashSet<>();
 
                 if (isSuperAdmin) {
-                        accessibleModules.addAll(Arrays.asList("DASHBOARD", "INCIDENT", "SAFETY",
-                                        "RISK", "LIMS", "SMARTDOCS", "PROCUREMENT", "ORGANISASI", "SYSTEM"));
+                        accessibleModules.addAll(Arrays.asList("DASHBOARD", "ORGANISASI", "SYSTEM"));
                 } else if (!roleIds.isEmpty()) {
                         List<AuthRolePermission> rolePermissions = authRolePermissionRepository
                                         .findWithPermissionsByRoleIds(roleIds);
@@ -801,116 +781,6 @@ public class RolePermissionService {
                                         Map.of("label", "Dashboard", "icon", "pi pi-th-large",
                                                         "to", "/dashboard")));
                         menu.add(main);
-                }
-
-                // IRMS
-                List<Map<String, Object>> irmsItems = new ArrayList<>();
-                if (accessibleModules.contains("INCIDENT") || accessibleModules.contains("SAFETY")
-                                || accessibleModules.contains("RISK")) {
-                        irmsItems.add(Map.of("label", "Dashboard IRMS", "icon", "pi pi-chart-bar",
-                                        "to", "/dashboard/irms"));
-                }
-                if (accessibleModules.contains("INCIDENT")) {
-                        irmsItems.add(Map.of("label", "Laporan Insiden", "icon",
-                                        "pi pi-exclamation-triangle",
-                                        "items", List.of(
-                                                        Map.of("label", "Daftar Insiden", "to",
-                                                                        "/dashboard/irms/incident-reports"),
-                                                        Map.of("label", "Buat Laporan", "to",
-                                                                        "/dashboard/irms/incident-reports/create"))));
-                        // Hanya tampil bila user punya permission Tugas Insiden di matrix.
-                        if (isSuperAdmin || readableCodes.contains("INCIDENT_FOLLOWUP_ASSIGN")) {
-                                irmsItems.add(Map.of("label", "Tugas Insiden", "icon",
-                                                "pi pi-list-check",
-                                                "to", "/dashboard/irms/incident-tasks"));
-                        }
-                }
-                if (accessibleModules.contains("SAFETY")) {
-                        irmsItems.add(Map.of("label", "Observasi Keselamatan", "icon", "pi pi-eye",
-                                        "items", List.of(
-                                                        Map.of("label", "Daftar Observasi", "to",
-                                                                        "/dashboard/irms/safety-observations"),
-                                                        Map.of("label", "Buat Observasi", "to",
-                                                                        "/dashboard/irms/safety-observations/create"),
-                                                        Map.of("label", "Tugas Observasi", "to",
-                                                                        "/dashboard/irms/observation-tasks"))));
-                }
-                if (!irmsItems.isEmpty()) {
-                        Map<String, Object> irms = new LinkedHashMap<>();
-                        irms.put("label", "IRMS");
-                        irms.put("items", irmsItems);
-                        menu.add(irms);
-                }
-
-                // PENGADAAN
-                if (accessibleModules.contains("PROCUREMENT")) {
-                        Map<String, Object> procurement = new LinkedHashMap<>();
-                        procurement.put("label", "PENGADAAN");
-                        procurement.put("items", List.of(
-                                        Map.of("label", "Monitoring PR", "icon", "pi pi-shopping-cart",
-                                                        "to", "/dashboard/procurement/purchase-requisitions")));
-                        menu.add(procurement);
-                }
-
-                // LIMS
-                List<Map<String, Object>> limsItems = new ArrayList<>();
-                if (accessibleModules.contains("LIMS")) {
-                        limsItems.add(Map.of("label", "Dashboard LIMS", "icon", "pi pi-chart-bar",
-                                        "to", "/dashboard/lims"));
-                        limsItems.add(Map.of("label", "Laporan Laboratorium", "icon", "pi pi-file",
-                                        "items", List.of(
-                                                        Map.of("label", "Daftar Laporan Lab", "to",
-                                                                        "/dashboard/lims/laboratory-reports"),
-                                                        Map.of("label", "Buat Laporan Lab", "to",
-                                                                        "/dashboard/lims/laboratory-reports/create"))));
-                        limsItems.add(Map.of("label", "Laporan Harian", "icon", "pi pi-calendar",
-                                        "items", List.of(
-                                                        Map.of("label", "Daftar Laporan Harian", "to",
-                                                                        "/dashboard/lims/daily-reports"),
-                                                        Map.of("label", "Buat Laporan Harian", "to",
-                                                                        "/dashboard/lims/daily-reports/create"))));
-                        limsItems.add(Map.of("label", "Inventaris Alat", "icon", "pi pi-box",
-                                        "items", List.of(
-                                                        Map.of("label", "Dashboard Inventaris", "to",
-                                                                        "/dashboard/lims/inventory/dashboard"),
-                                                        Map.of("label", "Daftar Inventaris", "to",
-                                                                        "/dashboard/lims/inventory"),
-                                                        Map.of("label", "Tambah Alat", "to",
-                                                                        "/dashboard/lims/inventory/create"))));
-                        limsItems.add(Map.of("label", "Permission Matrix", "icon", "pi pi-shield",
-                                        "to", "/dashboard/lims/permission-matrix"));
-                }
-                if (!limsItems.isEmpty()) {
-                        Map<String, Object> lims = new LinkedHashMap<>();
-                        lims.put("label", "LIMS");
-                        lims.put("items", limsItems);
-                        menu.add(lims);
-                }
-
-                // SMARTDOCS — dokumen hasil OCR (db_smartdocs)
-                // Satu entri yang bisa dibuka-tutup, bukan lima baris datar: kelima
-                // halaman ini selalu dipakai bersama, dan mendatarkan semuanya membuat
-                // sidebar memanjang tanpa menambah kejelasan.
-                List<Map<String, Object>> smartDocsItems = new ArrayList<>();
-                if (accessibleModules.contains("SMARTDOCS")) {
-                        smartDocsItems.add(Map.of("label", "SmartDocs", "icon", "pi pi-folder-open",
-                                        "items", List.of(
-                                                        Map.of("label", "Dashboard", "to",
-                                                                        "/dashboard/smartdocs"),
-                                                        Map.of("label", "Daftar Dokumen", "to",
-                                                                        "/dashboard/smartdocs/documents"),
-                                                        Map.of("label", "Unggah & Pindai", "to",
-                                                                        "/dashboard/smartdocs/upload"),
-                                                        Map.of("label", "Laporan", "to",
-                                                                        "/dashboard/smartdocs/reports"),
-                                                        Map.of("label", "Log Aktivitas", "to",
-                                                                        "/dashboard/smartdocs/activity"))));
-                }
-                if (!smartDocsItems.isEmpty()) {
-                        Map<String, Object> smartDocs = new LinkedHashMap<>();
-                        smartDocs.put("label", "SMARTDOCS");
-                        smartDocs.put("items", smartDocsItems);
-                        menu.add(smartDocs);
                 }
 
                 // ERP — port fitur ENTARIS. Visibilitas per item mengikuti matriks Hak Akses ERP
@@ -939,47 +809,10 @@ public class RolePermissionService {
                                                                         "/dashboard/settings/roles"),
                                                         Map.of("label", "Hak Akses", "to",
                                                                         "/dashboard/settings/access-management"))));
-                        List<Map<String, Object>> masterDataItems = new ArrayList<>(List.of(
-                                        Map.of("label", "Area", "to",
-                                                        "/dashboard/settings/master-data/areas"),
-                                        Map.of("label", "Kategori Insiden", "to",
-                                                        "/dashboard/settings/master-data/categories"),
-                                        Map.of("label", "Klasifikasi", "to",
-                                                        "/dashboard/settings/master-data/classifications"),
-                                        Map.of("label", "Akar Masalah", "to",
-                                                        "/dashboard/settings/master-data/root-causes"),
-                                        Map.of("label", "Region", "to",
-                                                        "/dashboard/settings/master-data/regions"),
-                                        Map.of("label", "Dept. Asal", "to",
-                                                        "/dashboard/settings/master-data/origin-departments"),
-                                        Map.of("label", "Dept. Tujuan", "to",
-                                                        "/dashboard/settings/master-data/designation-departments")));
-                        masterDataItems.add(Map.of("label", "Parameter Uji", "to",
-                                        "/dashboard/settings/master-data/lims-parameters"));
-                        masterDataItems.add(Map.of("label", "Jenis Uji", "to",
-                                        "/dashboard/settings/master-data/lims-test-types"));
-                        masterDataItems.add(Map.of("label", "Metode", "to",
-                                        "/dashboard/settings/master-data/lims-methods"));
-                        masterDataItems.add(Map.of("label", "Standar", "to",
-                                        "/dashboard/settings/master-data/lims-standards"));
-                        masterDataItems.add(Map.of("label", "Satuan", "to",
-                                        "/dashboard/settings/master-data/lims-units"));
-                        masterDataItems.add(Map.of("label", "Dept. Lab", "to",
-                                        "/dashboard/settings/master-data/lims-departments"));
-                        masterDataItems.add(Map.of("label", "Hasil Lab", "to",
-                                        "/dashboard/settings/master-data/lims-results"));
-                        masterDataItems.add(Map.of("label", "Senyawa Kimia", "to",
-                                        "/dashboard/settings/master-data/lims-compounds"));
-                        settingsItems.add(Map.of("label", "Master Data", "icon", "pi pi-database",
-                                        "items", masterDataItems));
                         settingsItems.add(Map.of("label", "Sistem", "icon", "pi pi-cog",
                                         "items", List.of(
                                                         Map.of("label", "Pengaturan Umum", "to",
-                                                                        "/dashboard/settings/general"),
-                                                        Map.of("label", "Audit Log", "to",
-                                                                        "/dashboard/settings/audit-log"),
-                                                        Map.of("label", "Email Template", "to",
-                                                                        "/dashboard/settings/email-templates"))));
+                                                                        "/dashboard/settings/general"))));
                 }
                 if (!settingsItems.isEmpty()) {
                         Map<String, Object> settings = new LinkedHashMap<>();
@@ -1177,6 +1010,7 @@ public class RolePermissionService {
                 entityManager.clear();
 
                 List<String> deprecatedModules = List.of("PENGADAAN", "INVENTORY", "KEUANGAN", "ASET",
+                    "INCIDENT", "SAFETY", "RISK", "LIMS", "SMARTDOCS", "PROCUREMENT",
                     "LAB_REPORT", "DAILY_REPORT", "QUALITY");
                 List<AuthPermission> deprecatedPerms = authPermissionRepository.findAll().stream()
                                 .filter(p -> p.getModule() != null && deprecatedModules.contains(p.getModule()))
@@ -1208,62 +1042,6 @@ public class RolePermissionService {
 
                 permissions.add(buildPermission("DASHBOARD_VIEW", "Lihat Dashboard", "DASHBOARD", null, "VIEW"));
 
-                permissions.add(buildPermission("INCIDENT_REPORT_VIEW", "Lihat Laporan Insiden", "INCIDENT", "REPORT", "VIEW"));
-                permissions.add(buildPermission("INCIDENT_REPORT_CREATE", "Buat Laporan Insiden", "INCIDENT", "REPORT", "CREATE"));
-                permissions.add(buildPermission("INCIDENT_REPORT_MANAGE", "Kelola Laporan Insiden", "INCIDENT", "REPORT", "MANAGE"));
-                permissions.add(buildPermission("INCIDENT_INVESTIGATION_VIEW", "Lihat Investigasi Insiden", "INCIDENT", "INVESTIGATION", "VIEW"));
-                permissions.add(buildPermission("INCIDENT_INVESTIGATION_MANAGE", "Kelola Investigasi Insiden", "INCIDENT", "INVESTIGATION", "MANAGE"));
-                permissions.add(buildPermission("INCIDENT_FOLLOWUP_VIEW", "Lihat Tindak Lanjut Insiden", "INCIDENT", "FOLLOWUP", "VIEW"));
-                permissions.add(buildPermission("INCIDENT_FOLLOWUP_MANAGE", "Kelola Tindak Lanjut Insiden", "INCIDENT", "FOLLOWUP", "MANAGE"));
-                // Satu permission untuk manager departemen tujuan: akses halaman
-                // Tugas Insiden sekaligus meng-assign tugas ke member departemennya.
-                permissions.add(buildPermission("INCIDENT_FOLLOWUP_ASSIGN", "Tugas Insiden & Penugasan ke Member", "INCIDENT", "FOLLOWUP", "ASSIGN"));
-
-                permissions.add(buildPermission("SAFETY_OBSERVATION_VIEW", "Lihat Observasi Keselamatan", "SAFETY", "OBSERVATION", "VIEW"));
-                permissions.add(buildPermission("SAFETY_OBSERVATION_CREATE", "Buat Observasi Keselamatan", "SAFETY", "OBSERVATION", "CREATE"));
-                permissions.add(buildPermission("SAFETY_OBSERVATION_MANAGE", "Kelola Observasi Keselamatan", "SAFETY", "OBSERVATION", "MANAGE"));
-                permissions.add(buildPermission("SAFETY_AUDIT_VIEW", "Lihat Audit Keselamatan", "SAFETY", "AUDIT", "VIEW"));
-                permissions.add(buildPermission("SAFETY_AUDIT_MANAGE", "Kelola Audit Keselamatan", "SAFETY", "AUDIT", "MANAGE"));
-
-                permissions.add(buildPermission("RISK_ASSESSMENT_VIEW", "Lihat Penilaian Risiko", "RISK", "ASSESSMENT", "VIEW"));
-                permissions.add(buildPermission("RISK_ASSESSMENT_MANAGE", "Kelola Penilaian Risiko", "RISK", "ASSESSMENT", "MANAGE"));
-                permissions.add(buildPermission("RISK_REGISTER_VIEW", "Lihat Register Risiko", "RISK", "REGISTER", "VIEW"));
-                permissions.add(buildPermission("RISK_REGISTER_MANAGE", "Kelola Register Risiko", "RISK", "REGISTER", "MANAGE"));
-                permissions.add(buildPermission("RISK_MATRIX_VIEW", "Lihat Matriks Risiko", "RISK", "MATRIX", "VIEW"));
-
-                permissions.add(buildPermission("LAB_REPORT_VIEW", "Lihat Laporan Laboratorium", "LIMS", "REPORT", "VIEW"));
-                permissions.add(buildPermission("LAB_REPORT_CREATE", "Buat Laporan Laboratorium", "LIMS", "REPORT", "CREATE"));
-                permissions.add(buildPermission("LAB_REPORT_MANAGE", "Kelola Laporan Laboratorium", "LIMS", "REPORT", "MANAGE"));
-                permissions.add(buildPermission("LAB_ANALYSIS_VIEW", "Lihat Detail Analisis", "LIMS", "ANALYSIS", "VIEW"));
-                permissions.add(buildPermission("LAB_ANALYSIS_MANAGE", "Kelola Detail Analisis", "LIMS", "ANALYSIS", "MANAGE"));
-                permissions.add(buildPermission("LAB_REPORT_REVIEW", "Review Laporan Laboratorium", "LIMS", "APPROVAL", "APPROVE"));
-                permissions.add(buildPermission("LAB_REPORT_APPROVE", "Approve Laporan Laboratorium", "LIMS", "APPROVAL", "APPROVE"));
-                permissions.add(buildPermission("LAB_REPORT_REJECT", "Reject Laporan Laboratorium", "LIMS", "APPROVAL", "MANAGE"));
-
-                permissions.add(buildPermission("DAILY_REPORT_VIEW", "Lihat Laporan Harian", "LIMS", "DAILY", "VIEW"));
-                permissions.add(buildPermission("DAILY_REPORT_CREATE", "Buat Laporan Harian", "LIMS", "DAILY", "CREATE"));
-                permissions.add(buildPermission("DAILY_REPORT_MANAGE", "Kelola Laporan Harian", "LIMS", "DAILY", "MANAGE"));
-                permissions.add(buildPermission("DAILY_CALENDAR_VIEW", "Lihat Kalender Harian", "LIMS", "CALENDAR", "VIEW"));
-
-                permissions.add(buildPermission("LAB_PARAMETER_VIEW", "Lihat Parameter Uji", "LIMS", "PARAMETER", "VIEW"));
-                permissions.add(buildPermission("LAB_PARAMETER_MANAGE", "Kelola Parameter Uji", "LIMS", "PARAMETER", "MANAGE"));
-                permissions.add(buildPermission("LAB_TEST_TYPE_VIEW", "Lihat Tipe Pengujian", "LIMS", "TEST_TYPE", "VIEW"));
-                permissions.add(buildPermission("LAB_TEST_TYPE_MANAGE", "Kelola Tipe Pengujian", "LIMS", "TEST_TYPE", "MANAGE"));
-                permissions.add(buildPermission("LAB_METHOD_VIEW", "Lihat Metode", "LIMS", "METHOD", "VIEW"));
-                permissions.add(buildPermission("LAB_METHOD_MANAGE", "Kelola Metode", "LIMS", "METHOD", "MANAGE"));
-                permissions.add(buildPermission("LAB_STANDARD_VIEW", "Lihat Standar", "LIMS", "STANDARD", "VIEW"));
-                permissions.add(buildPermission("LAB_STANDARD_MANAGE", "Kelola Standar", "LIMS", "STANDARD", "MANAGE"));
-                permissions.add(buildPermission("LAB_UNIT_VIEW", "Lihat Satuan", "LIMS", "UNIT", "VIEW"));
-                permissions.add(buildPermission("LAB_UNIT_MANAGE", "Kelola Satuan", "LIMS", "UNIT", "MANAGE"));
-
-                permissions.add(buildPermission("LAB_RESULT_VIEW", "Lihat Hasil Pengujian", "LIMS", "RESULT", "VIEW"));
-                permissions.add(buildPermission("LAB_RESULT_MANAGE", "Kelola Hasil Pengujian", "LIMS", "RESULT", "MANAGE"));
-                permissions.add(buildPermission("LAB_DEPT_VIEW", "Lihat Departemen Lab", "LIMS", "LAB_DEPT", "VIEW"));
-                permissions.add(buildPermission("LAB_DEPT_MANAGE", "Kelola Departemen Lab", "LIMS", "LAB_DEPT", "MANAGE"));
-
-                permissions.add(buildPermission("LAB_COMPOUND_VIEW", "Lihat Senyawa Kimia", "LIMS", "COMPOUND", "VIEW"));
-                permissions.add(buildPermission("LAB_COMPOUND_MANAGE", "Kelola Senyawa Kimia", "LIMS", "COMPOUND", "MANAGE"));
-
                 permissions.add(buildPermission("DEPARTMENT_VIEW", "Lihat Departemen", "ORGANISASI", "DEPARTMENT", "VIEW"));
                 permissions.add(buildPermission("DEPARTMENT_MANAGE", "Kelola Departemen", "ORGANISASI", "DEPARTMENT", "MANAGE"));
 
@@ -1276,6 +1054,7 @@ public class RolePermissionService {
                 permissions.add(buildPermission("SETTINGS_VIEW", "Lihat Pengaturan", "SYSTEM", "SETTINGS", "VIEW"));
                 permissions.add(buildPermission("SETTINGS_MANAGE", "Kelola Pengaturan", "SYSTEM", "SETTINGS", "MANAGE"));
 
+                // Hak akses fitur ERP diatur di matriks ERP (db_erp) per kode role, bukan di sini.
                 return permissions;
         }
 
@@ -1308,66 +1087,32 @@ public class RolePermissionService {
                                 .description("Akses dashboard dan laporan eksekutif")
                                 .isSystemRole(false).isActive(true).priority(85).createdBy("SYSTEM").build());
 
-                roles.add(AuthRole.builder().code("SAFETY_OFFICER").name("Safety Officer")
-                                .description("Mengelola keselamatan, observasi, dan audit")
-                                .isSystemRole(false).isActive(true).priority(75).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("RISK_MANAGER").name("Risk Manager")
-                                .description("Mengelola penilaian risiko dan register risiko")
-                                .isSystemRole(false).isActive(true).priority(75).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("INCIDENT_REPORTER").name("Pelapor Insiden")
-                                .description("Membuat dan melaporkan insiden")
-                                .isSystemRole(false).isActive(true).priority(50).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("INVESTIGATOR").name("Investigator")
-                                .description("Investigasi dan analisis insiden")
-                                .isSystemRole(false).isActive(true).priority(65).createdBy("SYSTEM").build());
-
                 roles.add(AuthRole.builder().code("DEPARTMENT_HEAD").name("Kepala Departemen")
-                                .description("Approval dan monitoring insiden departemen")
+                                .description("Monitoring departemen")
                                 .isSystemRole(false).isActive(true).priority(70).createdBy("SYSTEM").build());
 
-                roles.add(AuthRole.builder().code("MANAGER_LAB").name("Manajer Laboratorium")
-                                .description("Mengelola konfigurasi lab, parameter uji, dan master data laboratorium")
-                                .isSystemRole(false).isActive(true).priority(70).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("STAFF_LAB").name("Staff Laboratorium")
-                                .description("Membuat laporan laboratorium dan laporan harian")
-                                .isSystemRole(false).isActive(true).priority(50).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("QUALITY_MANAGER").name("Manajer Kualitas")
-                                .description("Review dan approval laporan laboratorium, kelola kualitas")
-                                .isSystemRole(false).isActive(true).priority(70).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("QUALITY_STAFF").name("Staff Kualitas")
-                                .description("Monitoring hasil pengujian")
-                                .isSystemRole(false).isActive(true).priority(50).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("KEPALA_LAB").name("Kepala Laboratorium")
-                                .description("Mengelola operasional lab dan approval laporan")
-                                .isSystemRole(false).isActive(true).priority(75).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("ANALIS_LAB").name("Analis Laboratorium")
-                                .description("Melakukan analisis pengujian dan membuat laporan harian")
-                                .isSystemRole(false).isActive(true).priority(50).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("REVIEWER_LAB").name("Reviewer Laboratorium")
-                                .description("Review dan validasi hasil pengujian laboratorium")
+                // Role modul ERP — matriks izin ERP-nya dibuat otomatis oleh ErpBootstrap (db_erp).
+                roles.add(AuthRole.builder().code("ERP_ADMIN").name("Admin ERP")
+                                .description("Akses penuh modul ERP")
+                                .isSystemRole(false).isActive(true).priority(80).createdBy("SYSTEM").build());
+                roles.add(AuthRole.builder().code("ERP_ACCOUNTANT").name("Akuntan / Keuangan")
+                                .description("Transaksi keuangan, jurnal, dan laporan ERP")
                                 .isSystemRole(false).isActive(true).priority(60).createdBy("SYSTEM").build());
-
-                roles.add(AuthRole.builder().code("APPROVER_LAB").name("Approver Laboratorium")
-                                .description("Approval akhir laporan laboratorium")
-                                .isSystemRole(false).isActive(true).priority(75).createdBy("SYSTEM").build());
+                roles.add(AuthRole.builder().code("ERP_PRODUCTION").name("Staff Produksi")
+                                .description("Persediaan dan produksi ERP")
+                                .isSystemRole(false).isActive(true).priority(50).createdBy("SYSTEM").build());
+                roles.add(AuthRole.builder().code("ERP_VIEWER").name("Viewer ERP")
+                                .description("Lihat data ERP")
+                                .isSystemRole(false).isActive(true).priority(40).createdBy("SYSTEM").build());
 
                 return roles;
         }
 
         private void assignDefaultPermissionsToRoles() {
                 Map<String, AuthRole> roleMap = authRoleRepository.findAll().stream()
-                                .collect(Collectors.toMap(AuthRole::getCode, r -> r));
+                                .collect(Collectors.toMap(AuthRole::getCode, r -> r, (a, b) -> a));
                 Map<String, AuthPermission> permMap = authPermissionRepository.findAll().stream()
-                                .collect(Collectors.toMap(AuthPermission::getCode, p -> p));
+                                .collect(Collectors.toMap(AuthPermission::getCode, p -> p, (a, b) -> a));
 
                 List<AuthRolePermission> rolePermissions = new ArrayList<>();
 
@@ -1388,163 +1133,19 @@ public class RolePermissionService {
                         rolePermissions.add(buildRolePermission(direktur.getId(), perm.getId(), false, true, false, false, true, true));
                 }
 
-                AuthRole safetyOfficer = roleMap.get("SAFETY_OFFICER");
-                if (safetyOfficer != null) {
-                        assignPermissions(rolePermissions, safetyOfficer, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "INCIDENT_REPORT_VIEW", "INCIDENT_REPORT_CREATE", "INCIDENT_REPORT_MANAGE",
-                                                        "INCIDENT_INVESTIGATION_VIEW", "INCIDENT_INVESTIGATION_MANAGE",
-                                                        "INCIDENT_FOLLOWUP_VIEW", "INCIDENT_FOLLOWUP_MANAGE",
-                                                        "SAFETY_OBSERVATION_VIEW", "SAFETY_OBSERVATION_CREATE", "SAFETY_OBSERVATION_MANAGE",
-                                                        "SAFETY_AUDIT_VIEW", "SAFETY_AUDIT_MANAGE",
-                                                        "RISK_ASSESSMENT_VIEW", "RISK_REGISTER_VIEW", "RISK_MATRIX_VIEW"),
-                                        true, true, true, true, true, true);
-                }
-
-                AuthRole riskManager = roleMap.get("RISK_MANAGER");
-                if (riskManager != null) {
-                        assignPermissions(rolePermissions, riskManager, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "RISK_ASSESSMENT_VIEW", "RISK_ASSESSMENT_MANAGE",
-                                                        "RISK_REGISTER_VIEW", "RISK_REGISTER_MANAGE", "RISK_MATRIX_VIEW",
-                                                        "INCIDENT_REPORT_VIEW", "INCIDENT_INVESTIGATION_VIEW",
-                                                        "SAFETY_OBSERVATION_VIEW", "SAFETY_AUDIT_VIEW"),
-                                        true, true, true, true, true, true);
-                }
-
-                AuthRole incidentReporter = roleMap.get("INCIDENT_REPORTER");
-                if (incidentReporter != null) {
-                        assignPermissions(rolePermissions, incidentReporter, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "INCIDENT_REPORT_VIEW", "INCIDENT_REPORT_CREATE",
-                                                        "INCIDENT_FOLLOWUP_VIEW",
-                                                        "SAFETY_OBSERVATION_VIEW", "SAFETY_OBSERVATION_CREATE"),
-                                        true, true, false, false, false, false);
-                }
-
-                AuthRole investigator = roleMap.get("INVESTIGATOR");
-                if (investigator != null) {
-                        assignPermissions(rolePermissions, investigator, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "INCIDENT_REPORT_VIEW", "INCIDENT_REPORT_MANAGE",
-                                                        "INCIDENT_INVESTIGATION_VIEW", "INCIDENT_INVESTIGATION_MANAGE",
-                                                        "INCIDENT_FOLLOWUP_VIEW", "INCIDENT_FOLLOWUP_MANAGE",
-                                                        "SAFETY_OBSERVATION_VIEW", "RISK_ASSESSMENT_VIEW"),
-                                        true, true, true, false, false, true);
-                }
-
                 AuthRole departmentHead = roleMap.get("DEPARTMENT_HEAD");
                 if (departmentHead != null) {
                         assignPermissions(rolePermissions, departmentHead, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "INCIDENT_REPORT_VIEW", "INCIDENT_REPORT_MANAGE",
-                                                        "INCIDENT_INVESTIGATION_VIEW",
-                                                        "INCIDENT_FOLLOWUP_VIEW", "INCIDENT_FOLLOWUP_MANAGE",
-                                                        "INCIDENT_FOLLOWUP_ASSIGN",
-                                                        "SAFETY_OBSERVATION_VIEW",
-                                                        "RISK_ASSESSMENT_VIEW", "RISK_REGISTER_VIEW", "RISK_MATRIX_VIEW",
-                                                        "DEPARTMENT_VIEW"),
+                                        Arrays.asList("DASHBOARD_VIEW", "DEPARTMENT_VIEW"),
                                         false, true, true, false, true, true);
                 }
 
-                AuthRole mgrLab = roleMap.get("MANAGER_LAB");
-                if (mgrLab != null) {
-                        assignPermissions(rolePermissions, mgrLab, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "LAB_PARAMETER_VIEW", "LAB_PARAMETER_MANAGE",
-                                                        "LAB_TEST_TYPE_VIEW", "LAB_TEST_TYPE_MANAGE",
-                                                        "LAB_METHOD_VIEW", "LAB_METHOD_MANAGE",
-                                                        "LAB_STANDARD_VIEW", "LAB_STANDARD_MANAGE",
-                                                        "LAB_UNIT_VIEW", "LAB_UNIT_MANAGE",
-                                                        "LAB_RESULT_VIEW", "LAB_RESULT_MANAGE",
-                                                        "LAB_DEPT_VIEW", "LAB_DEPT_MANAGE",
-                                                        "LAB_COMPOUND_VIEW", "LAB_COMPOUND_MANAGE",
-                                                        "LAB_REPORT_VIEW"),
-                                        true, true, true, true, true, true);
-                }
-
-                AuthRole staffLab = roleMap.get("STAFF_LAB");
-                if (staffLab != null) {
-                        assignPermissions(rolePermissions, staffLab, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "LAB_REPORT_VIEW", "LAB_REPORT_CREATE",
-                                                        "LAB_ANALYSIS_VIEW", "LAB_ANALYSIS_MANAGE",
-                                                        "DAILY_REPORT_VIEW", "DAILY_REPORT_CREATE", "DAILY_CALENDAR_VIEW",
-                                                        "LAB_PARAMETER_VIEW", "LAB_TEST_TYPE_VIEW",
-                                                        "LAB_METHOD_VIEW", "LAB_STANDARD_VIEW",
-                                                        "LAB_UNIT_VIEW", "LAB_RESULT_VIEW"),
-                                        true, true, true, false, false, false);
-                }
-
-                AuthRole qualityMgr = roleMap.get("QUALITY_MANAGER");
-                if (qualityMgr != null) {
-                        assignPermissions(rolePermissions, qualityMgr, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "LAB_REPORT_VIEW", "LAB_REPORT_MANAGE",
-                                                        "LAB_REPORT_REVIEW", "LAB_REPORT_APPROVE",
-                                                        "LAB_ANALYSIS_VIEW",
-                                                        "LAB_RESULT_VIEW", "LAB_RESULT_MANAGE",
-                                                        "LAB_DEPT_VIEW", "LAB_DEPT_MANAGE"),
-                                        true, true, true, true, true, true);
-                }
-
-                AuthRole qualityStaff = roleMap.get("QUALITY_STAFF");
-                if (qualityStaff != null) {
-                        assignPermissions(rolePermissions, qualityStaff, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "LAB_REPORT_VIEW", "LAB_ANALYSIS_VIEW",
-                                                        "LAB_RESULT_VIEW", "LAB_DEPT_VIEW"),
-                                        false, true, true, false, false, false);
-                }
-
-                AuthRole kepalaLab = roleMap.get("KEPALA_LAB");
-                if (kepalaLab != null) {
-                        assignPermissions(rolePermissions, kepalaLab, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "LAB_REPORT_VIEW", "LAB_REPORT_CREATE",
-                                                        "LAB_REPORT_MANAGE", "LAB_REPORT_REVIEW",
-                                                        "LAB_ANALYSIS_VIEW", "LAB_ANALYSIS_MANAGE",
-                                                        "DAILY_REPORT_VIEW", "DAILY_REPORT_CREATE",
-                                                        "DAILY_REPORT_MANAGE", "DAILY_CALENDAR_VIEW",
-                                                        "LAB_PARAMETER_VIEW", "LAB_PARAMETER_MANAGE",
-                                                        "LAB_TEST_TYPE_VIEW", "LAB_TEST_TYPE_MANAGE",
-                                                        "LAB_METHOD_VIEW", "LAB_METHOD_MANAGE",
-                                                        "LAB_STANDARD_VIEW", "LAB_STANDARD_MANAGE",
-                                                        "LAB_UNIT_VIEW", "LAB_UNIT_MANAGE",
-                                                        "LAB_RESULT_VIEW", "LAB_RESULT_MANAGE",
-                                                        "LAB_COMPOUND_VIEW", "LAB_COMPOUND_MANAGE"),
-                                        true, true, true, true, true, true);
-                }
-
-                AuthRole analisLab = roleMap.get("ANALIS_LAB");
-                if (analisLab != null) {
-                        assignPermissions(rolePermissions, analisLab, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "LAB_REPORT_VIEW", "LAB_REPORT_CREATE",
-                                                        "LAB_ANALYSIS_VIEW", "LAB_ANALYSIS_MANAGE",
-                                                        "DAILY_REPORT_VIEW", "DAILY_REPORT_CREATE", "DAILY_CALENDAR_VIEW",
-                                                        "LAB_PARAMETER_VIEW", "LAB_TEST_TYPE_VIEW",
-                                                        "LAB_METHOD_VIEW", "LAB_RESULT_VIEW"),
-                                        true, true, true, false, false, false);
-                }
-
-                AuthRole reviewerLab = roleMap.get("REVIEWER_LAB");
-                if (reviewerLab != null) {
-                        assignPermissions(rolePermissions, reviewerLab, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "LAB_REPORT_VIEW", "LAB_REPORT_REVIEW",
-                                                        "LAB_ANALYSIS_VIEW", "LAB_RESULT_VIEW"),
-                                        false, true, true, false, true, true);
-                }
-
-                AuthRole approverLab = roleMap.get("APPROVER_LAB");
-                if (approverLab != null) {
-                        assignPermissions(rolePermissions, approverLab, permMap,
-                                        Arrays.asList("DASHBOARD_VIEW",
-                                                        "LAB_REPORT_VIEW", "LAB_REPORT_APPROVE",
-                                                        "LAB_ANALYSIS_VIEW",
-                                                        "LAB_RESULT_VIEW", "LAB_RESULT_MANAGE"),
-                                        true, true, true, false, true, true);
+                for (String erpRole : List.of("ERP_ADMIN", "ERP_ACCOUNTANT", "ERP_PRODUCTION", "ERP_VIEWER")) {
+                        AuthRole role = roleMap.get(erpRole);
+                        if (role != null) {
+                                assignPermissions(rolePermissions, role, permMap, List.of("DASHBOARD_VIEW"),
+                                                false, true, false, false, false, false);
+                        }
                 }
 
                 // Deduplicate by (roleId, permissionId) — last entry wins

@@ -152,7 +152,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }: AdminSidebarProps) => {
             </svg>
           </div>
           <div className="flex flex-col">
-            <span className="text-white font-bold text-base tracking-wide">IRMS</span>
+            <span className="text-white font-bold text-base tracking-wide">Enterprise Apps</span>
             <span className="text-gray-400 text-xs">Hospital System</span>
           </div>
         </NavLink>

@@ -7,14 +7,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import id.enterpriseapps.dto.GeneralSettingsDto;
-import id.enterpriseapps.entity.AppSettingEntity;
-import id.enterpriseapps.repository.AppSettingRepository;
+import id.enterpriseapps.auth.entity.AppSettingEntity;
+import id.enterpriseapps.auth.repository.AppSettingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Sumber kebenaran untuk Pengaturan Umum. Dipakai UI (lewat REST) dan
- * EmailService (untuk branding template email).
+ * halaman Pengaturan Umum.
  */
 @Slf4j
 @Service
@@ -22,8 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 public class AppSettingsService {
 
     /** Dipakai juga sebagai cadangan saat DB tidak terbaca — lihat getSiteName(). */
-    public static final String DEFAULT_SITE_NAME = "IRMS";
-    public static final String DEFAULT_SITE_DESC = "Integrated Report Management System";
+    public static final String DEFAULT_SITE_NAME = "Enterprise Apps";
+    public static final String DEFAULT_SITE_DESC = "Enterprise Resources Planning";
 
     private static final String KEY_SITE_NAME = "site_name";
     private static final String KEY_SITE_DESC = "site_desc";
@@ -43,7 +43,7 @@ public class AppSettingsService {
                 .build();
     }
 
-    @Transactional(transactionManager = "transactionManager")
+    @Transactional(transactionManager = "authTransactionManager")
     public GeneralSettingsDto saveGeneralSettings(GeneralSettingsDto request, String updatedBy) {
         writeValue(KEY_SITE_NAME, request.getSiteName(), updatedBy);
         writeValue(KEY_SITE_DESC, request.getSiteDesc(), updatedBy);

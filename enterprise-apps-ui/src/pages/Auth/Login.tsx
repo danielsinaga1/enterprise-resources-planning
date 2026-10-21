@@ -136,18 +136,18 @@ const Login = () => {
       {/* ── Tagline ── */}
       <div style={{ position: 'relative', zIndex: 1, marginBottom: 32 }}>
         <h1 style={{ color: '#fff', fontSize: '1.85rem', fontWeight: 700, lineHeight: 1.35, margin: 0 }}>
-          Manajemen Laboratorium
+          Keuangan, Operasional
           <br />
           <span style={{ background: 'linear-gradient(90deg, #60a5fa, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            & Pemantauan Insiden
+            & Aset Perusahaan
           </span>
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.88rem', marginTop: 14, lineHeight: 1.7, maxWidth: 420 }}>
-          Satu platform terintegrasi untuk operasional laboratorium (LIMS) dan pelaporan insiden keselamatan (IRMS) &mdash; cepat, aman, dan terukur.
+          Satu platform ERP terintegrasi untuk akuntansi, penjualan, pembelian, persediaan &amp; produksi, serta aset dan pemeliharaan &mdash; cepat, aman, dan terukur.
         </p>
       </div>
 
-      {/* ── LIMS Widget (glassmorphism) ── */}
+      {/* ── Keuangan &amp; Akuntansi (glassmorphism) ── */}
       <div
         style={{
           ...glass({ padding: '18px 22px', marginBottom: 16 }),
@@ -156,29 +156,24 @@ const Login = () => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="pi pi-server" style={{ color: '#34d399', fontSize: '1rem' }} />
+            <i className="pi pi-wallet" style={{ color: '#34d399', fontSize: '1rem' }} />
           </div>
           <div>
-            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', letterSpacing: 0.3 }}>LIMS — Laboratory System</div>
-            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.7rem' }}>Real-time operational status</div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', letterSpacing: 0.3 }}>Keuangan &amp; Akuntansi</div>
+            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.7rem' }}>Jurnal otomatis, laporan keuangan, kas &amp; bank</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          {[
-            { label: 'Sistem Lab', status: 'Online', color: '#10b981' },
-            { label: 'Server', status: 'Stabil', color: '#10b981' },
-            { label: 'Data Sample', status: 'Synced', color: '#3b82f6' },
-          ].map((m) => (
-            <div key={m.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: m.color, display: 'inline-block', animation: 'sa-pulse 2s ease-in-out infinite' }} />
-              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.76rem' }}>{m.label}:</span>
-              <span style={{ color: '#fff', fontSize: '0.76rem', fontWeight: 600 }}>{m.status}</span>
+          {['Buku besar', 'Laporan keuangan', 'Rekonsiliasi bank'].map((label) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+              <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.76rem' }}>{label}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── IRMS Widget (glassmorphism) ── */}
+      {/* ── Operasional &amp; Aset (glassmorphism) ── */}
       <div
         style={{
           ...glass({ padding: '18px 22px', marginBottom: 28 }),
@@ -187,23 +182,18 @@ const Login = () => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="pi pi-shield" style={{ color: '#818cf8', fontSize: '1rem' }} />
+            <i className="pi pi-box" style={{ color: '#818cf8', fontSize: '1rem' }} />
           </div>
           <div>
-            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', letterSpacing: 0.3 }}>IRMS — Incident Monitoring</div>
-            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.7rem' }}>Security & safety overview</div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', letterSpacing: 0.3 }}>Operasional &amp; Aset</div>
+            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.7rem' }}>Penjualan, pembelian, persediaan, produksi, EAM</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          {[
-            { label: 'Insiden Kritis', status: '0 Aktif', color: '#10b981' },
-            { label: 'Monitoring', status: 'Aktif 24/7', color: '#10b981' },
-            { label: 'Audit Trail', status: 'Secured', color: '#6366f1' },
-          ].map((m) => (
-            <div key={m.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: m.color, display: 'inline-block', animation: 'sa-pulse 2s ease-in-out infinite' }} />
-              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.76rem' }}>{m.label}:</span>
-              <span style={{ color: '#fff', fontSize: '0.76rem', fontWeight: 600 }}>{m.status}</span>
+          {['Penjualan & pembelian', 'Persediaan & produksi', 'Aset & pemeliharaan'].map((label) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', display: 'inline-block' }} />
+              <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.76rem' }}>{label}</span>
             </div>
           ))}
         </div>
@@ -212,10 +202,10 @@ const Login = () => {
       {/* ── Stats row ── */}
       <div style={{ display: 'flex', gap: 20, marginBottom: 28, position: 'relative', zIndex: 1 }}>
         {[
-          { value: '24/7', label: 'Monitoring', icon: 'pi pi-eye' },
+          { value: 'Double', label: 'Entry', icon: 'pi pi-book' },
           { value: '100%', label: 'Traceability', icon: 'pi pi-check-circle' },
-          { value: 'Real-time', label: 'Data Sync', icon: 'pi pi-sync' },
-          { value: 'ISO', label: 'Compliant', icon: 'pi pi-verified' },
+          { value: 'Real-time', label: 'Laporan', icon: 'pi pi-sync' },
+          { value: 'Audit', label: 'Trail', icon: 'pi pi-verified' },
         ].map((s) => (
           <div key={s.label} style={{ textAlign: 'center' }}>
             <i className={s.icon} style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', marginBottom: 4, display: 'block' }} />
@@ -228,10 +218,10 @@ const Login = () => {
       {/* ── Module badges ── */}
       <div style={{ display: 'flex', gap: 10, position: 'relative', zIndex: 1 }}>
         {[
-          { icon: 'pi pi-flask', text: 'Lab Reports' },
-          { icon: 'pi pi-exclamation-triangle', text: 'Incident Tracking' },
-          { icon: 'pi pi-chart-bar', text: 'Analytics' },
-          { icon: 'pi pi-bell', text: 'Alerting' },
+          { icon: 'pi pi-calculator', text: 'Akuntansi' },
+          { icon: 'pi pi-shopping-cart', text: 'Penjualan' },
+          { icon: 'pi pi-box', text: 'Persediaan' },
+          { icon: 'pi pi-building', text: 'Aset' },
         ].map((b) => (
           <div
             key={b.text}
@@ -250,7 +240,7 @@ const Login = () => {
       <div style={{ position: 'relative', zIndex: 1, marginTop: 'auto', paddingTop: 32 }}>
         <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 14 }} />
         <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', margin: 0 }}>
-          &copy; 2026 {siteName} &mdash; LIMS & IRMS Integrated Platform &bull; PT. Kaltim Parna Industri
+          &copy; 2026 {siteName} &mdash; Enterprise Resources Planning &bull; PT. Kaltim Parna Industri
         </p>
       </div>
     </div>
@@ -287,9 +277,9 @@ const Login = () => {
       {/* Compact status pills */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 14, flexWrap: 'wrap' }}>
         {[
-          { label: 'LIMS Online', color: '#10b981' },
-          { label: '0 Insiden Kritis', color: '#10b981' },
-          { label: 'Monitoring Aktif', color: '#3b82f6' },
+          { label: 'Keuangan', color: '#10b981' },
+          { label: 'Operasional', color: '#10b981' },
+          { label: 'Aset', color: '#3b82f6' },
         ].map((p) => (
           <div
             key={p.label}
@@ -498,90 +488,9 @@ const Login = () => {
           </div>
         </Dialog>
 
-        {/* ── Emergency Report Link (IRMS) ── */}
-        <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <a
-            href="/dashboard/irms/incident-reports/create"
-            style={{
-              color: '#dc2626',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 16px',
-              borderRadius: 8,
-              background: 'rgba(220,38,38,0.05)',
-              border: '1px solid rgba(220,38,38,0.12)',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(220,38,38,0.1)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(220,38,38,0.05)'; }}
-          >
-            <i className="pi pi-exclamation-triangle" style={{ fontSize: '0.85rem' }} />
-            Laporkan Insiden Darurat (Tanpa Login)
-          </a>
-        </div>
-
-        {/* ── Demo Accounts ── */}
-        <div
-          style={{
-            marginTop: 20,
-            padding: 16,
-            borderRadius: 14,
-            background: '#f8fafc',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <i className="pi pi-info-circle" style={{ color: '#6366f1', fontSize: '0.85rem' }} />
-            <span style={{ fontWeight: 700, fontSize: '0.76rem', color: '#374151', textTransform: 'uppercase', letterSpacing: 0.5 }}>Akun Demo</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {/*
-              Akun uji yang login lewat password lokal (bukan Active Directory).
-              Harus sama dengan app.ldap.local-login-npks di backend — NPK di luar
-              daftar itu diautentikasi ke AD, jadi password di sini tidak berlaku.
-            */}
-            {[
-              { role: 'Manager Creator', npk: '2002190', pw: 'password', color: '#6366f1', icon: 'pi pi-briefcase' },
-              { role: 'Superintendent Creator', npk: '2002191', pw: 'password', color: '#8b5cf6', icon: 'pi pi-verified' },
-              { role: 'Creator', npk: '2002192', pw: 'password', color: '#0ea5e9', icon: 'pi pi-pencil' },
-              { role: 'Manager Executor', npk: '2002193', pw: 'password', color: '#f59e0b', icon: 'pi pi-briefcase' },
-              { role: 'Executor', npk: '2002194', pw: 'password', color: '#10b981', icon: 'pi pi-check-square' },
-              { role: 'Superintendent Executor', npk: '2002195', pw: 'password', color: '#ec4899', icon: 'pi pi-verified' },
-              { role: 'Administrator Safety', npk: '2002196', pw: 'password123', color: '#ff0202', icon: 'pi pi-verified' },
-            ].map((acc) => (
-              <div
-                key={acc.npk}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '8px 12px', borderRadius: 10, background: '#fff',
-                  border: '1px solid #f3f4f6', cursor: 'pointer', transition: 'all 0.2s',
-                }}
-                onClick={() => { setNpk(acc.npk); setPassword(acc.pw); }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#a5b4fc'; (e.currentTarget as HTMLDivElement).style.background = '#f5f3ff'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#f3f4f6'; (e.currentTarget as HTMLDivElement).style.background = '#fff'; }}
-                title="Klik untuk mengisi otomatis"
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: acc.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <i className={acc.icon} style={{ color: '#fff', fontSize: '0.7rem' }} />
-                  </div>
-                  <span style={{ fontWeight: 600, fontSize: '0.8rem', color: '#374151' }}>{acc.role}</span>
-                </div>
-                <code style={{ fontSize: '0.7rem', color: '#6b7280', background: '#f1f5f9', padding: '3px 8px', borderRadius: 6 }}>
-                  NPK: {acc.npk}
-                </code>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* ── Footer ── */}
         <p style={{ textAlign: 'center', color: '#9CA3AF', fontSize: '0.72rem', marginTop: 20, lineHeight: 1.5 }}>
-          &copy; 2026 {siteName} &mdash; LIMS & IRMS Integrated Platform
+          &copy; 2026 {siteName} &mdash; Enterprise Resources Planning
           <br />PT. Kaltim Parna Industri
         </p>
       </div>
