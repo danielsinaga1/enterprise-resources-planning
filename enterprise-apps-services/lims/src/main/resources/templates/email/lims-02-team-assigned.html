@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Penugasan Tim Laboratorium</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f6f9;">
+        <tr>
+            <td align="center" style="padding:32px 16px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+                       style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td bgcolor="#0369a1" style="padding:28px 40px;background-color:#0369a1;background:linear-gradient(135deg,#0369a1,#0ea5e9);">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td>
+                                        <h1 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">
+                                            &#128101; Anda Ditugaskan pada Laporan Lab</h1>
+                                        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.85);">
+                                            Tahap 2 dari 4 &mdash; Analisis &amp; Penugasan Tim</p>
+                                    </td>
+                                    <td align="right" valign="middle">
+                                        <span style="display:inline-block;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;color:#fff;background-color:#f59e0b;">
+                                            ACTION REQUIRED</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding:32px 40px;">
+                            <p style="margin:0 0 16px;font-size:15px;color:#344054;">
+                                Halo <strong>{{recipientName}}</strong>,</p>
+
+                            <p style="margin:0 0 24px;font-size:14px;color:#475467;line-height:1.6;">
+                                Anda ditugaskan pada laporan laboratorium berikut. Silakan lengkapi
+                                <strong>Detail Analisis</strong> sesuai peran Anda &mdash; Sampler mengisi
+                                <em>Hasil Sampler</em>, Analis mengisi <em>Hasil Analisis</em>.</p>
+
+                            <!-- Info Card -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                   style="background-color:#f0f9ff;border-radius:8px;border-left:4px solid #0ea5e9;margin-bottom:24px;">
+                                <tr>
+                                    <td style="padding:20px 24px;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;width:150px;">Nomor Laporan</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;font-weight:600;">{{reportNo}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Lokasi Sampling</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;">{{location}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Analis Lab</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;font-weight:600;">{{analystName}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Sampler Lab</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;font-weight:600;">{{samplerName}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Status</td>
+                                                <td style="padding:4px 0;">
+                                                    <span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;color:#075985;background-color:#e0f2fe;">
+                                                        {{status}}</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <!-- padding (bukan margin) dipakai karena Outlook mengabaikan margin pada <table>;
+                                         align="center" pada <td> tabel selebar 100% ini adalah cara aman lintas klien
+                                         email untuk menengahkan tabel tombol di dalamnya (margin:auto saja tidak cukup). -->
+                                    <td align="center" style="padding-top:16px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td align="center" bgcolor="#0369a1" style="border-radius:8px;background-color:#0369a1;background:linear-gradient(135deg,#0ea5e9,#0369a1);">
+                                                    <a href="{{actionUrl}}" target="_blank"
+                                                       style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.3px;">
+                                                        &#9654; Isi Detail Analisis</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin:20px 0 0;font-size:12px;color:#98a2b3;text-align:center;">
+                                Jika tombol tidak berfungsi, salin tautan berikut ke browser Anda:<br/>
+                                <a href="{{actionUrl}}" style="color:#0369a1;word-break:break-all;">{{actionUrl}}</a></p>
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                   style="background-color:#fffbeb;border:1px dashed #fcd34d;border-radius:8px;margin-top:24px;">
+                                <tr>
+                                    <td style="padding:12px 16px;font-size:12px;color:#92400e;">
+                                        <strong>Catatan uji coba:</strong> email ini dialihkan ke alamat pengujian.
+                                        Penerima sebenarnya: <strong>{{intendedRecipient}}</strong>.</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding:24px 40px;background-color:#f8f9fb;border-top:1px solid #eaecf0;">
+                            <p style="margin:0 0 4px;font-size:12px;color:#98a2b3;">
+                                Email ini dikirim secara otomatis oleh <strong style="color:#667085;">{{siteName}}</strong></p>
+                            <p style="margin:0;font-size:11px;color:#b0b8c4;">
+                                &copy; 2026 {{siteDesc}} &mdash; Mohon tidak membalas email ini.</p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

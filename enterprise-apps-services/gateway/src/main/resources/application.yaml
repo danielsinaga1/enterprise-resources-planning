@@ -1,0 +1,157 @@
+spring:
+  application:
+    name: irms-gateway
+  profiles:
+    active: dev
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # Global CORS — applies to ALL routes before forwarding
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOriginPatterns:
+                  - '${ALLOWED_ORIGINS:http://localhost:5173}'
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - PATCH
+                  - OPTIONS
+                allowedHeaders:
+                  - '*'
+                allowCredentials: true
+                maxAge: 3600
+                exposedHeaders:
+                  - Authorization
+                  - X-Gateway-Validated
+
+      # Deduplicate CORS headers so browser doesn't see duplicates when
+      # both gateway and downstream service add CORS headers
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+      routes:
+        # ── Auth routes (public — no JWT required, higher rate limit) ─────
+        - id: auth-public
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/auth/**
+
+        # ── Swagger / OpenAPI (dev only) ──────────────────────────────────
+        - id: swagger
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/swagger-ui/**,/v3/api-docs/**,/webjars/**
+
+        # ── RBAC endpoints ────────────────────────────────────────────────
+        - id: rbac
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/rbac/**
+
+        # ── Profile endpoint ──────────────────────────────────────────────
+        - id: profile
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/profile/**
+
+        # ── LIMS API (laboratory-reports, daily-reports, inventory, assistant) ─
+        - id: lims-api
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/lims/**
+
+        # ── ERP API (port fitur ENTARIS, db_erp) ─────────────────────────
+        - id: erp-api
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/erp/**
+
+        # ── SmartDocs API (dokumen hasil OCR, db_smartdocs) ───────────────
+        - id: smartdocs-api
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/smartdocs/**
+
+        # ── SmartDocs OCR service (PaddleOCR, container terpisah) ─────────
+        # Browser memanggil /api/smartdocs-ocr/**; service-nya sendiri memakai
+        # prefix /api/**. Filter JWT global sudah memvalidasi token dan
+        # meneruskan X-Gateway-Validated yang dipercaya service ini.
+        - id: smartdocs-ocr
+          uri: ${SMARTDOCS_OCR_URL:http://smartdocs-ocr:8001}
+          predicates:
+            - Path=/api/smartdocs-ocr/**
+          filters:
+            - RewritePath=/api/smartdocs-ocr/(?<segment>.*), /api/${segment}
+
+        # ── RAG Chatbot service (document-grounded AI, own DB) ────────────
+        # Browser calls /api/rag/**; rewrite to the service's /api/v1/** prefix.
+        # The global JWT filter validates the token and forwards X-User-Id +
+        # X-Gateway-Validated, which the RAG service trusts (shadow user).
+        - id: rag-chatbot
+          uri: ${RAG_SERVICE_URL:http://rag-chatbot:8000}
+          predicates:
+            - Path=/api/rag/**
+          filters:
+            - RewritePath=/api/rag/(?<segment>.*), /api/v1/${segment}
+
+        # ── IRMS core API ─────────────────────────────────────────────────
+        - id: irms-api
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/**
+
+        # ── File uploads / static served by backend ───────────────────────
+        - id: uploads
+          uri: ${IRMS_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/uploads/**
+
+server:
+  port: ${GATEWAY_PORT:8080}
+  http2:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+    gateway:
+      access: read-only
+
+app:
+  jwt:
+    # Dev-only fallback so the gateway boots locally without a .env. It matches
+    # the backend's dev default; the prod profile below strips it.
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    id.enterpriseapps.gateway: DEBUG
+
+---
+# ── prod profile: JWT_SECRET is REQUIRED (startup fails if unset) ──────────
+# Without this override, a prod gateway with a forgotten JWT_SECRET would fall
+# back to the public dev secret above — making every token forgeable.
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}

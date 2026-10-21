@@ -1,0 +1,11 @@
+# Artefak build & data runtime (aturan per proyek ada di .gitignore masing-masing folder)
+node_modules/
+dist/
+build/
+.gradle/
+*.log
+.env
+.env.*
+!.env.example
+**/uploads/
+**/erp-files/

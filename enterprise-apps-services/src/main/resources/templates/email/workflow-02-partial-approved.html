@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Persetujuan Manajerial</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f4f6f9;">
+        <tr>
+            <td align="center" style="padding:32px 16px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+                       style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding:28px 40px;background:linear-gradient(135deg,#4c1d95,#7c3aed);">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td>
+                                        <h1 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">
+                                            &#9989; Persetujuan Akhir Diperlukan</h1>
+                                        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.8);">
+                                            {{siteDesc}}</p>
+                                    </td>
+                                    <td align="right" valign="middle">
+                                        <span style="display:inline-block;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;color:#fff;background-color:#f59e0b;">
+                                            FINAL APPROVAL</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding:32px 40px;">
+                            <p style="margin:0 0 16px;font-size:15px;color:#344054;">
+                                Halo <strong>{{recipientName}}</strong>,</p>
+
+                            <p style="margin:0 0 24px;font-size:14px;color:#475467;line-height:1.6;">
+                                Laporan berikut telah disetujui oleh Superior dan kini memerlukan
+                                <strong>persetujuan akhir</strong> Anda untuk status <em>Fully Approved</em>.</p>
+
+                            <!-- Info Card -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                   style="background-color:#faf5ff;border-radius:8px;border-left:4px solid #7c3aed;margin-bottom:24px;">
+                                <tr>
+                                    <td style="padding:20px 24px;">
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;width:140px;">Nomor Laporan</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;font-weight:600;">{{reportId}}</td>
+                                            </tr>
+                                              <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Pengaju</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;">{{creatorName}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Judul Laporan</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;font-weight:600;">{{reportTitle}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Disetujui Oleh</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;">{{approverName}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Klasifikasi Insiden</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;">{{classificationName}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Kategori Insiden</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;">{{categoryName}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Reviewed By</td>
+                                                <td style="padding:4px 0;font-size:13px;color:#1d2939;">{{reviewedBy}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;font-size:13px;color:#667085;">Status Saat Ini</td>
+                                                <td style="padding:4px 0;">
+                                                    <span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;color:#5b21b6;background-color:#ede9fe;">
+                                                        PARTIALLY APPROVED</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Approval Trail -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                   style="margin-bottom:24px;">
+                                <tr>
+                                    <td style="padding:12px 16px;border-radius:8px;background-color:#f9fafb;">
+                                        <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#667085;text-transform:uppercase;letter-spacing:0.5px;">
+                                            Jejak Persetujuan</p>
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:13px;">
+                                                    <span style="color:#22c55e;">&#10003;</span>
+                                                    <span style="color:#344054;margin-left:4px;">Creator &rarr; Submitted</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:13px;">
+                                                    <span style="color:#22c55e;">&#10003;</span>
+                                                    <span style="color:#344054;margin-left:4px;">Superior &rarr; Approved</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:13px;">
+                                                    <span style="color:#f59e0b;">&#9679;</span>
+                                                    <span style="color:#344054;margin-left:4px;font-weight:600;">Manager &rarr; Menunggu Persetujuan Anda</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin:0 0 24px;font-size:14px;color:#475467;line-height:1.6;">
+                                Silakan berikan keputusan Anda melalui tautan di bawah ini.</p>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <!-- padding (bukan margin) dipakai karena Outlook mengabaikan margin pada <table>;
+                                         align="center" pada <td> tabel selebar 100% ini adalah cara aman lintas klien
+                                         email untuk menengahkan tabel tombol di dalamnya (margin:auto saja tidak cukup). -->
+                                    <td align="center" style="padding-top:16px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td align="center" style="border-radius:8px;background:linear-gradient(135deg,#7c3aed,#4c1d95);">
+                                                    <a href="{{actionUrl}}" target="_blank"
+                                                       style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.3px;">
+                                                        &#9989; Berikan Persetujuan</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin:20px 0 0;font-size:12px;color:#98a2b3;text-align:center;">
+                                Jika tombol tidak berfungsi, salin tautan berikut ke browser Anda:<br/>
+                                <a href="{{actionUrl}}" style="color:#7c3aed;word-break:break-all;">{{actionUrl}}</a></p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding:24px 40px;background-color:#f8f9fb;border-top:1px solid #eaecf0;">
+                            <p style="margin:0 0 4px;font-size:12px;color:#98a2b3;">
+                                Email ini dikirim secara otomatis oleh <strong style="color:#667085;">{{siteName}}</strong></p>
+                            <p style="margin:0;font-size:11px;color:#b0b8c4;">
+                                &copy; 2026 {{siteDesc}} &mdash; Mohon tidak membalas email ini.</p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

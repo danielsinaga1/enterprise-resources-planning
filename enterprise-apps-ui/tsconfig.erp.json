@@ -1,0 +1,25 @@
+{
+  // Type-check modul ERP (src/erp, port klien ENTARIS). Kodenya ditulis untuk mode strict
+  // (penyempitan union, inferensi generik), sehingga diperiksa terpisah dari tsconfig.json
+  // platform yang `strict: false`. Jalankan: npx tsc -p tsconfig.erp.json
+  "compilerOptions": {
+    "target": "ES2023",
+    "useDefineForClassFields": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/erp/*"]
+    }
+  },
+  "include": ["src/erp", "src/vite-env.d.ts", "src/types/declarations.d.ts"]
+}

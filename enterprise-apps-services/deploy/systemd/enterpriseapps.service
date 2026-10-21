@@ -1,0 +1,27 @@
+[Unit]
+Description=EnterpriseApps Spring Boot Service
+After=network.target
+
+[Service]
+Type=simple
+User=enterpriseapps
+Group=enterpriseapps
+WorkingDirectory=/opt/enterpriseapps-service
+Environment=SPRING_PROFILES_ACTIVE=prod
+# Optional: load environment variables
+EnvironmentFile=-/etc/sysconfig/enterpriseapps-service
+ExecStart=/usr/bin/java -Xms256m -Xmx1024m -Djava.security.egd=file:/dev/./urandom -jar /opt/enterpriseapps-service/app.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=65536
+
+# Hardening (safe defaults for a typical Spring Boot service)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
+

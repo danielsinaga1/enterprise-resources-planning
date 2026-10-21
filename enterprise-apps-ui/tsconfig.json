@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "checkJs": false,
+    "strict": false,
+    "baseUrl": ".",
+    "paths": {
+      // Modul ERP (src/erp, port klien ENTARIS) memakai impor `@/…`.
+      "@/*": ["src/erp/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    // Exclude legacy JS/JSX in components now replaced by TSX
+    "src/components/**/*.js",
+    "src/components/**/*.jsx",
+    // Exclude legacy root JS(X) entries
+    "src/App.jsx",
+    "src/main.jsx",
+    // Scaffolding template bawaan yang TIDAK DIPAKAI: tidak diimpor dari mana pun di
+    // luar dirinya sendiri (vitest.config.ts juga sudah mengecualikannya dari coverage),
+    // dan modul yang dibutuhkannya tidak terpasang (flatpickr, framer-motion). Ia
+    // menyumbang SELURUH 24 error `tsc --noEmit` yang selama ini jadi "baseline" repo —
+    // baseline yang membuat type-check tidak bisa dipakai sebagai gate CI, sehingga
+    // error tipe pada kode yang benar-benar dipakai ikut tenggelam di dalamnya.
+    // Dikecualikan, bukan dihapus, supaya template-nya tetap ada bila nanti diadopsi.
+    "src/components/admin-panel/**",
+    // Modul ERP diperiksa dengan tsconfig.erp.json (mode strict, seperti sumbernya).
+    "src/erp/**"
+  ]
+}

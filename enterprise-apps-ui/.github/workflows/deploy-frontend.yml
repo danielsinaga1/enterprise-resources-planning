@@ -1,0 +1,63 @@
+# Verify + deploy frontend React (Vite) ke server dev KPI lewat baik-deploy.
+#
+# Runner: self-hosted, terpasang LANGSUNG di server 192.168.5.105. Penyalinan
+# dist/ ke /var/www/html/frontend didelegasikan ke skrip `baik-deploy`.
+#
+# Kenapa ada job `verify` di depan: `baik-deploy frontend` hanya menjalankan
+# `npm ci && npm run build`, jadi lint dan unit test tidak pernah jalan sebelum
+# kode tayang. `deploy` menunggu `verify` lewat `needs:`.
+#
+# Type-check IKUT jadi gate. Dulu tidak bisa: scaffolding
+# src/components/admin-panel/** yang tidak dipakai menyisakan 24 error sebagai
+# "baseline" repo. Scaffolding itu sekarang dikecualikan di tsconfig.json, jadi
+# `tsc --noEmit` bersih (0 error) dan setiap error tipe baru langsung terlihat.
+# Ini penting karena `npm run build` (vite build) TIDAK menjalankan tsc sama
+# sekali — tanpa langkah terpisah ini, error tipe tetap lolos sampai runtime.
+#
+# Prasyarat di server (setup manual sekali, lihat deploy-backend.yml di repo
+# enterprise-apps-services untuk detail lengkap):
+#   - Self-hosted runner terdaftar & jalan sebagai service.
+#   - Sudo NOPASSWD untuk baik-deploy di /etc/sudoers.d/baik-deploy.
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Lint, test & build
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      # npm ci, bukan npm install: kunci versi di package-lock.json harus dipatuhi
+      # supaya hasil verifikasi sama dengan yang nanti dibangun baik-deploy.
+      - name: Install dependency
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Tidak ada script `typecheck` di package.json — panggil tsc langsung.
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Unit test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  deploy:
+    name: Deploy via baik-deploy
+    runs-on: self-hosted
+    needs: verify
+    # Pull request hanya diverifikasi, tidak ikut men-deploy.
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Deploy via baik-deploy
+        run: sudo baik-deploy frontend

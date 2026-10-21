@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logback configuration for the IRMS backend.
+
+  Goals:
+    * Console output for humans, with the active trace correlation IDs
+      (traceId / spanId injected into the MDC by Micrometer Tracing).
+    * Ship every log line to Loki via the loki4j appender so logs are
+      searchable in Grafana and clickable through to the matching trace
+      in Tempo (Grafana "derived field" extracts traceID=... below).
+
+  Everything network-related is overridable by environment variable so the
+  same artifact runs locally and in Docker without edits.
+-->
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- Pull values from Spring so they respect application.yaml / env vars. -->
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="IRMS"/>
+    <springProperty scope="context" name="springProfile" source="spring.profiles.active" defaultValue="dev"/>
+
+    <!-- Loki endpoint. Docker overrides to http://loki:3100/loki/api/v1/push. -->
+    <property name="LOKI_URL" value="${LOKI_URL:-http://localhost:3100/loki/api/v1/push}"/>
+    <!-- Toggle Loki shipping off when running tests or with no Loki around. -->
+    <property name="LOKI_ENABLED" value="${LOKI_ENABLED:-true}"/>
+
+    <!--
+      Logback's built-in HOSTNAME context property resolves asynchronously (a background
+      DNS/InetAddress lookup) and running as a systemd service (no shell) means the OS
+      HOSTNAME env var isn't set either — so ${HOSTNAME} in the label pattern below could
+      evaluate empty. Loki rejects any stream where every label resolves empty with
+      "at least one label pair is required per stream", which silently dropped every
+      log line shipped this way. Force a value that is never empty.
+    -->
+    <property name="LOKI_HOST" value="${HOSTNAME:-bgpaad-d002}"/>
+
+    <!--
+      Shared console pattern. The [traceId,spanId] block makes logs correlatable
+      by eye; the existing [id][username][service][step] MDC keys are preserved.
+    -->
+    <property name="CONSOLE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [${appName},%X{traceId:-},%X{spanId:-}] [%X{id:-}][%X{username:-}][%X{service:-}][%X{step:-}] %-30logger{30} : %msg%n"/>
+
+    <!-- ===================== CONSOLE ===================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ===================== LOKI ===================== -->
+    <!--
+      loki4j ships logs over HTTP. We expose traceId/spanId both as a queryable
+      label-free message token (traceID=...) so Grafana's derived field can turn
+      it into a Tempo link, and the level/app as Loki labels for fast filtering.
+      Keep cardinality LOW: only app, host, level, profile as labels — never the
+      traceId (that would explode Loki's index).
+    -->
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>${LOKI_URL}</url>
+            <!-- Drop-on-overflow rather than block the app threads. -->
+            <connectionTimeoutMs>5000</connectionTimeoutMs>
+            <requestTimeoutMs>10000</requestTimeoutMs>
+        </http>
+        <batchMaxItems>1000</batchMaxItems>
+        <batchTimeoutMs>5000</batchTimeoutMs>
+        <format>
+            <label>
+                <pattern>app=${appName},host=${LOKI_HOST},level=%level,profile=${springProfile}</pattern>
+            </label>
+            <message>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] traceID=%X{traceId:-none} spanID=%X{spanId:-none} %logger{36} [%X{username:-}] - %msg%n</pattern>
+            </message>
+        </format>
+    </appender>
+
+    <!--
+      Async wrapper so Loki I/O never sits on the request thread. neverBlock=true
+      means a full queue drops logs instead of stalling the app.
+    -->
+    <appender name="LOKI_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOKI"/>
+        <queueSize>2048</queueSize>
+        <neverBlock>true</neverBlock>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+
+    <logger name="id.enterpriseapps" level="debug"/>
+
+    <!-- Loki enabled everywhere except the test profile. -->
+    <springProfile name="!test">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="LOKI_ASYNC"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="test">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>

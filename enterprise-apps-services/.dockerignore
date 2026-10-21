@@ -1,0 +1,11 @@
+.git
+.gradle
+build
+*/build
+logs
+*.log
+.idea
+.vscode
+uploads
+dumps
+*.iml

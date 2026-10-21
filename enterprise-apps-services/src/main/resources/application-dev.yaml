@@ -1,0 +1,165 @@
+# Development Environment Configuration
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db_irms
+    username: postgres
+    password:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: PrimaryPool
+      maximum-pool-size: 5
+      minimum-idle: 2
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:noreply@irms.id}
+    password: ${MAIL_PASSWORD:}
+    properties:
+
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    from: ${MAIL_USERNAME:noreply@irms.id}
+    from-name: KPI Notification
+
+  servlet:
+    multipart:
+      max-file-size: 20MB  # ERP: versi dokumen PDF GA hingga 20 MB (sama dengan prod)
+      max-request-size: 50MB
+      enabled: true
+
+server:
+  port: 8082
+  tomcat:
+    max-swallow-size: 50MB
+  error:
+    include-message: always
+    include-binding-errors: always
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    "[org.springframework.security.ldap]": DEBUG
+    "[org.springframework.ldap]": DEBUG
+  file:
+    name: logs/application-dev.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 7
+
+app:
+  # Public origin of the SPA. Used to build the links inside notification emails,
+  # so it must be reachable by the recipient — not the developer's localhost.
+  base-url: ${APP_BASE_URL:http://localhost:5173}
+
+  # Disable LDAP in dev — use local bcrypt flow instead
+  ldap:
+    enabled: ${LDAP_ENABLED:false}
+
+  # Auth / Identity datasource — db_auth
+  datasource:
+    auth:
+      url: jdbc:postgresql://localhost:5432/db_auth
+      username: postgres
+      password:
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        pool-name: AuthPool
+        maximum-pool-size: 5
+        minimum-idle: 2
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+
+    # SmartDocs datasource — db_smartdocs (dibagi dengan service OCR Python;
+    # lihat SmartDocsDataSourceConfig). Skema dikelola skrip sql/smartdocs_service/,
+    # bukan Hibernate.
+    smartdocs:
+      url: jdbc:postgresql://localhost:5432/db_smartdocs
+      username: postgres
+      password:
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        pool-name: SmartDocsPool
+        maximum-pool-size: 5
+        minimum-idle: 2
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+
+    # ERP datasource — db_erp (port fitur ENTARIS; lihat ErpDataSourceConfig).
+    # Skema & data awal: sql/erp_service/ (dipasang otomatis bila db_erp masih kosong,
+    # lihat app.erp.auto-init). Buat database-nya dulu: CREATE DATABASE db_erp;
+    erp:
+      url: jdbc:postgresql://localhost:5432/db_erp
+      username: postgres
+      password:
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        pool-name: ErpPool
+        # Kolom waktu db_erp berisi UTC (seperti Prisma); default CURRENT_TIMESTAMP/now() ikut UTC.
+        connection-init-sql: SET TIME ZONE 'UTC'
+        maximum-pool-size: 10
+        minimum-idle: 2
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+
+    # LIMS datasource — db_lims (DB-per-service; see LimsDataSourceConfig)
+    lims:
+      url: jdbc:postgresql://localhost:5432/db_lims
+      username: postgres
+      password:
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        pool-name: LimsPool
+        maximum-pool-size: 5
+        minimum-idle: 2
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+
+# --- Observability (dev) ---
+# Head-based sampling at 100% so every request is traced while developing.
+management:
+  tracing:
+    sampling:
+      probability: ${OTEL_TRACES_SAMPLER_PROB:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACING_ENDPOINT:http://localhost:4318/v1/traces}

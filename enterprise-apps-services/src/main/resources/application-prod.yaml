@@ -1,0 +1,99 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    # No defaults on purpose: prod must fail fast at startup if these are not
+    # provided via environment. Never put real credentials back in this file —
+    # it is committed to git.
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      schema: ${DB_SCHEMA:public}
+      maximum-pool-size: ${DB_HIKARI_MAXIMUM_POOL_SIZE:30}
+      minimum-idle: ${DB_HIKARI_MINIMUM_IDLE:10}
+      idle-timeout: ${DB_HIKARI_IDLE_TIMEOUT:600000}
+      max-lifetime: ${DB_HIKARI_MAX_LIFETIME:1800000}
+      connection-timeout: ${DB_HIKARI_CONNECTION_TIMEOUT:30000}
+      pool-name: ${DB_HIKARI_POOL_NAME:IRMS-POOL}
+      leak-detection-threshold: ${DB_HIKARI_LEAK_DETECTION_THRESHOLD:20000}
+      validation-timeout: ${DB_HIKARI_VALIDATION_TIMEOUT:5000}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: ${OPEN_IN_VIEW:false}
+    show-sql: ${SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:20MB}
+      max-request-size: ${MAX_REQUEST_SIZE:100MB}
+      enabled: true
+
+server:
+  port: ${APP_PORT:8080}
+  address: 127.0.0.1
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Prometheus endpoint exposed for in-cluster scraping. Keep it off the
+        # public ingress (server.address is bound to 127.0.0.1 above) or guard it
+        # at the reverse proxy — metrics can leak internal topology.
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  # --- Observability (prod) ---
+  # Head-based sampling at 10% to bound tracing overhead/cost under load.
+  tracing:
+    sampling:
+      probability: ${OTEL_TRACES_SAMPLER_PROB:0.1}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACING_ENDPOINT:http://otel-collector:4318/v1/traces}
+
+logging:
+  level:
+    root: INFO
+    web: INFO
+
+# Prod overrides of base application.yaml — the base file carries dev-friendly
+# defaults for these; in prod they MUST come from the environment (startup
+# fails on unresolved placeholder otherwise).
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+  # ERP — db_erp. Default ke server & kredensial DB utama agar deploy lama tidak gagal boot
+  # (pool ERP tidak memblokir startup bila db_erp belum dibuat). Timpa lewat ERP_DB_*.
+  datasource:
+    erp:
+      url: ${ERP_DB_URL:jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/db_erp}
+      username: ${ERP_DB_USERNAME:${DB_USERNAME}}
+      password: ${ERP_DB_PASSWORD:${DB_PASSWORD}}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        pool-name: ErpPool
+        # Kolom waktu db_erp berisi UTC (seperti Prisma); default CURRENT_TIMESTAMP/now() ikut UTC.
+        connection-init-sql: SET TIME ZONE 'UTC'
+        maximum-pool-size: ${ERP_DB_POOL_SIZE:15}
+        minimum-idle: 2
+  erp:
+    # Di produksi skema dipasang ops dari sql/erp_service/; aktifkan hanya untuk instalasi baru.
+    auto-init: ${ERP_AUTO_INIT:false}

@@ -1,0 +1,126 @@
+// ─────────────────────────────────────────────────────────────────────
+// :erp — ERP (penjualan, pembelian, persediaan, produksi, keuangan, aset/EAM),
+// port fitur ENTARIS ke platform Enterprise Apps.
+//
+// Mengikuti pola :lims / :smartdocs: paket terisolasi (id.enterpriseapps.erp.*)
+// dengan database sendiri (db_erp). Identitas pengguna datang dari auth platform
+// (JWT berisi email + kode role); modul ini menyimpan snapshot pengguna sendiri
+// di tabel users db_erp, tanpa foreign key lintas database.
+//
+// Skema dikelola skrip sql/erp_service/ (bukan Hibernate). Skrip yang sama ikut
+// dikemas ke classpath (db/erp/) agar ErpSchemaInitializer bisa memasangnya di
+// database kosong saat pengembangan.
+// ─────────────────────────────────────────────────────────────────────
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'id'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.add('-parameters')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.4"
+    }
+}
+
+configurations {
+    // Runner JUnit mandiri untuk uji cepat tanpa daemon Gradle (lihat writeAgentClasspaths).
+    junitConsole
+}
+
+dependencies {
+    // Shared kernel (Response, CustomException, ...).
+    api(project(':shared'))
+
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+
+    // Serialisasi entity: relasi lazy yang belum di-fetch tidak ikut ditulis
+    // (meniru semantik include Prisma di sumber ENTARIS).
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
+    // Excel (template & impor/ekspor; padanan exceljs) dan CSV (mutasi bank, buku kas; padanan csv-parse).
+    implementation("org.apache.poi:poi-ooxml:5.2.5")
+    implementation("org.apache.commons:commons-csv:1.12.0")
+
+    // Anotasi OpenAPI pada controller.
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11")
+
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
+    // PostgreSQL sungguhan di dalam JVM test (tanpa Docker) untuk uji integrasi alur posting.
+    testImplementation("io.zonky.test:embedded-postgres:2.1.0")
+    testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:16.4.0"))
+    testCompileOnly("org.projectlombok:lombok:1.18.34")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.34")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    junitConsole("org.junit.platform:junit-platform-console-standalone:1.12.2")
+}
+
+// Classpath untuk kompilasi/uji ringan (javac + JUnit console) tanpa daemon Gradle —
+// dipakai saat banyak paket ERP dikerjakan paralel di mesin dengan RAM terbatas.
+tasks.register('writeAgentClasspaths') {
+    dependsOn 'classes', 'testClasses'
+    doLast {
+        def dir = layout.buildDirectory.dir('agent').get().asFile
+        dir.mkdirs()
+        new File(dir, 'main-cp.txt').text = sourceSets.main.compileClasspath.asPath
+        new File(dir, 'test-cp.txt').text = sourceSets.test.runtimeClasspath.asPath
+        new File(dir, 'ap.txt').text = configurations.annotationProcessor.asPath
+        new File(dir, 'junit.txt').text = configurations.junitConsole.asPath
+    }
+}
+
+// Skrip skema/seed kanonik ada di sql/erp_service/; kemas juga ke classpath.
+processResources {
+    from(rootProject.file('sql/erp_service')) {
+        include '*.sql'
+        into 'db/erp'
+    }
+}
+
+// Laporan & health-check memeriksa invarian GLOBAL (neraca seimbang, tidak ada data yatim), sedangkan
+// tes paket lain sengaja membuat data tidak konsisten (impor saldo awal, injeksi data yatim) di DB
+// bersama — jadi paket report dijalankan di JVM + PostgreSQL embedded tersendiri.
+def reportTest = tasks.register('reportTest', Test) {
+    description = 'Tes paket erp.report di JVM terpisah (database embedded sendiri).'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    maxHeapSize = '1g'
+    include 'id/enterpriseapps/erp/report/**'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    // Semua tes ERP berbagi satu PostgreSQL embedded per JVM; beberapa paket memakai @MockitoBean
+    // (context Spring terpisah) — batasi cache context agar heap cukup.
+    maxHeapSize = '1g'
+    systemProperty 'spring.test.context.cache.maxSize', '3'
+    exclude 'id/enterpriseapps/erp/report/**'
+    finalizedBy reportTest
+}
