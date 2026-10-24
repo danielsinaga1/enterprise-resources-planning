@@ -21,6 +21,11 @@ management:
         # Only expose what the observability stack needs.
         include: health,info,prometheus,metrics
       base-path: /actuator
+  health:
+    # Cek koneksi AD hanya bila login LDAP aktif; saat app.ldap.enabled=false (dev) server AD
+    # memang tidak dipakai, dan indikator ini membuat /actuator/health selalu DOWN.
+    ldap:
+      enabled: ${app.ldap.enabled:true}
   endpoint:
     health:
       show-details: when-authorized
