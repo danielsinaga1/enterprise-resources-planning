@@ -1,3 +1,4 @@
+import { erpPortalContainer } from '@/lib/portal';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import {
@@ -176,7 +177,7 @@ export const NotificationBell = () => {
         )}
       </PopoverPrimitive.Trigger>
 
-      <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Portal container={erpPortalContainer()}>
         <PopoverPrimitive.Content
           ref={contentRef}
           align="end"

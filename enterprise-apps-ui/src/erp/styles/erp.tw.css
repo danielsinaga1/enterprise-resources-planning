@@ -528,7 +528,7 @@
   .print-only { display: block !important; }
   .bg-card.border { border: none !important; box-shadow: none !important; break-inside: auto; }
   .report-summary-cards { break-inside: avoid; }
-  .bg-blue-600, .bg-primary { background-color: #2F6FC4 !important; color: white !important; }
+  .bg-blue-600, .bg-primary { background-color: #0F766E !important; color: white !important; }
   .bg-green-50\/60, .bg-red-50\/60, .bg-gray-50\/60 { background-color: #f9fafb !important; }
   .overflow-y-auto, .overflow-auto, .overflow-x-auto {
     overflow: visible !important; max-height: none !important;
@@ -549,4 +549,17 @@
   a[href]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #555; }
   a[href^="#"]::after, a[href^="javascript:"]::after, a[data-no-print-url]::after { content: ""; }
   .font-tabular, [class*="font-mono"] { font-variant-numeric: tabular-nums; }
+}
+
+/* Shell platform memakai Tailwind v3 yang menulis utilitas transform sebagai `transform:
+   translate(var(--tw-translate-x), ...)`, sedangkan Tailwind v4 di modul ini memakai properti
+   individual (`translate`, `scale`, `rotate`) dengan nama variabel yang SAMA. Kelas yang kebetulan
+   juga dipakai shell (mis. -translate-y-1/2) jadi menggeser elemen dua kali — dialog keluar layar.
+   Di dalam modul ERP transform versi v3 selalu salah, jadi dinetralkan (animasi keyframes tetap
+   berjalan karena mengalahkan deklarasi biasa). Diberi prefix .erp-root oleh build-erp-css. */
+[class*="translate-"],
+[class*="rotate-"],
+[class*="scale-"],
+[class*="skew-"] {
+  transform: none;
 }

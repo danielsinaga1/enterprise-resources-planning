@@ -1,3 +1,4 @@
+import { erpPortalContainer } from '@/lib/portal';
 import { useId, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Command } from 'cmdk';
@@ -94,7 +95,7 @@ export function ComboboxFilter({
             {!value && <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />}
           </button>
         </PopoverPrimitive.Trigger>
-        <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Portal container={erpPortalContainer()}>
           <PopoverPrimitive.Content
             id={`${id}-popup`}
             align="start"

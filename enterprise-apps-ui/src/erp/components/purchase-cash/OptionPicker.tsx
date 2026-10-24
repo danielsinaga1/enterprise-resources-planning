@@ -1,3 +1,4 @@
+import { erpPortalContainer } from '@/lib/portal';
 /**
  * Single-select for forms: Radix Select for short lists, cmdk combobox for long or
  * `searchable` ones. Works inside Dialog/Sheet, unlike SearchableSelect.
@@ -141,7 +142,7 @@ export function OptionPicker({
           <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         </button>
       </PopoverPrimitive.Trigger>
-      <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Portal container={erpPortalContainer()}>
         <PopoverPrimitive.Content
           id={popupId}
           align="start"

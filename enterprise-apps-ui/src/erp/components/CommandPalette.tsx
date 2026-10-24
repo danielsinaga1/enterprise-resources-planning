@@ -1,3 +1,4 @@
+import { erpPortalContainer } from '@/lib/portal';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Command } from 'cmdk';
@@ -131,7 +132,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogPrimitive.Portal>
+      <DialogPrimitive.Portal container={erpPortalContainer()}>
         <DialogPrimitive.Overlay className={cn(overlayClass, 'z-[var(--z-palette)]')} />
         <DialogPrimitive.Content
           data-testid="command-palette"
