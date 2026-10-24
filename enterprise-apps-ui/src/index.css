@@ -522,3 +522,122 @@ aside::-webkit-scrollbar-track {
 .text-700 { color: var(--text-700, #495057) !important; }
 .text-800 { color: var(--text-800, #343a40) !important; }
 .text-900 { color: var(--text-900, #212529) !important; }
+/* ============================================================
+   BRAND LOADER (components/BrandLoader.tsx)
+   ============================================================ */
+.ea-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: #0f2e2c;
+}
+.ea-loader--content { min-height: 60vh; width: 100%; }
+.ea-loader--screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background:
+    radial-gradient(600px circle at 25% 20%, rgba(20, 184, 166, 0.16), transparent 60%),
+    radial-gradient(500px circle at 80% 85%, rgba(15, 118, 110, 0.14), transparent 60%),
+    #f6faf9;
+}
+.ea-loader-mark {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 6px;
+}
+.ea-loader-logo {
+  position: relative;
+  z-index: 2;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  box-shadow: 0 12px 28px -8px rgba(15, 118, 110, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  animation: ea-loader-float 2.4s ease-in-out infinite;
+}
+.ea-loader-ring {
+  position: absolute;
+  inset: 20px;
+  border-radius: 24px;
+  border: 2px solid rgba(20, 184, 166, 0.45);
+  animation: ea-loader-pulse 2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.ea-loader-ring--late { animation-delay: 1s; }
+.ea-loader-orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(20, 184, 166, 0.9) 70deg, transparent 140deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  animation: ea-loader-spin 1.4s linear infinite;
+}
+.ea-loader-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #0f2e2c, #0f766e, #0f2e2c);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: ea-loader-shine 3s linear infinite;
+}
+.ea-loader-message {
+  font-size: 0.82rem;
+  color: #4b6b68;
+  min-height: 1.2em;
+  animation: ea-loader-fade-up 0.45s ease-out both;
+}
+.ea-loader-bar {
+  position: relative;
+  width: 180px;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(15, 118, 110, 0.12);
+}
+.ea-loader-bar > span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, #14b8a6, #0f766e);
+  animation: ea-loader-slide 1.3s ease-in-out infinite;
+}
+@keyframes ea-loader-spin { to { transform: rotate(360deg); } }
+@keyframes ea-loader-pulse {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes ea-loader-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes ea-loader-shine { to { background-position: -200% 0; } }
+@keyframes ea-loader-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ea-loader-slide {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ea-loader-logo, .ea-loader-ring, .ea-loader-orbit, .ea-loader-name, .ea-loader-message, .ea-loader-bar > span {
+    animation: none;
+  }
+  .ea-loader-bar > span { left: 30%; }
+}

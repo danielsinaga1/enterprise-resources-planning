@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import BrandLoader from './BrandLoader';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,16 +11,9 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
-  // Show loading spinner while checking auth
+  // Layar loading bermerek selama sesi diperiksa
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-boxdark-2">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 dark:text-gray-400">Memuat...</p>
-        </div>
-      </div>
-    );
+    return <BrandLoader variant="screen" label="Memeriksa sesi…" />;
   }
 
   // Redirect to login if not authenticated

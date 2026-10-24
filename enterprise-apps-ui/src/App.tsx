@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ScrollTop } from "./components/scrolltop/ScrollTop";
+import BrandLoader from "./components/BrandLoader";
 
 
 // ERP (port fitur ENTARIS) — dimuat terpisah (code-split) karena besar.
@@ -45,7 +46,7 @@ function AppContent() {
           <Route
             path="erp/*"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<BrandLoader />}>
                 <ErpApp />
               </Suspense>
             }
@@ -66,7 +67,7 @@ function AppContent() {
         <Route
           path="/erp/*"
           element={
-            <Suspense fallback={null}>
+            <Suspense fallback={<BrandLoader variant="screen" />}>
               <ErpPublicApp />
             </Suspense>
           }

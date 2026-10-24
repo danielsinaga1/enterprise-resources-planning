@@ -3,6 +3,7 @@
  * i18n ERP (instance terpisah), React Query ERP, tema, gerak, toast, gaya Tailwind v4 ERP
  * (di-scope ke `.erp-root`), dan gerbang profil ERP (`/api/erp/me` → izin modul & capability).
  */
+import BrandLoader from '../components/BrandLoader';
 import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -64,7 +65,7 @@ function ErpProfileGate({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  if (state === 'loading') return null;
+  if (state === 'loading') return <BrandLoader label="Memuat profil & hak akses ERP…" />;
   if (state === 'denied') {
     return (
       <div className="mx-auto mt-16 max-w-md rounded-md border border-border bg-card p-6 text-center">

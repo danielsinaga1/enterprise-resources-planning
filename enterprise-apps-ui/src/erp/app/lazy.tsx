@@ -4,7 +4,7 @@
  */
 import { Component, lazy, Suspense, type ComponentProps, type ComponentType, type ErrorInfo, type ReactNode } from 'react';
 import { useLocation } from '@/lib/router';
-import { LoadingState } from '@/components/shared';
+import BrandLoader from '../../components/BrandLoader';
 import i18n from '@/i18n';
 import { useTranslation } from 'react-i18next';
 import { isChunkLoadError } from './lazyUtils';
@@ -15,11 +15,7 @@ type PageComponent<C extends AnyComponent> = ((props: ComponentProps<C>) => Reac
 
 export function PageFallback() {
   const { t } = useTranslation('shell');
-  return (
-    <div className="min-h-[50vh] flex items-center justify-center">
-      <LoadingState label={t('lazy.loadingPage')} />
-    </div>
-  );
+  return <BrandLoader label={t('lazy.loadingPage')} />;
 }
 
 interface BoundaryState { error: Error | null }
