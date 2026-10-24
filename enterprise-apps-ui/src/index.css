@@ -10,15 +10,15 @@
 
 :root {
   /* Verona Palette */
-  --verona-primary: #6366f1;
-  --verona-primary-dark: #4f46e5;
-  --verona-secondary: #14b8a6;
+  --verona-primary: #0d9488;
+  --verona-primary-dark: #0f766e;
+  --verona-secondary: #0891b2;
   --verona-accent: #f59e0b;
   --verona-surface: #ffffff;
   --verona-surface-alt: #f8fafc;
-  --verona-sidebar-bg: #1e1b4b;
-  --verona-sidebar-text: #c7d2fe;
-  --verona-sidebar-active: #818cf8;
+  --verona-sidebar-bg: #0f2e2c;
+  --verona-sidebar-text: #ccfbf1;
+  --verona-sidebar-active: #2dd4bf;
   --verona-text: #1e293b;
   --verona-text-secondary: #64748b;
   --verona-border: #e2e8f0;
@@ -114,7 +114,7 @@ body {
 }
 
 .p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-link):hover {
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
   transform: translateY(-1px);
 }
 
@@ -268,7 +268,7 @@ textarea.p-inputtextarea {
 .p-inputtext:focus,
 .p-inputtextarea:focus {
   border-color: var(--verona-primary) !important;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2) !important;
 }
 
 .p-dropdown:focus-within,
@@ -278,7 +278,7 @@ textarea.p-inputtextarea {
 .p-multiselect:focus-within,
 .p-autocomplete:focus-within {
   border-color: var(--verona-primary) !important;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2) !important;
 }
 
 /* InputNumber button borders */
@@ -435,7 +435,7 @@ input[type="file"].p-inputtext {
 .verona-tag-warning { background: #fffbeb; color: #d97706; }
 .verona-tag-danger  { background: #fef2f2; color: #dc2626; }
 .verona-tag-info    { background: #eff6ff; color: #2563eb; }
-.verona-tag-primary { background: #eef2ff; color: #4f46e5; }
+.verona-tag-primary { background: #f0fdfa; color: #0f766e; }
 
 /* ============================================================
    PRIMEFLEX / TAILWIND CONFLICT RESOLUTION
@@ -482,10 +482,10 @@ h6 { font-size: 0.67em; font-weight: bold; }
    SIDEBAR & DASHBOARD CHROME
    ============================================================ */
 aside::-webkit-scrollbar-thumb {
-  background: rgba(129, 140, 248, 0.3);
+  background: rgba(45, 212, 191, 0.3);
 }
 aside::-webkit-scrollbar-thumb:hover {
-  background: rgba(129, 140, 248, 0.5);
+  background: rgba(45, 212, 191, 0.5);
 }
 aside::-webkit-scrollbar-track {
   background: transparent;

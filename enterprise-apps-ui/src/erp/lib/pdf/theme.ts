@@ -6,8 +6,8 @@
 
 /** Warna brand ERP (docs/brand/entaris/README.md) — navy untuk judul/garis, biru untuk aksen. */
 export const BRAND = {
-  navy: '#1B2B48',
-  blue: '#2E5CA8',
+  navy: '#0F2E2C',
+  blue: '#0F766E',
   blueLt: '#EAF1FB',
 } as const;
 
@@ -17,9 +17,9 @@ export const FOOTER_SPACE = 52;
 /** Palet berwarna — dipakai laporan analitik & dokumen layar/arsip digital. */
 export const C = {
   // Brand
-  primary: '#1B2B48',    // navy ERP
+  primary: '#0F2E2C',    // navy ERP
   primaryLt: '#EAF1FB',  // biru sangat muda (tanpa fill berat)
-  accent: '#2E5CA8',     // biru ERP
+  accent: '#0F766E',     // biru ERP
 
   // Netral
   dark: '#111827',

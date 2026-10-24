@@ -77,7 +77,7 @@ const GaAssetQRModal: React.FC<Props> = ({ isOpen, onClose, asset }) => {
     w.document.write(`<!DOCTYPE html><html lang="${i18n.language}"><head><meta charset="utf-8"><title>QR ${code}</title>
       <style>
         *{box-sizing:border-box}
-        body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;margin:0;padding:24px;color:#1B2B48;background:#fff;display:flex;justify-content:center}
+        body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;margin:0;padding:24px;color:#0F2E2C;background:#fff;display:flex;justify-content:center}
         .label{width:300px;border:1px solid #CBD5E1;border-radius:12px;padding:16px 16px 14px;text-align:center}
         img{display:block;width:240px;height:240px;margin:0 auto}
         .code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:700;letter-spacing:.02em;margin-top:12px}

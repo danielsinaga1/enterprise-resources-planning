@@ -18,7 +18,7 @@ const THEME_ICONS: Record<ThemeId, LucideIcon> = {
 
 /** Static preview swatches that mirror the light/dark tokens in index.css. */
 const PREVIEW: Record<'light' | 'dark', { bg: string; surface: string; border: string; primary: string; text: string }> = {
-  light: { bg: '#F6F8FB', surface: '#FFFFFF', border: '#E2E7EF', primary: '#2F6FC4', text: '#142033' },
+  light: { bg: '#F6F8FB', surface: '#FFFFFF', border: '#E2E7EF', primary: '#0F766E', text: '#142033' },
   dark: { bg: '#0D1524', surface: '#131D2F', border: '#24324A', primary: '#5B9BE8', text: '#E8EDF5' },
 };
 

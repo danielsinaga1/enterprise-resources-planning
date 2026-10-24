@@ -155,7 +155,7 @@ const VeronaTopbar = ({ onMenuToggle, isDesktop }: VeronaTopbarProps) => {
             shape="circle"
             size="normal"
             style={{
-              background: 'linear-gradient(135deg, #6366f1, #818cf8)',
+              background: 'linear-gradient(135deg, #0d9488, #2dd4bf)',
               color: '#fff',
               fontWeight: 600,
               fontSize: '0.75rem',

@@ -121,8 +121,8 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
     textDecoration: 'none',
     transition: 'all 0.2s',
     fontWeight: active ? 600 : 400,
-    color: active ? '#ffffff' : 'rgba(199,210,254,0.85)',
-    background: active ? 'rgba(129,140,248,0.25)' : 'transparent',
+    color: active ? '#ffffff' : 'rgba(204,251,241,0.85)',
+    background: active ? 'rgba(45,212,191,0.25)' : 'transparent',
   });
 
   const renderIcon = (icon: string): ReactNode => (
@@ -162,7 +162,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
           minWidth: '260px',
           transform: isDesktop ? 'none' : (open ? 'translateX(0)' : 'translateX(-100%)'),
           transition: 'transform 0.3s ease',
-          background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)',
+          background: 'linear-gradient(180deg, #0f2e2c 0%, #134e4a 50%, #0f2e2c 100%)',
         }}
       >
         {/* Logo / Brand */}
@@ -185,7 +185,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                 borderRadius: '8px',
                 width: '36px',
                 height: '36px',
-                background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+                background: 'linear-gradient(135deg, #2dd4bf, #0d9488)',
               }}
             >
               <i className="pi pi-building" style={{ color: '#ffffff', fontSize: '1.125rem' }} />
@@ -194,7 +194,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
               <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '1rem', letterSpacing: '0.05em', maxWidth: '170px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {siteName}
               </span>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(199,210,254,0.7)', maxWidth: '170px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontSize: '0.65rem', color: 'rgba(204,251,241,0.7)', maxWidth: '170px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {siteDesc}
               </span>
             </div>
@@ -206,7 +206,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                 border: 'none',
                 cursor: 'pointer',
                 background: 'transparent',
-                color: 'rgba(199,210,254,0.7)',
+                color: 'rgba(204,251,241,0.7)',
                 padding: '6px',
                 borderRadius: '8px',
               }}
@@ -254,7 +254,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                           onMouseLeave={(e) => {
                             if (!active) {
                               e.currentTarget.style.background = 'transparent';
-                              e.currentTarget.style.color = 'rgba(199,210,254,0.85)';
+                              e.currentTarget.style.color = 'rgba(204,251,241,0.85)';
                             }
                           }}
                         >
@@ -262,7 +262,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                           <span>{tItem(item.label)}</span>
                           {active && (
                             <span
-                              style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', background: '#818cf8' }}
+                              style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', background: '#2dd4bf' }}
                             />
                           )}
                         </NavLink>
@@ -289,7 +289,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                           gap: '8px',
                           padding: '8px 12px',
                           fontSize: '0.875rem',
-                          color: childActive || isExpanded ? '#ffffff' : 'rgba(199,210,254,0.85)',
+                          color: childActive || isExpanded ? '#ffffff' : 'rgba(204,251,241,0.85)',
                           background: childActive || isExpanded ? 'rgba(255,255,255,0.1)' : 'transparent',
                           transition: 'all 0.2s',
                         }}
@@ -302,7 +302,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                         onMouseLeave={(e) => {
                           if (!childActive && !isExpanded) {
                             e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.color = 'rgba(199,210,254,0.85)';
+                            e.currentTarget.style.color = 'rgba(204,251,241,0.85)';
                           }
                         }}
                       >
@@ -336,7 +336,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                             marginLeft: '16px',
                             paddingLeft: '12px',
                             marginTop: '4px',
-                            borderLeft: '2px solid rgba(129,140,248,0.25)',
+                            borderLeft: '2px solid rgba(45,212,191,0.25)',
                           }}
                         >
                           {item.items?.map((sub) => {
@@ -352,9 +352,9 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                                     borderRadius: '8px',
                                     padding: '7px 12px',
                                     fontSize: '0.8125rem',
-                                    color: active ? '#ffffff' : 'rgba(199,210,254,0.7)',
+                                    color: active ? '#ffffff' : 'rgba(204,251,241,0.7)',
                                     fontWeight: active ? 500 : 400,
-                                    background: active ? 'rgba(129,140,248,0.2)' : 'transparent',
+                                    background: active ? 'rgba(45,212,191,0.2)' : 'transparent',
                                     transition: 'all 0.2s',
                                   }}
                                   onMouseEnter={(e) => {
@@ -365,7 +365,7 @@ const VeronaSidebar = ({ open, onClose, isDesktop }: VeronaSidebarProps) => {
                                   }}
                                   onMouseLeave={(e) => {
                                     if (!active) {
-                                      e.currentTarget.style.color = 'rgba(199,210,254,0.7)';
+                                      e.currentTarget.style.color = 'rgba(204,251,241,0.7)';
                                       e.currentTarget.style.background = 'transparent';
                                     }
                                   }}

@@ -13,8 +13,8 @@ const MARK_PATHS = [
 
 /** Fill per bar, in path order: light-blue bar, top bar, third bar. */
 const MARK_FILLS = {
-  default: ['#3D8BE0', '#1B2B48', '#2E5CA8'],
-  negative: ['#3D8BE0', '#FFFFFF', '#9CC9F5'],
+  default: ['#14B8A6', '#0F2E2C', '#0F766E'],
+  negative: ['#14B8A6', '#FFFFFF', '#99F6E4'],
   mono: ['currentColor', 'currentColor', 'currentColor'],
 } as const;
 
@@ -117,13 +117,13 @@ export function Wordmark({
       : variant === 'mono'
         ? 'text-current'
         : variant === 'auto'
-          ? 'text-[#1B2B48] dark:text-white'
-          : 'text-[#1B2B48]';
-  // Brand blue #3D8BE0 is 3.5:1 on white: fine for large text only (brand README).
-  // sm/md render below 18.66px bold, so they use the brand mid-blue #2E5CA8 (6.3:1).
-  const lightAccent = size === 'lg' ? 'text-[#3D8BE0]' : 'text-[#2E5CA8]';
-  const accentColor = variant === 'mono' ? '' : variant === 'negative' ? 'text-[#9CC9F5]' : lightAccent;
-  const autoAccent = variant === 'auto' ? cn(lightAccent, 'dark:text-[#9CC9F5]') : accentColor;
+          ? 'text-[#0F2E2C] dark:text-white'
+          : 'text-[#0F2E2C]';
+  // Brand blue #14B8A6 is 3.5:1 on white: fine for large text only (brand README).
+  // sm/md render below 18.66px bold, so they use the brand mid-blue #0F766E (6.3:1).
+  const lightAccent = size === 'lg' ? 'text-[#14B8A6]' : 'text-[#0F766E]';
+  const accentColor = variant === 'mono' ? '' : variant === 'negative' ? 'text-[#99F6E4]' : lightAccent;
+  const autoAccent = variant === 'auto' ? cn(lightAccent, 'dark:text-[#99F6E4]') : accentColor;
   const label = product ? `ERP ${product}` : 'ERP';
 
   return (

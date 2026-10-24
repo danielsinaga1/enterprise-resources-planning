@@ -16,7 +16,7 @@ const KEYFRAMES = `
 @keyframes sa-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 @keyframes sa-pulse { 0%,100%{opacity:.85} 50%{opacity:1} }
 @keyframes sa-slide-up { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
-@keyframes sa-glow { 0%,100%{box-shadow:0 0 12px rgba(59,130,246,.15)} 50%{box-shadow:0 0 24px rgba(59,130,246,.3)} }
+@keyframes sa-glow { 0%,100%{box-shadow:0 0 12px rgba(20,184,166,.15)} 50%{box-shadow:0 0 24px rgba(20,184,166,.3)} }
 @keyframes sa-shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 @keyframes sa-dot-blink { 0%,100%{opacity:.4} 50%{opacity:1} }
 `;
@@ -97,7 +97,7 @@ const Login = () => {
     <div
       style={{
         flex: '1 1 50%',
-        background: 'linear-gradient(160deg, #020617 0%, #0c1a3a 30%, #0f2f5f 60%, #1a4480 85%, #2563eb 100%)',
+        background: 'linear-gradient(160deg, #020617 0%, #062826 30%, #0f2f5f 60%, #115e59 85%, #0f766e 100%)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -107,12 +107,12 @@ const Login = () => {
       }}
     >
       {/* ── Decorative orbs ── */}
-      <div style={{ position: 'absolute', top: -120, right: -120, width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)' }} />
+      <div style={{ position: 'absolute', top: -120, right: -120, width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(20,184,166,0.12) 0%, transparent 70%)' }} />
       <div style={{ position: 'absolute', bottom: -100, left: -60, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)' }} />
-      <div style={{ position: 'absolute', top: '40%', right: 40, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)' }} />
+      <div style={{ position: 'absolute', top: '40%', right: 40, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(13,148,136,0.08) 0%, transparent 70%)' }} />
 
       {/* ── Top accent bar ── */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #3b82f6, #10b981, #6366f1, #3b82f6)', backgroundSize: '300% 100%', animation: 'sa-shimmer 4s linear infinite' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #14b8a6, #10b981, #0d9488, #14b8a6)', backgroundSize: '300% 100%', animation: 'sa-shimmer 4s linear infinite' }} />
 
       {/* ── Branding ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 36, position: 'relative', zIndex: 1 }}>
@@ -120,8 +120,8 @@ const Login = () => {
           style={{
             width: 54, height: 54, borderRadius: 14,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
-            boxShadow: '0 4px 24px rgba(59,130,246,0.35)',
+            background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+            boxShadow: '0 4px 24px rgba(20,184,166,0.35)',
             animation: 'sa-glow 3s ease-in-out infinite',
           }}
         >
@@ -138,7 +138,7 @@ const Login = () => {
         <h1 style={{ color: '#fff', fontSize: '1.85rem', fontWeight: 700, lineHeight: 1.35, margin: 0 }}>
           Keuangan, Operasional
           <br />
-          <span style={{ background: 'linear-gradient(90deg, #60a5fa, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <span style={{ background: 'linear-gradient(90deg, #5eead4, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             & Aset Perusahaan
           </span>
         </h1>
@@ -181,8 +181,8 @@ const Login = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="pi pi-box" style={{ color: '#818cf8', fontSize: '1rem' }} />
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(13,148,136,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="pi pi-box" style={{ color: '#2dd4bf', fontSize: '1rem' }} />
           </div>
           <div>
             <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', letterSpacing: 0.3 }}>Operasional &amp; Aset</div>
@@ -192,7 +192,7 @@ const Login = () => {
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           {['Penjualan & pembelian', 'Persediaan & produksi', 'Aset & pemeliharaan'].map((label) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', display: 'inline-block' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#0d9488', display: 'inline-block' }} />
               <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.76rem' }}>{label}</span>
             </div>
           ))}
@@ -252,7 +252,7 @@ const Login = () => {
   const mobileHeader = (
     <div
       style={{
-        background: 'linear-gradient(135deg, #0c1a3a 0%, #1a4480 100%)',
+        background: 'linear-gradient(135deg, #062826 0%, #115e59 100%)',
         padding: '28px 20px 22px',
         textAlign: 'center',
       }}
@@ -263,7 +263,7 @@ const Login = () => {
           style={{
             width: 40, height: 40, borderRadius: 12,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+            background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
           }}
         >
           <i className="pi pi-box" style={{ color: '#fff', fontSize: '1.15rem' }} />
@@ -279,7 +279,7 @@ const Login = () => {
         {[
           { label: 'Keuangan', color: '#10b981' },
           { label: 'Operasional', color: '#10b981' },
-          { label: 'Aset', color: '#3b82f6' },
+          { label: 'Aset', color: '#14b8a6' },
         ].map((p) => (
           <div
             key={p.label}
@@ -321,8 +321,8 @@ const Login = () => {
                 style={{
                   width: 44, height: 44, borderRadius: 12,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
-                  boxShadow: '0 4px 16px rgba(59,130,246,0.25)',
+                  background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+                  boxShadow: '0 4px 16px rgba(20,184,166,0.25)',
                 }}
               >
                 <i className="pi pi-box" style={{ color: '#fff', fontSize: '1.2rem' }} />
@@ -418,7 +418,7 @@ const Login = () => {
                 background: 'none',
                 border: 'none',
                 padding: 0,
-                color: '#3b82f6',
+                color: '#14b8a6',
                 fontSize: '0.82rem',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -438,7 +438,7 @@ const Login = () => {
             style={{
               width: '100%',
               padding: '14px 24px',
-              background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #6366f1 100%)',
+              background: 'linear-gradient(135deg, #1e3a5f 0%, #0f766e 50%, #0d9488 100%)',
               border: 'none',
               fontSize: '0.95rem',
               fontWeight: 700,
@@ -468,7 +468,7 @@ const Login = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '4px 2px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
               <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <i className="pi pi-info-circle" style={{ color: '#3b82f6', fontSize: '1.2rem' }} />
+                <i className="pi pi-info-circle" style={{ color: '#14b8a6', fontSize: '1.2rem' }} />
               </div>
               <p style={{ margin: 0, color: '#374151', fontSize: '0.9rem', lineHeight: 1.6 }}>
                 Reset password tidak dapat dilakukan sendiri. Silakan hubungi <strong>Tim IT</strong> untuk

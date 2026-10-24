@@ -18,8 +18,8 @@ export interface GeneralSettings {
 
 // Kontak sengaja dikosongkan: diisi admin lewat Pengaturan Umum, bukan ditebak di sini.
 export const defaultGeneralSettings: GeneralSettings = {
-  siteName: 'BAIK',
-  siteDesc: 'Basis Aplikasi Integrasi & Kolaborasi',
+  siteName: 'KPI ERP',
+  siteDesc: 'Enterprise Resources Planning',
   email: '',
   phone: '',
   address: '',
@@ -29,7 +29,7 @@ export const defaultGeneralSettings: GeneralSettings = {
 // Diperlakukan sebagai "belum diisi" supaya default baru yang dipakai — tanpa ini
 // pengguna lama harus Reset + Simpan manual agar branding-nya ikut berubah.
 const LEGACY_PLACEHOLDERS: Record<keyof GeneralSettings, string> = {
-  siteName: 'Enterprise Apps',
+  siteName: 'IRMS Hospital',
   siteDesc: 'Sistem Informasi Manajemen Rumah Sakit',
   email: '',
   phone: '(021) 123456',

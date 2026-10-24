@@ -104,7 +104,7 @@ const ProfilePage = () => {
             shape="circle"
             size="xlarge"
             style={{
-              background: 'linear-gradient(135deg, #6366f1, #818cf8)',
+              background: 'linear-gradient(135deg, #0d9488, #2dd4bf)',
               color: '#fff',
               fontWeight: 700,
               fontSize: '1.5rem',

@@ -17,7 +17,7 @@ ON CONFLICT (id) DO NOTHING;
 SELECT setval(pg_get_serial_sequence('auth_users', 'id'), GREATEST((SELECT MAX(id) FROM auth_users), 1));
 
 INSERT INTO app_settings (setting_key, setting_value) VALUES
-    ('site_name',    'Enterprise Apps'),
+    ('site_name',    'KPI ERP'),
     ('site_desc',    'Enterprise Resources Planning'),
     ('site_email',   ''),
     ('site_phone',   ''),

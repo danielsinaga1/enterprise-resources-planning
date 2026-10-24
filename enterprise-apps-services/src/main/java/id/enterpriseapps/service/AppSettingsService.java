@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AppSettingsService {
 
     /** Dipakai juga sebagai cadangan saat DB tidak terbaca — lihat getSiteName(). */
-    public static final String DEFAULT_SITE_NAME = "Enterprise Apps";
+    public static final String DEFAULT_SITE_NAME = "KPI ERP";
     public static final String DEFAULT_SITE_DESC = "Enterprise Resources Planning";
 
     private static final String KEY_SITE_NAME = "site_name";

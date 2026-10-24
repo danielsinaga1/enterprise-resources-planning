@@ -128,12 +128,12 @@
 :root,
 .light {
   /* Palet merek (warna netral turunan desain sumber) */
-  --brand-navy: #1B2B48;
-  --brand-navy-2: #22385C;
-  --brand-blue: #3D8BE0;
-  --brand-blue-mid: #2E5CA8;
-  --brand-blue-light: #9CC9F5;
-  --brand-accent: #3D8BE0;
+  --brand-navy: #0F2E2C;
+  --brand-navy-2: #134240;
+  --brand-blue: #14B8A6;
+  --brand-blue-mid: #0F766E;
+  --brand-blue-light: #99F6E4;
+  --brand-accent: #14B8A6;
 
   /* Surfaces */
   --background: #F6F8FB;
@@ -153,15 +153,15 @@
   --text-muted: #5B687C;
 
   /* Primary (buttons, links) */
-  --primary: #2F6FC4;
-  --primary-hover: #285FA9;
+  --primary: #0F766E;
+  --primary-hover: #115E59;
   --primary-foreground: #FFFFFF;
-  --primary-subtle: #EEF4FD;
-  --primary-subtle-foreground: #1F4E8C;
+  --primary-subtle: #E6F6F4;
+  --primary-subtle-foreground: #115E59;
   /* Solid fill that always carries white text (legacy bg-blue-600 text-white) */
-  --primary-solid: #2F6FC4;
-  --primary-solid-hover: #285FA9;
-  --ring: #3D8BE0;
+  --primary-solid: #0F766E;
+  --primary-solid-hover: #115E59;
+  --ring: #14B8A6;
 
   /* Semantic */
   --success: #1A7F51;
@@ -177,19 +177,19 @@
   --danger-foreground: #FFFFFF;
   --danger-subtle: #FCEBE9;
   --danger-text: #9B2219;
-  --info: #0B7A88;
+  --info: #1D4ED8;
   --info-foreground: #FFFFFF;
-  --info-subtle: #E4F5F7;
-  --info-text: #0B6470;
+  --info-subtle: #EAF1FD;
+  --info-text: #1E40AF;
   --neutral-subtle: #EEF1F5;
   --neutral-text: #46546B;
 
   /* Charts: brand ramp + teal/amber for contrast between series */
-  --chart-1: #1B2B48;
-  --chart-2: #2F6FC4;
-  --chart-3: #0E8A9A;
+  --chart-1: #0F2E2C;
+  --chart-2: #0F766E;
+  --chart-3: #2563EB;
   --chart-4: #A86F0A;
-  --chart-5: #3D8BE0;
+  --chart-5: #14B8A6;
   --chart-6: #77839A;
 
   --overlay: rgb(15 23 38 / 0.5);
@@ -213,9 +213,9 @@
 
 /* ─── Dark theme ─────────────────────────────────────────────────────────── */
 .dark {
-  --brand-navy: #0F1A2E;
-  --brand-navy-2: #1A2942;
-  --brand-accent: #6FA8EC;
+  --brand-navy: #0A1F1E;
+  --brand-navy-2: #11302E;
+  --brand-accent: #2DD4BF;
 
   --background: #0D1524;
   --surface: #131D2F;
@@ -231,14 +231,14 @@
   --text-secondary: #B4C0D2;
   --text-muted: #8C9AAF;
 
-  --primary: #5B9BE8;
-  --primary-hover: #74ABEC;
+  --primary: #2DD4BF;
+  --primary-hover: #5EEAD4;
   --primary-foreground: #0D1524;
-  --primary-subtle: #1A2F4F;
-  --primary-subtle-foreground: #A9CCF4;
-  --primary-solid: #2F6FC4;
-  --primary-solid-hover: #2A65B4;
-  --ring: #6FA8EC;
+  --primary-subtle: #0F3533;
+  --primary-subtle-foreground: #99F6E4;
+  --primary-solid: #0F766E;
+  --primary-solid-hover: #0D9488;
+  --ring: #2DD4BF;
 
   --success: #3DBE82;
   --success-foreground: #0D1524;
@@ -253,18 +253,18 @@
   --danger-foreground: #0D1524;
   --danger-subtle: #3A1A18;
   --danger-text: #F6A29B;
-  --info: #3BB7C6;
+  --info: #60A5FA;
   --info-foreground: #0D1524;
-  --info-subtle: #0F2E33;
-  --info-text: #86D6E0;
+  --info-subtle: #132544;
+  --info-text: #BFDBFE;
   --neutral-subtle: #1D2A40;
   --neutral-text: #B4C0D2;
 
-  --chart-1: #9CC9F5;
-  --chart-2: #5B9BE8;
-  --chart-3: #3BB7C6;
+  --chart-1: #99F6E4;
+  --chart-2: #2DD4BF;
+  --chart-3: #60A5FA;
   --chart-4: #E5A93A;
-  --chart-5: #3D8BE0;
+  --chart-5: #14B8A6;
   --chart-6: #8C9AAF;
 
   --overlay: rgb(3 6 12 / 0.65);

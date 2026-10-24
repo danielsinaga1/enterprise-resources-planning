@@ -33,7 +33,7 @@ export const PageHeroBanner: React.FC<PageHeroBannerProps> = ({
   return (
     <section
       style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 60%, #6366f1 100%)',
+        background: 'linear-gradient(135deg, #0f2e2c 0%, #4338ca 60%, #0d9488 100%)',
         position: 'relative',
         overflow: 'hidden',
       }}
