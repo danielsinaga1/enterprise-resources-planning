@@ -17,7 +17,8 @@ spring:
       enabled: true
 
 server:
-  port: 8082
+  # Port dev Neravoxa (8082/5173 sering dipakai proyek lain di mesin yang sama).
+  port: ${APP_PORT:8090}
   tomcat:
     max-swallow-size: 50MB
   error:
@@ -41,7 +42,7 @@ logging:
 
 app:
   # Public origin of the SPA (tautan absolut di teks notifikasi ERP).
-  base-url: ${APP_BASE_URL:http://localhost:5173}
+  base-url: ${APP_BASE_URL:http://localhost:5180}
 
   # Disable LDAP in dev — use local bcrypt flow instead
   ldap:

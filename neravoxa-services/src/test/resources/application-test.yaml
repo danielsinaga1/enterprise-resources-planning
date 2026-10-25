@@ -45,7 +45,7 @@ app:
     refresh-expiration: 604800000    # 7 days
   config:
     allowedOrigins: "*"
-  base-url: http://localhost:5173
+  base-url: http://localhost:5180
 
 logging:
   level:

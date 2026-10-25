@@ -18,7 +18,7 @@ spring:
             cors-configurations:
               '[/**]':
                 allowedOriginPatterns:
-                  - '${ALLOWED_ORIGINS:http://localhost:5173}'
+                  - '${ALLOWED_ORIGINS:http://localhost:5180}'
                 allowedMethods:
                   - GET
                   - POST
@@ -42,43 +42,43 @@ spring:
       routes:
         # ── Auth routes (public — no JWT required, higher rate limit) ─────
         - id: auth-public
-          uri: ${BACKEND_SERVICE_URL:http://localhost:8082}
+          uri: ${BACKEND_SERVICE_URL:http://localhost:8090}
           predicates:
             - Path=/api/v1/auth/**
 
         # ── Swagger / OpenAPI (dev only) ──────────────────────────────────
         - id: swagger
-          uri: ${BACKEND_SERVICE_URL:http://localhost:8082}
+          uri: ${BACKEND_SERVICE_URL:http://localhost:8090}
           predicates:
             - Path=/swagger-ui/**,/v3/api-docs/**,/webjars/**
 
         # ── RBAC endpoints ────────────────────────────────────────────────
         - id: rbac
-          uri: ${BACKEND_SERVICE_URL:http://localhost:8082}
+          uri: ${BACKEND_SERVICE_URL:http://localhost:8090}
           predicates:
             - Path=/api/rbac/**
 
         # ── Profile endpoint ──────────────────────────────────────────────
         - id: profile
-          uri: ${BACKEND_SERVICE_URL:http://localhost:8082}
+          uri: ${BACKEND_SERVICE_URL:http://localhost:8090}
           predicates:
             - Path=/api/v1/profile/**
 
         # ── ERP API (port fitur ENTARIS, db_erp) ─────────────────────────
         - id: erp-api
-          uri: ${BACKEND_SERVICE_URL:http://localhost:8082}
+          uri: ${BACKEND_SERVICE_URL:http://localhost:8090}
           predicates:
             - Path=/api/erp/**
 
         # ── Core API (auth, pengaturan umum) ──────────────────────────────
         - id: core-api
-          uri: ${BACKEND_SERVICE_URL:http://localhost:8082}
+          uri: ${BACKEND_SERVICE_URL:http://localhost:8090}
           predicates:
             - Path=/api/v1/**
 
         # ── File uploads / static served by backend ───────────────────────
         - id: uploads
-          uri: ${BACKEND_SERVICE_URL:http://localhost:8082}
+          uri: ${BACKEND_SERVICE_URL:http://localhost:8090}
           predicates:
             - Path=/uploads/**
 

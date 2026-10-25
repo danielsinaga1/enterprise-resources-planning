@@ -1,13 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 5173;
+const PORT = 5180;
 const BASE_URL = `http://localhost:${PORT}`;
 
 /**
  * E2E dijalankan terhadap dev server Vite.
  *
- * Perhatikan: dev server mem-proxy /api ke backend :8082 dan /api/rag ke :8000.
- * Skenario yang menyentuh data asli hanya jalan kalau kedua service itu hidup —
+ * Perhatikan: dev server mem-proxy /api ke backend (bawaan :8090).
+ * Skenario yang menyentuh data asli hanya jalan kalau backend hidup —
  * test di `e2e/` sengaja dibatasi pada hal yang murni frontend, supaya suite ini
  * tidak merah hanya karena backend lokal sedang mati.
  */

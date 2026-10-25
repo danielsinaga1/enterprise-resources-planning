@@ -104,7 +104,7 @@ public class LoginThrottleService {
     public String resolveClientIp(HttpServletRequest request) {
         String header = request.getHeader("X-Forwarded-For");
         if (header == null || header.isBlank()) {
-            // Backend diakses langsung (dev di :8082, atau probe internal) — tidak ada proxy.
+            // Backend diakses langsung (dev di :8090, atau probe internal) — tidak ada proxy.
             return request.getRemoteAddr();
         }
         String[] hops = header.split(",");

@@ -20,7 +20,7 @@ psql -U postgres -d db_auth -f sql/auth_service/01_schema.sql
 psql -U postgres -d db_auth -f sql/auth_service/02_seed_data.sql   # admin awal: NPK admin / Admin@12345
 psql -U postgres -c "CREATE DATABASE db_erp;"                       # skema & seed ERP dipasang otomatis saat boot
 
-# 2. Backend (port 8082)
+# 2. Backend (port 8090; ganti dengan APP_PORT)
 DB_PASSWORD=<password-postgres> ./gradlew bootRun
 ```
 

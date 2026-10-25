@@ -18,7 +18,7 @@ Tailwind untuk modul ERP).
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173 — proxy /api & /uploads ke backend :8082 (lihat vite.config.js)
+npm run dev        # http://localhost:5180 — proxy /api & /uploads ke backend :8090 (DEV_BACKEND_URL, lihat vite.config.js)
 npm run build      # output dist/ (CSS ERP dibangun otomatis lewat `npm run erp:css`)
 ```
 

@@ -3,7 +3,6 @@ package id.neravoxa.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -28,17 +27,9 @@ public class OpenApiConfig {
                         .title("Neravoxa API Documentation")
                         .description("REST API Documentation for Neravoxa platform")
                         .version("v1.0.0")
-                        .contact(new Contact()
-                                .name("PT Lintas Teknokreatif Nusantara")
-                                .email("support@neravoxa.id")
-                                .url("https://www.lintastekno.com"))
-                        .license(new License()
-                                .name("Proprietary")
-                                .url("https://www.lintastekno.com/license")))
-                .servers(List.of(
-                        new Server().url("http://localhost:8082").description("Development Server"),
-                        new Server().url("http://localhost:8080").description("Production Server")
-                ))
+                        .contact(new Contact().name("Neravoxa")))
+                // Origin halaman Swagger itu sendiri: benar di dev (port berapa pun) maupun di balik gateway.
+                .servers(List.of(new Server().url("/").description("Server saat ini")))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .schemaRequirement(securitySchemeName,
                         new SecurityScheme()

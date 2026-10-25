@@ -35,9 +35,9 @@ Prasyarat: PostgreSQL (`localhost:5432`), Redis (`localhost:6379`), JDK 17, Node
    Skema & data awal `db_erp` (bagan akun PSAK, pemetaan akun sistem, tahun fiskal, gudang utama, dsb.)
    dipasang otomatis saat backend start (`ERP_AUTO_INIT=true`, bawaan dev). Role platform bawaan termasuk
    `ERP_ADMIN`, `ERP_ACCOUNTANT`, `ERP_PRODUCTION`, `ERP_VIEWER` dibuat otomatis di `db_auth`.
-2. Backend: `cd neravoxa-services && DB_PASSWORD=<password-postgres> ./gradlew bootRun` (port 8082).
+2. Backend: `cd neravoxa-services && DB_PASSWORD=<password-postgres> ./gradlew bootRun` (port 8090; ganti dengan `APP_PORT`).
 3. Frontend: `cd neravoxa-ui && npm install && npm run dev`.
-4. Buka `http://localhost:5173`, login dengan admin awal **NPK `admin` / `Admin@12345`** (ganti setelah
+4. Buka `http://localhost:5180`, login dengan admin awal **NPK `admin` / `Admin@12345`** (ganti setelah
    login pertama), lalu beri role ERP ke pengguna lain di *Pengaturan → Manajemen User*.
 
 ### Produksi
@@ -46,7 +46,7 @@ Backend: `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` wajib;
 `ERP_DB_URL` (+ `_USERNAME` / `_PASSWORD`) opsional untuk memisahkan database; `ERP_AUTO_INIT` (bawaan
 `false` — jalankan `sql/auth_service/*.sql` dan `sql/erp_service/*.sql` manual), `APP_UTC_OFFSET` (zona waktu
 bisnis, bawaan `+07:00`), `ERP_STORAGE_DIR` (lampiran privat, bawaan `./erp-files`).
-Gateway: `BACKEND_SERVICE_URL` (bawaan `http://localhost:8082`).
+Gateway: `BACKEND_SERVICE_URL` (bawaan `http://localhost:8090`).
 
 ## Pengujian
 
