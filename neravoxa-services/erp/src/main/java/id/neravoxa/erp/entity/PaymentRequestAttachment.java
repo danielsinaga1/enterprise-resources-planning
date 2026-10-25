@@ -1,0 +1,64 @@
+package id.neravoxa.erp.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.*;
+import java.time.Instant;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
+
+/** Tabel payment_request_attachments. (Dibangkitkan dari model Prisma PaymentRequestAttachment.) */
+@Entity
+@Table(name = "payment_request_attachments")
+@DynamicUpdate
+@Getter
+@Setter
+@NoArgsConstructor
+public class PaymentRequestAttachment {
+
+    @Id
+    @Column(name = "id", nullable = false, updatable = false)
+    private String id;
+
+    @Column(name = "payment_request_id", nullable = false)
+    private String paymentRequestId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_request_id", insertable = false, updatable = false)
+    @JsonIgnoreProperties(value = {"attachments", "hibernateLazyInitializer", "handler"}, allowSetters = true)
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = LazyNotLoadedFilter.class)
+    private PaymentRequest paymentRequest;
+
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
+
+    @Column(name = "stored_name", nullable = false)
+    private String storedName;
+
+    @Column(name = "mime_type", nullable = false)
+    private String mimeType;
+
+    @Column(name = "file_size", nullable = false)
+    private Integer fileSize;
+
+    @Column(name = "file_path", nullable = false)
+    private String filePath;
+
+    @Column(name = "uploaded_by", nullable = false)
+    private String uploadedBy;
+
+    @Column(name = "scope", nullable = false)
+    private String scope = "REQUEST";
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onPrePersist() {
+        if (id == null) id = java.util.UUID.randomUUID().toString();
+        if (createdAt == null) createdAt = Instant.now();
+    }
+
+}

@@ -1,20 +1,20 @@
-# Enterprise Resources Planning
+# Neravoxa — Enterprise Resources Planning
 
-Monorepo platform **Enterprise Apps** dengan modul **ERP** (akuntansi, penjualan, pembelian, kas & bank,
+Monorepo platform **Neravoxa** dengan modul **ERP** (akuntansi, penjualan, pembelian, kas & bank,
 persediaan & produksi, aset & pemeliharaan, pengajuan pembayaran, laporan keuangan).
 
 | Folder | Isi |
 |---|---|
-| [`enterprise-apps-services/`](enterprise-apps-services/) | Backend Java 17 / Spring Boot 3.5 — aplikasi inti (auth, pengguna & role, menu, pengaturan; `db_auth`) + modul **ERP** (`db_erp`) + Spring Cloud Gateway |
-| [`enterprise-apps-ui/`](enterprise-apps-ui/) | Frontend React 19 + Vite — shell platform + modul ERP (`src/erp`, rute `/dashboard/erp`) |
+| [`neravoxa-services/`](neravoxa-services/) | Backend Java 17 / Spring Boot 3.5 — aplikasi inti (auth, pengguna & role, menu, pengaturan; `db_auth`) + modul **ERP** (`db_erp`) + Spring Cloud Gateway |
+| [`neravoxa-ui/`](neravoxa-ui/) | Frontend React 19 + Vite — shell platform + modul ERP (`src/erp`, rute `/dashboard/erp`) |
 
 ## Modul ERP
 
-- **Backend**: Gradle module [`enterprise-apps-services/erp`](enterprise-apps-services/erp/) — paket
-  `id.enterpriseapps.erp`, database PostgreSQL `db_erp`, API `/api/erp/**` (lewat gateway).
-  Panduan & konvensi: [`erp/README.md`](enterprise-apps-services/erp/README.md), peta skema:
-  [`erp/SCHEMA-MAP.md`](enterprise-apps-services/erp/SCHEMA-MAP.md).
-- **Frontend**: [`enterprise-apps-ui/src/erp`](enterprise-apps-ui/src/erp/) — dimuat lazy di
+- **Backend**: Gradle module [`neravoxa-services/erp`](neravoxa-services/erp/) — paket
+  `id.neravoxa.erp`, database PostgreSQL `db_erp`, API `/api/erp/**` (lewat gateway).
+  Panduan & konvensi: [`erp/README.md`](neravoxa-services/erp/README.md), peta skema:
+  [`erp/SCHEMA-MAP.md`](neravoxa-services/erp/SCHEMA-MAP.md).
+- **Frontend**: [`neravoxa-ui/src/erp`](neravoxa-ui/src/erp/) — dimuat lazy di
   `/dashboard/erp/*` (beranda `/dashboard` langsung membuka Dashboard ERP); halaman publik (formulir
   pertanyaan, scan QR aset) di `/erp/*`.
 - **Identitas & akses**: login memakai akun platform (JWT, LDAP/AD opsional). Hak akses ERP = gabungan izin
@@ -28,15 +28,15 @@ Prasyarat: PostgreSQL (`localhost:5432`), Redis (`localhost:6379`), JDK 17, Node
 1. Database:
    ```bash
    psql -U postgres -c "CREATE DATABASE db_auth;"
-   psql -U postgres -d db_auth -f enterprise-apps-services/sql/auth_service/01_schema.sql
-   psql -U postgres -d db_auth -f enterprise-apps-services/sql/auth_service/02_seed_data.sql
+   psql -U postgres -d db_auth -f neravoxa-services/sql/auth_service/01_schema.sql
+   psql -U postgres -d db_auth -f neravoxa-services/sql/auth_service/02_seed_data.sql
    psql -U postgres -c "CREATE DATABASE db_erp;"
    ```
    Skema & data awal `db_erp` (bagan akun PSAK, pemetaan akun sistem, tahun fiskal, gudang utama, dsb.)
    dipasang otomatis saat backend start (`ERP_AUTO_INIT=true`, bawaan dev). Role platform bawaan termasuk
    `ERP_ADMIN`, `ERP_ACCOUNTANT`, `ERP_PRODUCTION`, `ERP_VIEWER` dibuat otomatis di `db_auth`.
-2. Backend: `cd enterprise-apps-services && DB_PASSWORD=<password-postgres> ./gradlew bootRun` (port 8082).
-3. Frontend: `cd enterprise-apps-ui && npm install && npm run dev`.
+2. Backend: `cd neravoxa-services && DB_PASSWORD=<password-postgres> ./gradlew bootRun` (port 8082).
+3. Frontend: `cd neravoxa-ui && npm install && npm run dev`.
 4. Buka `http://localhost:5173`, login dengan admin awal **NPK `admin` / `Admin@12345`** (ganti setelah
    login pertama), lalu beri role ERP ke pengguna lain di *Pengaturan → Manajemen User*.
 
@@ -51,12 +51,14 @@ Gateway: `BACKEND_SERVICE_URL` (bawaan `http://localhost:8082`).
 ## Pengujian
 
 - Backend ERP: `./gradlew :erp:test` (PostgreSQL embedded, tanpa database eksternal).
+- Backend inti: `./gradlew test` — tes integrasi `NeravoxaApplicationTests` & `AuthControllerTest` memakai
+  Testcontainers sehingga butuh Docker.
 - Frontend: `npx tsc --noEmit -p tsconfig.json`, `npx tsc --noEmit -p tsconfig.erp.json`, `npm run build`.
 
 ## Lisensi
 
-Modul ERP (`enterprise-apps-services/erp`, `enterprise-apps-services/sql/erp_service`,
-`enterprise-apps-ui/src/erp`) adalah karya turunan dari **Entaris 4.1.3** (© 2026 PT Arah Karya
+Modul ERP (`neravoxa-services/erp`, `neravoxa-services/sql/erp_service`,
+`neravoxa-ui/src/erp`) adalah karya turunan dari **Entaris 4.1.3** (© 2026 PT Arah Karya
 Sinergi) dan dilisensikan di bawah **GNU AGPL-3.0** — lihat `NOTICE.md` dan `LICENSE-AGPL-3.0.txt` di
 masing-masing folder. "Entaris" dan "AIRA" adalah merek PT Arah Karya Sinergi dan tidak dipakai sebagai
 nama produk ini.

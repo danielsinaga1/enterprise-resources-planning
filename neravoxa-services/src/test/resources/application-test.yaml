@@ -1,0 +1,55 @@
+# Test Profile Configuration
+# Uses H2 in-memory database so tests don't need MySQL/PostgreSQL/Redis running.
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    open-in-view: false
+    show-sql: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6370   # non-default; we mock RedisService in tests so no real connection needed
+
+  mail:
+    host: localhost
+    port: 3025
+    username: test
+    password: test
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+app:
+  jwt:
+    secret: testSecretKeyThatIsLongEnoughForHMACSHA256Algorithm1234567890
+    access-expiration: 900000        # 15 minutes
+    refresh-expiration: 604800000    # 7 days
+  config:
+    allowedOrigins: "*"
+  base-url: http://localhost:5173
+
+logging:
+  level:
+    root: WARN
+    id.neravoxa: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN

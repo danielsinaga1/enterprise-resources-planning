@@ -1,0 +1,150 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'id'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+		// languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+// Without -parameters, @Bean factory-method parameter names are erased and Spring can't use
+// them to disambiguate an unqualified parameter among multiple beans of the same type — it
+// silently falls back to whichever candidate is @Primary instead of erroring. That exact gap
+// once made a new datasource's JdbcTemplate silently wrap the app's own Postgres DataSource
+// instead of the external one it was built for, with no startup error (see WrDataSourceConfig).
+// This doesn't replace @Qualifier — it just stops name-based autowiring from being pure luck.
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs << '-parameters'
+}
+
+repositories {
+	mavenCentral()
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+}
+
+dependencies {
+	// ──────────────────────────────────────────────────────────────
+	// MODULAR MONOLITH — internal library modules (SaaS modularization).
+	// The root project is the bootable app; domain logic lives in modules.
+	// ──────────────────────────────────────────────────────────────
+	implementation(project(':shared'))
+	implementation(project(':erp'))
+
+	// Spring Boot Dependencies
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+	// ──────────────────────────────────────────────────────────────
+	// OBSERVABILITY (OpenTelemetry / Micrometer / Loki)
+	// Versions of micrometer-* and opentelemetry-* are managed by the
+	// Spring Boot 3.5.4 BOM, so they stay mutually compatible.
+	// ──────────────────────────────────────────────────────────────
+	// Metrics: exposes /actuator/prometheus for Prometheus to scrape.
+	implementation("io.micrometer:micrometer-registry-prometheus")
+	// Tracing: bridges the Micrometer Observation API onto the OpenTelemetry SDK.
+	implementation("io.micrometer:micrometer-tracing-bridge-otel")
+	// Tracing exporter: ships spans to the OTel Collector / Tempo over OTLP.
+	implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+	// Logs: ships application logs straight to Loki via a Logback appender.
+	implementation("com.github.loki4j:loki-logback-appender:1.5.2")
+	
+	// DevTools for Hot Reload
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+	// Database PostgreSQL (prod)
+	implementation 'org.postgresql:postgresql:42.7.3'
+	// Database MySQL (dev)
+	runtimeOnly 'com.mysql:mysql-connector-j:9.1.0'
+
+	// Lombok
+	compileOnly("org.projectlombok:lombok:1.18.34")
+	annotationProcessor("org.projectlombok:lombok:1.18.34")
+	testCompileOnly("org.projectlombok:lombok:1.18.34")
+	testAnnotationProcessor("org.projectlombok:lombok:1.18.34")
+
+	implementation("org.springframework.boot:spring-boot-starter-aop")
+
+	// JSON and Mapping Libraries
+	implementation("com.google.code.gson:gson:2.11.0")
+	implementation("org.modelmapper:modelmapper:3.2.1")
+	implementation("com.fasterxml.jackson.core:jackson-core:2.17.2")
+	implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
+	implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.2")
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4")
+	
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11")
+
+	// LDAP / Active Directory authentication
+	implementation("org.springframework.boot:spring-boot-starter-data-ldap")
+	implementation("org.springframework.security:spring-security-ldap")
+
+	// JWT
+	implementation("io.jsonwebtoken:jjwt-api:0.12.5")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
+
+
+	// Testing Dependencies
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.security:spring-security-test")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	// H2 in-memory database for tests (no need to run MySQL/PostgreSQL)
+	testRuntimeOnly("com.h2database:h2:2.3.232")
+
+	// Testcontainers for integration tests with real database
+	// Versi diselaraskan: modul-modul ini sempat dipatok 1.20.4 sementara core
+	// tertarik ke 1.21.3 oleh resolusi dependensi, sehingga classpath bercampur versi.
+	testImplementation("org.testcontainers:junit-jupiter:1.21.3")
+	testImplementation("org.testcontainers:postgresql:1.21.3")
+
+	// RestAssured for fluent REST API testing
+	testImplementation("io.rest-assured:rest-assured:5.5.0")
+	testImplementation("io.rest-assured:spring-mock-mvc:5.5.0")
+
+	// ArchUnit — menjaga batas modular monolith (modul :erp tidak boleh bergantung
+	// pada aplikasi inti) agar tidak mundur diam-diam.
+	testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+
+	// Annotation Processor
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+}
+
+springBoot {
+	mainClass = 'id.neravoxa.NeravoxaApplication'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+
+	// Docker Engine 29 menolak API < 1.40 dengan HTTP 400, sedangkan docker-java
+	// (dipakai Testcontainers) masih menegosiasi v1.32 secara default. Tanpa pin ini
+	// seluruh test @SpringBootTest gagal dengan "Could not find a valid Docker
+	// environment" — pesan yang menyesatkan, karena daemonnya sendiri sehat dan
+	// `docker info` lewat CLI jalan normal.
+	//
+	// Di-set lewat task, bukan lewat shell: Test task memakai environment milik
+	// proses Gradle, jadi `DOCKER_API_VERSION=... ./gradlew test` tidak sampai ke
+	// test worker. Bisa ditimpa lewat env bila daemonnya lebih tua dari Docker 25.
+	//
+	// Keduanya dipasang karena docker-java membaca versi dari system property
+	// `api.version`, sementara env DOCKER_API_VERSION saja terbukti tidak cukup.
+	def dockerApiVersion = System.getenv('DOCKER_API_VERSION') ?: '1.44'
+	environment 'DOCKER_API_VERSION', dockerApiVersion
+	systemProperty 'api.version', dockerApiVersion
+}
+
