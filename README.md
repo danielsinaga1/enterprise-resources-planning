@@ -66,14 +66,15 @@ Panel **Asisten AI** (pojok kanan bawah di semua halaman ERP):
   oleh UI lewat endpoint biasa dengan hak akses pengguna, dan hasilnya tetap draf yang perlu ditinjau.
 
 Model memakai **Hugging Face Inference Providers**: embedding `intfloat/multilingual-e5-large`
-(feature-extraction) dan chat `openai/gpt-oss-120b` (OpenAI-compatible, tool calling). Vektor disimpan di
+(feature-extraction, dijalankan HF sendiri lewat `hf-inference`) dan chat `openai/gpt-oss-120b` yang dikunci ke
+penyedia **OVHcloud** (Prancis, GDPR) lewat akhiran `:ovhcloud` (OpenAI-compatible, tool calling). Vektor disimpan di
 `db_erp` (`assistant_documents`, `assistant_chunks` — skrip `sql/erp_service/03_assistant.sql`, dipasang otomatis
 bila `ERP_AUTO_INIT=true`); pencarian cosine dilakukan di memori, tanpa ekstensi pgvector.
 
 | Variabel | Bawaan | Keterangan |
 |---|---|---|
 | `HF_TOKEN` | — | Token Hugging Face (fine-grained, izin *Make calls to Inference Providers*). Tanpa token: chat & indeks nonaktif. |
-| `ASSISTANT_CHAT_MODEL` | `openai/gpt-oss-120b` | Model chat; akhiran `:fastest`, `:cheapest`, atau `:<provider>` memilih penyedia. |
+| `ASSISTANT_CHAT_MODEL` | `openai/gpt-oss-120b:ovhcloud` | Model chat + penyedia. Pakai akhiran `:<provider>` agar data hanya diproses penyedia yang kebijakannya sudah ditinjau (mis. `:scaleway`); tanpa akhiran, router memilih penyedia mana saja. |
 | `ASSISTANT_EMBEDDING_MODEL` | `intfloat/multilingual-e5-large` | Ganti model = panduan di-embed ulang otomatis; proses ulang dokumen unggahan di Pengaturan. |
 | `ASSISTANT_QUERY_PREFIX` / `ASSISTANT_PASSAGE_PREFIX` | `query: ` / `passage: ` | Awalan keluarga E5; kosongkan untuk model lain. |
 | `ASSISTANT_TOP_K` / `ASSISTANT_MIN_SCORE` | `6` / `0.70` | Jumlah & ambang kemiripan potongan pengetahuan. |
@@ -81,7 +82,11 @@ bila `ERP_AUTO_INIT=true`); pencarian cosine dilakukan di memori, tanpa ekstensi
 | `HF_BASE_URL` | `https://router.huggingface.co` | Alamat router (mis. proxy internal). |
 
 **Privasi:** saat asisten dipakai, pertanyaan, potongan dokumen yang relevan, dan data hasil tool dikirim ke
-penyedia model melalui Hugging Face. Riwayat chat tidak disimpan di server (hanya di tab browser pengguna).
+penyedia model chat melalui Hugging Face. Saat dokumen diunggah/diindeks, **seluruh teksnya** dikirim ke
+`hf-inference` untuk dibuat embedding — jangan unggah dokumen yang tidak boleh keluar dari perusahaan. Riwayat chat
+tidak disimpan di server (hanya di tab browser pengguna). Akun HF gratis tidak punya kredit Inference Providers
+(error 402); beli kredit atau PRO di *Settings → Billing*, dan nonaktifkan penyedia yang tidak disetujui di
+*Settings → Inference Providers*.
 
 ## Pengujian
 

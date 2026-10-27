@@ -18,7 +18,7 @@ public class AssistantProperties {
 
     private String hfToken = "";
     private String baseUrl = "https://router.huggingface.co";
-    private String chatModel = "openai/gpt-oss-120b";
+    private String chatModel = "openai/gpt-oss-120b:ovhcloud";
     private String embeddingModel = "intfloat/multilingual-e5-large";
     private String queryPrefix = "query: ";
     private String passagePrefix = "passage: ";

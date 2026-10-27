@@ -91,9 +91,10 @@ app:
   assistant:
     hf-token: ${HF_TOKEN:}
     base-url: ${HF_BASE_URL:https://router.huggingface.co}
-    # Model chat (OpenAI-compatible, mendukung tool calling). Akhiran ":fastest" / ":cheapest"
-    # atau ":<provider>" mengatur pemilihan penyedia.
-    chat-model: ${ASSISTANT_CHAT_MODEL:openai/gpt-oss-120b}
+    # Model chat (OpenAI-compatible, mendukung tool calling). Akhiran ":<provider>" mengunci penyedia
+    # yang memproses data (bawaan OVHcloud, Prancis/GDPR); tanpa akhiran, router memilih penyedia mana
+    # saja. ":fastest" / ":cheapest" juga bisa dipakai.
+    chat-model: ${ASSISTANT_CHAT_MODEL:openai/gpt-oss-120b:ovhcloud}
     # Model embedding multibahasa (penyedia hf-inference, pipeline feature-extraction).
     embedding-model: ${ASSISTANT_EMBEDDING_MODEL:intfloat/multilingual-e5-large}
     # Awalan khusus keluarga model E5; kosongkan untuk model lain (mis. BAAI/bge-m3).
