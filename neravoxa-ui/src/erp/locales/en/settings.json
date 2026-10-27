@@ -170,8 +170,12 @@
         "description": "Create, download, upload, and restore database backups."
       },
       "agentic": {
-        "label": "Asisten AI (MCP)",
-        "description": "Asisten AI status, MCP tokens for the Asisten AI engine, and tool call history."
+        "label": "AI Assistant (MCP)",
+        "description": "AI Assistant status, MCP tokens for the AI Assistant engine, and tool call history."
+      },
+      "assistant": {
+        "label": "AI Assistant",
+        "description": "Assistant status (Hugging Face models) and knowledge base: upload company SOPs, policies, or manuals."
       },
       "appearance": {
         "label": "Appearance",
@@ -441,7 +445,7 @@
     },
     "demo": {
       "title": "Demo Data",
-      "description": "Fill every module (sales, purchasing, production, stock, fixed assets, cash & bank, payment requests, assets & maintenance, fleet, and sample Asisten AI conversations) with three months of sample transactions from a rice mill and distributor, created through the same app flows users go through. Only available while there are no transactions.",
+      "description": "Fill every module (sales, purchasing, production, stock, fixed assets, cash & bank, payment requests, assets & maintenance, fleet, and sample AI Assistant conversations) with three months of sample transactions from a rice mill and distributor, created through the same app flows users go through. Only available while there are no transactions.",
       "create": "Create Demo Data",
       "delete": "Delete Demo Data",
       "deleteLegacy": "Delete Old Dummy Data",

@@ -12,7 +12,7 @@
       "system": "System"
     },
     "dashboard": "Dashboard",
-    "aira": "Asisten AI assistant",
+    "aira": "AI Assistant",
     "paymentRequests": "Payment requests",
     "paymentRequestNew": "New payment request",
     "paymentRequestDetail": "Payment request details",
@@ -90,9 +90,9 @@
     "minChars_one": "Type at least {{count}} letter to search records.",
     "minChars_other": "Type at least {{count}} letters to search records.",
     "recordsError": "Record search failed. Try typing again in a moment.",
-    "askAira": "Ask Asisten AI",
-    "askAiraAbout": "Ask Asisten AI about “{{query}}”",
-    "openAira": "Open Asisten AI assistant",
+    "askAira": "Ask AI Assistant",
+    "askAiraAbout": "Ask AI Assistant about “{{query}}”",
+    "openAira": "Open AI Assistant",
     "groups": {
       "recent": "Recently opened",
       "pages": "Pages",
@@ -147,7 +147,7 @@
     "search": "Search pages or records",
     "searchShort": "Search…",
     "searchLong": "Search pages or records…",
-    "askAira": "Ask Asisten AI"
+    "askAira": "Ask AI Assistant"
   },
   "layout": {
     "skipToContent": "Skip to main content",
@@ -290,7 +290,7 @@
   },
   "about": {
     "title": "About ERP",
-    "description": "ERP system with the Asisten AI AI agent.",
+    "description": "ERP system with the AI Assistant agent.",
     "version": "Version",
     "releaseDate": "Release date",
     "developer": "Developer",
@@ -411,12 +411,12 @@
     "password": "Password",
     "passwordHintEdit": "Leave blank to keep it. At least 8 characters, with an uppercase letter, a number, and a special character.",
     "passwordHintNew": "At least 8 characters, with an uppercase letter, a number, and a special character.",
-    "airaLegend": "Asisten AI (AI assistant)",
-    "airaAccess": "Asisten AI access",
-    "airaAccessHint": "Let this user use Asisten AI (WhatsApp/Telegram/panel). Data access still follows the role.",
-    "airaTier": "Asisten AI access level",
-    "directWarning": "Caution: at the Direct level, instructions through Asisten AI can post transactions without a separate approval. Use it only for trusted users.",
-    "airaTitle": "Asisten AI job title",
+    "airaLegend": "AI Assistant",
+    "airaAccess": "AI Assistant access",
+    "airaAccessHint": "Let this user use AI Assistant (WhatsApp/Telegram/panel). Data access still follows the role.",
+    "airaTier": "AI Assistant access level",
+    "directWarning": "Caution: at the Direct level, instructions through AI Assistant can post transactions without a separate approval. Use it only for trusted users.",
+    "airaTitle": "AI Assistant job title",
     "airaTitleHint": "Free text (e.g. Finance Director). The agent reads it to adjust its tone.",
     "saveChanges": "Save changes",
     "tiers": {
@@ -570,7 +570,7 @@
   },
   "telegramLink": {
     "title": "Link Telegram",
-    "description": "Connect your Telegram account to the Asisten AI bot. Once linked, you can ask Asisten AI on Telegram with this account's permissions.",
+    "description": "Connect your Telegram account to the AI Assistant bot. Once linked, you can ask AI Assistant on Telegram with this account's permissions.",
     "creating": "Creating a code…",
     "failed": "Failed to create a link code.",
     "codeLabel": "Link code: {{code}}",
@@ -578,7 +578,7 @@
     "validUntil": "Single use, valid until {{time}}.",
     "expired": "This code has expired. Create a new one.",
     "stepOpenBot": "Press Open Telegram, then Start in the @{{bot}} bot.",
-    "stepOpenAnyBot": "Open the Asisten AI bot in Telegram and send {{command}}.",
+    "stepOpenAnyBot": "Open the AI Assistant bot in Telegram and send {{command}}.",
     "openTelegram": "Open Telegram",
     "newCode": "Create a new code",
     "close": "Close",

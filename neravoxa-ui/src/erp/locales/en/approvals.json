@@ -7,7 +7,7 @@
     "PurchaseOrder": "Purchase Order",
     "ProductionRunEdit": "Production Data Edit",
     "PurchaseInvoiceRevisePrice": "Purchase Invoice Price Revision",
-    "aiTool": "Asisten AI Request"
+    "aiTool": "AI Assistant Request"
   },
   "ruleDocTypes": {
     "PurchaseInvoice": "Purchase Invoice",
@@ -175,7 +175,7 @@
     }
   },
   "aiTool": {
-    "fallbackTitle": "Asisten AI Request",
+    "fallbackTitle": "AI Assistant Request",
     "meta": "Tool <code>{{tool}}</code> ({{risk}}) · requested by {{actor}}{{position}} via {{channel}}{{token}}",
     "position": " ({{position}})",
     "token": " · token {{name}}",

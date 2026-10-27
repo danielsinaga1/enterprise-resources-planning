@@ -173,6 +173,10 @@
         "label": "Asisten AI (MCP)",
         "description": "Status Asisten AI, token MCP untuk engine Asisten AI, dan riwayat panggilan tool."
       },
+      "assistant": {
+        "label": "Asisten AI",
+        "description": "Status asisten (model Hugging Face) dan basis pengetahuan: unggah SOP, kebijakan, atau manual perusahaan."
+      },
       "appearance": {
         "label": "Tampilan",
         "description": "Tema terang atau gelap, dan tingkat gerak animasi."

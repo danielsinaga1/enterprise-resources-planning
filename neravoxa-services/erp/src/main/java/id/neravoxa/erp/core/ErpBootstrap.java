@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,8 @@ import java.util.UUID;
  *   <li>Bila {@code app.erp.auto-init=true} (default) dan tabel {@code accounts} belum ada, jalankan
  *       {@code db/erp/01_schema.sql} lalu {@code 02_seed.sql} (salinan sql/erp_service/). Untuk
  *       produksi, skrip yang sama dijalankan manual oleh ops dan auto-init boleh dimatikan.</li>
+ *   <li>Skrip tambahan yang idempoten ({@code 03_assistant.sql}) dijalankan setiap boot bila auto-init
+ *       aktif, sehingga database lama ikut mendapat tabel baru.</li>
  *   <li>Role ERP bawaan + matriks izin default dibuat bila belum ada (tidak menimpa perubahan admin).</li>
  *   <li>Peringatan di log bila pemetaan akun sistem wajib belum lengkap.</li>
  * </ol>
@@ -50,7 +54,9 @@ public class ErpBootstrap {
         this.autoInit = autoInit;
     }
 
+    /** Paling awal: listener ApplicationReady lain (LOWEST_PRECEDENCE) mengandalkan tabel db_erp sudah ada. */
     @EventListener(ApplicationReadyEvent.class)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     public void onReady() {
         try {
             if (autoInit && !tableExists("accounts")) {
@@ -58,6 +64,10 @@ public class ErpBootstrap {
                 runScript("db/erp/01_schema.sql");
                 runScript("db/erp/02_seed.sql");
                 log.info("ERP: skema & data awal terpasang.");
+            }
+            if (autoInit) {
+                // Tabel tambahan setelah rilis awal; idempoten (IF NOT EXISTS), aman tiap boot.
+                runScript("db/erp/03_assistant.sql");
             }
             if (!tableExists("roles")) {
                 log.warn("ERP: tabel db_erp belum ada. Jalankan sql/erp_service/01_schema.sql & 02_seed.sql.");

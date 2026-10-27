@@ -120,6 +120,7 @@ public class ErpRouteGuard implements HandlerInterceptor {
             perm("dashboard", "reports"),
             // Gate di dalam handler:
             open("me"),
+            open("assistant"),
             open("search"),
             open("attachments"),
             open("notifications"),
@@ -155,37 +156,43 @@ public class ErpRouteGuard implements HandlerInterceptor {
         if (!path.startsWith(API_PREFIX) || PUBLIC_PREFIXES.stream().anyMatch(path::startsWith)) {
             return true;
         }
-        String rel = path.substring(API_PREFIX.length());
         ErpActor actor = actors.current(); // 401 bila tidak login
+        authorize(actor, request.getMethod(), path.substring(API_PREFIX.length()));
+        return true;
+    }
+
+    /**
+     * Gerbang yang sama untuk pemanggilan di dalam proses (mis. tool Asisten AI yang memanggil
+     * controller langsung). {@code rel} = path relatif terhadap {@code /api/erp/}. Melempar 403 bila
+     * aktor tidak berhak; rute OPEN lolos dan cek izinnya tetap di handler.
+     */
+    public void authorize(ErpActor actor, String method, String rel) {
         Rule rule = match(rel);
         if (rule == null || rule.mode() == Mode.OPEN) {
-            return true;
+            return;
         }
-        boolean read = READ_METHODS.contains(request.getMethod().toUpperCase());
+        boolean read = READ_METHODS.contains(method.toUpperCase());
         String action = read ? ErpPermissionService.VIEW : ErpPermissionService.EDIT;
         switch (rule.mode()) {
             case WRITE -> {
-                if (read) {
-                    return true;
-                }
-                if (permissions.can(actor.roleKeys(), rule.modules().get(0), ErpPermissionService.EDIT)) {
-                    return true;
+                if (read || permissions.can(actor.roleKeys(), rule.modules().get(0), ErpPermissionService.EDIT)) {
+                    return;
                 }
             }
             case PERM -> {
                 if (permissions.can(actor.roleKeys(), rule.modules().get(0), action)) {
-                    return true;
+                    return;
                 }
             }
             case ANY -> {
                 for (String m : rule.modules()) {
                     if (permissions.can(actor.roleKeys(), m, action)) {
-                        return true;
+                        return;
                     }
                 }
             }
             default -> {
-                return true;
+                return;
             }
         }
         throw ErpException.forbidden();

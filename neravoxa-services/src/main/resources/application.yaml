@@ -84,6 +84,29 @@ app:
     auto-init: ${ERP_AUTO_INIT:true}
     # Lampiran dokumen keuangan ERP (privat; JANGAN di dalam folder uploads/ yang publik).
     storage-dir: ${ERP_STORAGE_DIR:}
+  # Asisten AI ERP (RAG). Embedding & jawaban dihitung model Hugging Face lewat Inference
+  # Providers; vektor disimpan di db_erp. Tanpa HF_TOKEN asisten nonaktif, tetapi saran
+  # "langkah berikutnya" (berbasis aturan) tetap jalan. Data percakapan, potongan dokumen,
+  # dan hasil tool dikirim ke penyedia model Hugging Face saat asisten dipakai.
+  assistant:
+    hf-token: ${HF_TOKEN:}
+    base-url: ${HF_BASE_URL:https://router.huggingface.co}
+    # Model chat (OpenAI-compatible, mendukung tool calling). Akhiran ":fastest" / ":cheapest"
+    # atau ":<provider>" mengatur pemilihan penyedia.
+    chat-model: ${ASSISTANT_CHAT_MODEL:openai/gpt-oss-120b}
+    # Model embedding multibahasa (penyedia hf-inference, pipeline feature-extraction).
+    embedding-model: ${ASSISTANT_EMBEDDING_MODEL:intfloat/multilingual-e5-large}
+    # Awalan khusus keluarga model E5; kosongkan untuk model lain (mis. BAAI/bge-m3).
+    query-prefix: '${ASSISTANT_QUERY_PREFIX:query: }'
+    passage-prefix: '${ASSISTANT_PASSAGE_PREFIX:passage: }'
+    top-k: ${ASSISTANT_TOP_K:6}
+    # Skor cosine minimum. Skor E5 berkisar ~0,7–0,9, jadi ambang ini sengaja rendah; potongan
+    # yang jauh di bawah skor terbaik tetap dibuang (lihat KnowledgeStore.search).
+    min-score: ${ASSISTANT_MIN_SCORE:0.70}
+    timeout-seconds: ${ASSISTANT_TIMEOUT_SECONDS:60}
+    max-upload-mb: ${ASSISTANT_MAX_UPLOAD_MB:10}
+    # Batas permintaan chat per pengguna per 5 menit (mengendalikan biaya model).
+    requests-per-5-min: ${ASSISTANT_RATE_LIMIT:30}
   jwt:
     secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     access-expiration: ${JWT_EXPIRATION:86400000}        # 24 hours

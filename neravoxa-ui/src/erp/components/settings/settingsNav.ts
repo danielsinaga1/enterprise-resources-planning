@@ -1,15 +1,15 @@
 import {
-  Building2, Calendar, Receipt, Shield, KeyRound, Palette, HandCoins,
+  Building2, Calendar, Receipt, Shield, KeyRound, Palette, HandCoins, Sparkles,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 export type SettingsTabId =
   | 'company' | 'fiscal' | 'tax' | 'accounts' | 'payment-request-types' | 'roles'
-  | 'notifications' | 'backup' | 'agentic' | 'appearance' | 'about';
+  | 'notifications' | 'backup' | 'agentic' | 'assistant' | 'appearance' | 'about';
 
 export type SettingsNavKey =
   | 'company' | 'fiscal' | 'tax' | 'accounts' | 'paymentRequestTypes' | 'roles'
-  | 'notifications' | 'backup' | 'agentic' | 'appearance' | 'about';
+  | 'notifications' | 'backup' | 'agentic' | 'assistant' | 'appearance' | 'about';
 
 export type SettingsNavGroupId = 'company' | 'access' | 'system';
 
@@ -47,6 +47,7 @@ export const SETTINGS_NAV: SettingsNavGroup[] = [
   {
     id: 'system',
     items: [
+      { id: 'assistant', key: 'assistant', icon: Sparkles },
       { id: 'appearance', key: 'appearance', icon: Palette },
     ],
   },

@@ -12,7 +12,7 @@
       "system": "Sistem"
     },
     "dashboard": "Dasbor",
-    "aira": "Asisten Asisten AI",
+    "aira": "Asisten AI",
     "paymentRequests": "Pengajuan Pembayaran",
     "paymentRequestNew": "Buat Pengajuan",
     "paymentRequestDetail": "Detail Pengajuan",
@@ -92,7 +92,7 @@
     "recordsError": "Pencarian data gagal. Coba ketik ulang sebentar lagi.",
     "askAira": "Tanya Asisten AI",
     "askAiraAbout": "Tanya Asisten AI tentang “{{query}}”",
-    "openAira": "Buka Asisten Asisten AI",
+    "openAira": "Buka Asisten AI",
     "groups": {
       "recent": "Terakhir dibuka",
       "pages": "Halaman",

@@ -220,9 +220,9 @@
     "title": "Draft {{number}}",
     "subtitle": "{{title}} · page {{date}} · cash {{cash}}",
     "createdBy": "created by {{name}}",
-    "createdByAira": "created by {{name}} via Asisten AI",
-    "airaNote": "Rows were read by Asisten AI. Check the rows marked <b>Unsure</b>; only posting creates journals.",
-    "airaNoteWithSource": "Rows were read by Asisten AI ({{note}}). Check the rows marked <b>Unsure</b>; only posting creates journals.",
+    "createdByAira": "created by {{name}} via AI Assistant",
+    "airaNote": "Rows were read by AI Assistant. Check the rows marked <b>Unsure</b>; only posting creates journals.",
+    "airaNoteWithSource": "Rows were read by AI Assistant ({{note}}). Check the rows marked <b>Unsure</b>; only posting creates journals.",
     "readOnly": "The draft has been posted; this view is read-only. Each row shows its journal number.",
     "readOnlyOn": "The draft was posted on {{date}}; this view is read-only. Each row shows its journal number.",
     "page": {
@@ -312,7 +312,7 @@
       "review": "Review"
     },
     "title": "Cash Book Drafts",
-    "description": "Cash book pages from receipt photos (Asisten AI) or paste/CSV wait for review before becoming journals. Drafts do not affect the General Ledger yet.",
+    "description": "Cash book pages from receipt photos (AI Assistant) or paste/CSV wait for review before becoming journals. Drafts do not affect the General Ledger yet.",
     "createFromPaste": "Create from paste/CSV",
     "tabs": {
       "label": "Draft status",
@@ -340,7 +340,7 @@
     },
     "empty": {
       "title": "No cash book drafts yet",
-      "description": "Send a receipt photo or cash book page to Asisten AI, or paste rows from Excel/CSV to create a draft."
+      "description": "Send a receipt photo or cash book page to AI Assistant, or paste rows from Excel/CSV to create a draft."
     },
     "rowCount_one": "{{count, number}} row",
     "rowCount_other": "{{count, number}} rows"

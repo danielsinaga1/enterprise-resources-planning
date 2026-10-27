@@ -15,6 +15,7 @@ import { TaxConfigTab } from './settings/TaxConfigTab';
 import { RolePermissionsTab } from './settings/RolePermissionsTab';
 import { AppearanceTab } from './settings/AppearanceTab';
 import { PaymentRequestTypesTab } from './settings/PaymentRequestTypesTab';
+import { AssistantSettingsTab } from './settings/AssistantSettingsTab';
 
 const PANELS: Partial<Record<SettingsTabId, React.FC>> = {
   company: CompanySettingsTab,
@@ -23,6 +24,7 @@ const PANELS: Partial<Record<SettingsTabId, React.FC>> = {
   accounts: SystemAccountsTab,
   'payment-request-types': PaymentRequestTypesTab,
   roles: RolePermissionsTab,
+  assistant: AssistantSettingsTab,
   appearance: AppearanceTab,
 };
 

@@ -17,6 +17,7 @@ import { CompanySettingsProvider } from './contexts/CompanySettingsContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemedToaster } from './components/ThemedToaster';
 import { useNumberInputGuard } from './hooks/useNumberInputGuard';
+import { AssistantWidget } from './components/assistant/AssistantWidget';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles/erp.generated.css';
@@ -94,7 +95,13 @@ function ShellInner({ children }: { children: ReactNode }) {
   useNumberInputGuard();
   return (
     <ErpProfileGate>
-      <CompanySettingsProvider>{children}</CompanySettingsProvider>
+      <CompanySettingsProvider>
+        {children}
+        {/* Namespace i18n 'assistant' dimuat lazy: Suspense sendiri agar halaman tidak ikut menunggu. */}
+        <Suspense fallback={null}>
+          <AssistantWidget />
+        </Suspense>
+      </CompanySettingsProvider>
     </ErpProfileGate>
   );
 }
