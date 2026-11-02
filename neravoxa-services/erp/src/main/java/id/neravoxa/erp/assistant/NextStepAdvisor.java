@@ -2,12 +2,14 @@ package id.neravoxa.erp.assistant;
 
 import id.neravoxa.erp.core.ErpDates;
 import id.neravoxa.erp.core.security.ErpAccess;
+import id.neravoxa.erp.eam.ops.MaintenanceDue;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -161,6 +163,19 @@ public class NextStepAdvisor {
                     "SELECT COUNT(*) FROM inventory_items WHERE is_active = TRUE AND minimum_stock > 0 AND current_stock <= minimum_stock",
                     "%d item stok berada di bawah atau sama dengan stok minimum; pertimbangkan membuat Purchase Order.",
                     "/inventory", List.of("/", "/inventory", "/warehouse-stock", "/purchase-orders")));
+        }
+        if (access.can("ga_maintenance", "view")) {
+            add(out, () -> simple("maintenanceDue", "SELECT COUNT(*) " + MaintenanceDue.FROM_WHERE,
+                    "%d jadwal maintenance preventif terlambat atau segera jatuh tempo (≤ 7 hari / ≤ 500 km) dan belum punya "
+                            + "Work Order; buat WO dari tab Jadwal Preventif.",
+                    "/ga/maintenance?tab=schedules", List.of("/", "/ga", "/ga/maintenance"),
+                    utc(Instant.now().plus(Duration.ofDays(MaintenanceDue.DUE_SOON_DAYS)))));
+            if (userId != null) {
+                add(out, () -> simple("myWorkOrders",
+                        "SELECT COUNT(*) FROM ga_work_orders WHERE assigned_to_id = ? AND status IN ('ASSIGNED', 'IN_PROGRESS')",
+                        "%d Work Order ditugaskan ke Anda dan belum selesai.", "/ga/maintenance",
+                        List.of("/", "/ga", "/ga/maintenance"), userId));
+            }
         }
         if (access.hasCap("approval.decide")) {
             add(out, () -> simple("approvalsPending", "SELECT COUNT(*) FROM approval_requests WHERE status = 'Pending'",

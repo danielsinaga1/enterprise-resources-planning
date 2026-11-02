@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { formatNumber } from '@/lib/format';
 import { ComboboxField } from '@/components/overlays/ComboboxField';
 import { NumberInput } from '@/components/ui/number-input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,6 +28,7 @@ export function ScheduleFormModal({ schedule, onClose }: { schedule?: ScheduleRo
     intervalDays: str(schedule?.intervalDays ?? null),
     intervalHours: str(schedule?.intervalHours ?? null),
     intervalKm: str(schedule?.intervalKm ?? null),
+    nextDueAtKm: str(schedule?.nextDueAtKm ?? null),
     nextDueAt: toDateInput(schedule?.nextDueAt),
     notes: schedule?.notes ?? '',
     isActive: schedule ? !!schedule.isActive : true,
@@ -43,6 +45,8 @@ export function ScheduleFormModal({ schedule, onClose }: { schedule?: ScheduleRo
     intervalDays: numOrNull(form.intervalDays),
     intervalHours: numOrNull(form.intervalHours),
     intervalKm: numOrNull(form.intervalKm),
+    // Kosong = server menghitung dari odometer terakhir + interval.
+    ...(form.intervalKm && form.nextDueAtKm ? { nextDueAtKm: numOrNull(form.nextDueAtKm) } : {}),
   };
 
   const mutation = useMutation({
@@ -118,6 +122,18 @@ export function ScheduleFormModal({ schedule, onClose }: { schedule?: ScheduleRo
       <Field label={t('schedule.form.nextDue')} required={!editing} error={submitted ? errors.nextDueAt : undefined}>
         {(control) => <DateInput id={control.id} value={form.nextDueAt} onChange={(v) => set({ nextDueAt: v })} />}
       </Field>
+      {form.intervalKm && (
+        <Field
+          label={t('schedule.form.nextDueKm')}
+          hint={
+            schedule?.currentKm != null
+              ? t('schedule.form.nextDueKmHintCurrent', { km: formatNumber(schedule.currentKm) })
+              : t('schedule.form.nextDueKmHint')
+          }
+        >
+          <NumberInput min={1} value={form.nextDueAtKm} onChange={(e) => set({ nextDueAtKm: e.target.value })} />
+        </Field>
+      )}
       <Field label={t('shared.notes')}>
         <Textarea rows={2} value={form.notes} onChange={(e) => set({ notes: e.target.value })} />
       </Field>

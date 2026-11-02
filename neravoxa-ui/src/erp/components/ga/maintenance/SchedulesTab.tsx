@@ -9,6 +9,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { CalendarCheck, CalendarClock, CalendarX, FilePlus, Pencil, Plus } from 'lucide-react';
 import api from '@/lib/api';
 import { formatNumber } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import { useListState } from '@/hooks/useListState';
 import { useTableDensity } from '@/hooks/useTableDensity';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,17 @@ import { DueDate } from '@/components/ProjectGuaranteeDueDate';
 import { compareNullable, includesText, pageRows, sortRows, type Comparators } from './local-list';
 import { ScheduleFormModal } from './schedule-forms';
 import { SCHEDULE_FILTER_KEYS } from './queries';
-import { intervalLabel, scheduleDueState, toDateInput, type ScheduleRow, type WoPrefill } from './wo-meta';
+import {
+  intervalLabel,
+  scheduleDateState,
+  scheduleDueState,
+  scheduleKmState,
+  scheduleTracksKm,
+  scheduleUsesDate,
+  toDateInput,
+  type ScheduleRow,
+  type WoPrefill,
+} from './wo-meta';
 import { useTranslation } from 'react-i18next';
 
 
@@ -118,12 +129,30 @@ export function SchedulesTab({ canEdit, onCreate, onCreateWorkOrder }: Schedules
         id: 'nextDueAt',
         header: t('schedule.tab.nextDue'),
         enableSorting: true,
-        cell: ({ row }) =>
-          row.original.nextDueAt ? (
-            <DueDate date={row.original.nextDueAt} dueState={scheduleDueState(row.original)} />
-          ) : (
-            <span className="text-muted-foreground">—</span>
-          ),
+        cell: ({ row }) => {
+          const s = row.original;
+          const showDate = scheduleUsesDate(s) && !!s.nextDueAt;
+          const tracksKm = scheduleTracksKm(s);
+          if (!showDate && !tracksKm) return <span className="text-muted-foreground">—</span>;
+          const kmState = scheduleKmState(s);
+          return (
+            <div className="space-y-0.5">
+              {showDate && <DueDate date={s.nextDueAt!} dueState={scheduleDateState(s)} />}
+              {tracksKm && (
+                <p
+                  className={cn(
+                    'num whitespace-nowrap text-xs',
+                    kmState === 'overdue' ? 'font-medium text-danger-text' : kmState === 'dueSoon' ? 'font-medium text-warning-text' : 'text-muted-foreground',
+                  )}
+                >
+                  {t('schedule.tab.kmDue', { km: formatNumber(s.nextDueAtKm ?? 0) })}
+                  {' · '}
+                  {s.currentKm != null ? t('schedule.tab.kmCurrent', { km: formatNumber(s.currentKm) }) : t('schedule.tab.kmUnknown')}
+                </p>
+              )}
+            </div>
+          );
+        },
       },
       {
         id: 'notes',

@@ -72,6 +72,8 @@
     "purchaseInvoicesDue": "{{count}} invoice pembelian jatuh tempo ≤ 7 hari (sisa {{amount}}).",
     "cashBookDrafts": "{{count}} draft buku kas menunggu ditinjau & diposting.",
     "lowStock": "{{count}} item stok di bawah stok minimum.",
+    "maintenanceDue": "{{count}} jadwal maintenance terlambat atau segera jatuh tempo dan belum punya WO.",
+    "myWorkOrders": "{{count}} Work Order yang ditugaskan ke Anda belum selesai.",
     "approvalsPending": "{{count}} pengajuan dokumen menunggu keputusan Anda.",
     "myPaymentRequestsDraft": "{{count}} pengajuan pembayaran Anda belum diajukan / perlu revisi.",
     "paymentRequestsToApprove": "{{count}} pengajuan pembayaran bawahan menunggu persetujuan Anda.",

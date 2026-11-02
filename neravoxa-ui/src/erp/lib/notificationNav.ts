@@ -1,5 +1,6 @@
 // Route for a clicked notification. Approvals go to /approvals for Admin/Accountant, otherwise to
-// the module's approval tab. GA/EAM types map to /ga/* although the backend does not emit them yet.
+// the module's approval tab. GA/EAM types map to /ga/* (maintenance_due is emitted by the daily check;
+// the WO/MR/calibration types are not emitted by the backend yet).
 
 export interface NotifItem {
   type: string;
@@ -45,6 +46,8 @@ export function notificationLink(n: NotifItem, role: string | undefined): string
     case 'wo_assigned':
     case 'wo_completed':
       return '/ga/maintenance';
+    case 'maintenance_due':
+      return `/ga/maintenance?tab=schedules&due=${meta.state === 'overdue' ? 'overdue' : 'dueSoon'}`;
     case 'mr_pending':
     case 'mr_approved':
     case 'mr_rejected':

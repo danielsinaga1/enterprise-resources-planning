@@ -108,6 +108,11 @@ export interface ScheduleRow {
   intervalHours: number | null;
   intervalKm: number | null;
   nextDueAt: string | null;
+  /** Km jatuh tempo berikutnya (jadwal ber-interval km). */
+  nextDueAtKm?: number | null;
+  lastDoneAtKm?: number | null;
+  /** Odometer terakhir aset (null bila belum tercatat). */
+  currentKm?: number | null;
   notes: string | null;
   isActive: boolean;
   asset?: { id: string; code?: string; name?: string } | null;
@@ -137,10 +142,41 @@ export function woDueState(wo: Pick<WorkOrderRow, 'status' | 'dueAt'>, now: Date
   return null;
 }
 
-/** Same rule for preventive schedules (inactive schedules never flag). */
-export function scheduleDueState(s: Pick<ScheduleRow, 'isActive' | 'nextDueAt'>, now: Date = new Date()): DueState | null {
-  if (!s.isActive || !s.nextDueAt) return null;
+/** Km remaining before a schedule counts as "due soon" (server: MaintenanceDue.DUE_SOON_KM). */
+export const DUE_SOON_KM = 500;
+
+type ScheduleDueFields = Pick<ScheduleRow, 'isActive' | 'nextDueAt' | 'intervalDays' | 'intervalHours' | 'intervalKm' | 'nextDueAtKm' | 'currentKm'>;
+
+/** Km tracking applies when the schedule has a km interval and a known km due point. */
+export const scheduleTracksKm = (s: Pick<ScheduleRow, 'intervalKm' | 'nextDueAtKm'>): boolean => !!s.intervalKm && s.nextDueAtKm != null;
+
+/** The due date applies unless the schedule is km-only with km tracking in place. */
+export const scheduleUsesDate = (s: Pick<ScheduleRow, 'intervalDays' | 'intervalHours' | 'intervalKm' | 'nextDueAtKm'>): boolean =>
+  !!s.intervalDays || !!s.intervalHours || !scheduleTracksKm(s);
+
+/**
+ * Preventive schedule due state, whichever comes first: the date (≤ 7 days) or the odometer (≤ 500 km).
+ * Same rule as the server's notification check (MaintenanceDue.java). Inactive schedules never flag.
+ */
+export function scheduleDueState(s: ScheduleDueFields, now: Date = new Date()): DueState | null {
+  if (!s.isActive) return null;
+  const byDate = scheduleDateState(s, now);
+  const byKm = scheduleKmState(s);
+  if (byDate === 'overdue' || byKm === 'overdue') return 'overdue';
+  return byDate ?? byKm;
+}
+
+/** Date part of {@link scheduleDueState} (null when the date does not apply). */
+export function scheduleDateState(s: ScheduleDueFields, now: Date = new Date()): DueState | null {
+  if (!s.isActive || !scheduleUsesDate(s) || !s.nextDueAt) return null;
   return woDueState({ status: 'OPEN', dueAt: s.nextDueAt }, now);
+}
+
+/** Odometer part of {@link scheduleDueState} (null without km tracking or a recorded odometer). */
+export function scheduleKmState(s: ScheduleDueFields): DueState | null {
+  if (!s.isActive || !scheduleTracksKm(s) || s.currentKm == null) return null;
+  const left = (s.nextDueAtKm as number) - s.currentKm;
+  return left <= 0 ? 'overdue' : left <= DUE_SOON_KM ? 'dueSoon' : null;
 }
 
 export function intervalLabel(s: Pick<ScheduleRow, 'intervalDays' | 'intervalHours' | 'intervalKm'>): string {

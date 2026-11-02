@@ -471,6 +471,22 @@ public class ErpGaWorkOrderService {
         return current;
     }
 
+    /**
+     * Gulirkan km jadwal ber-interval km: dari odometer terakhir bila tercatat, kalau tidak dari km jatuh tempo
+     * sebelumnya (dianggap dikerjakan tepat waktu). Tanpa keduanya km jatuh tempo tetap kosong.
+     */
+    static void rollKm(GaMaintenanceSchedule s, Integer currentKm) {
+        Integer interval = s.getIntervalKm();
+        if (interval == null || interval == 0) {
+            return;
+        }
+        Integer base = currentKm != null ? currentKm : s.getNextDueAtKm();
+        if (base != null) {
+            s.setLastDoneAtKm(base);
+            s.setNextDueAtKm(base + interval);
+        }
+    }
+
     /** PATCH /work-orders/:id/complete — ASSIGNED/IN_PROGRESS → DONE (hanya teknisi yang ditugaskan). */
     @ErpTx
     public Map<String, Object> complete(String id, CompleteInput in, String userId) {
@@ -505,6 +521,7 @@ public class ErpGaWorkOrderService {
             if (s != null) {
                 s.setLastDoneAt(completedAt);
                 s.setNextDueAt(nextDue(completedAt, s.getIntervalDays(), s.getIntervalHours()));
+                rollKm(s, ErpGaMaintenanceScheduleService.currentKm(em, s.getAssetId()));
                 s.setUpdatedAt(Instant.now());
             }
         }

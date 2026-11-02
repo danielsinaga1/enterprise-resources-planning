@@ -1380,11 +1380,14 @@
       },
       "dueFilter": {
         "overdue": "Overdue",
-        "dueSoon": "Due within 7 days"
+        "dueSoon": "Due soon"
       },
       "asset": "Asset",
       "interval": "Interval",
       "nextDue": "Next due",
+      "kmDue": "Due at {{km}} km",
+      "kmCurrent": "now {{km}} km",
+      "kmUnknown": "odometer not recorded",
       "actionsFor": "Actions for schedule {{name}}",
       "createWo": "Create work order from schedule",
       "edit": "Edit schedule",
@@ -1393,8 +1396,8 @@
       "kpiActiveHint": "of {{total}} schedules",
       "kpiOverdue": "Overdue",
       "kpiOverdueHint": "needs a work order",
-      "kpiDueSoon": "Due within 7 days",
-      "kpiDueSoonHint": "prepare a preventive work order",
+      "kpiDueSoon": "Due Soon",
+      "kpiDueSoonHint": "≤ 7 days or ≤ 500 km left",
       "kpiInactive": "Inactive",
       "kpiInactiveHint": "not monitored",
       "searchLabel": "Search schedules",
@@ -1419,7 +1422,7 @@
       "createFailed": "Could not create the schedule.",
       "editTitle": "Edit preventive schedule",
       "createTitle": "Create preventive schedule",
-      "description": "Periodic maintenance schedule; the due date rolls forward automatically when the related work order is done.",
+      "description": "Recurring maintenance; the due date and km roll forward automatically when the linked WO is completed, and reminders arrive as notifications.",
       "asset": "Asset",
       "loading": "Loading…",
       "assetPlaceholder": "Select asset",
@@ -1429,6 +1432,9 @@
       "hours": "Hours",
       "km": "Km",
       "nextDue": "Next due date",
+      "nextDueKm": "Next due odometer (km)",
+      "nextDueKmHint": "Leave empty to use the latest odometer + km interval.",
+      "nextDueKmHintCurrent": "Latest odometer {{km}} km. Leave empty to use odometer + km interval.",
       "active": "Schedule active"
     }
   },

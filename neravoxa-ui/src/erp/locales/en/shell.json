@@ -234,6 +234,7 @@
       "wo_overdue": "Late WO",
       "wo_assigned": "WO assigned",
       "wo_completed": "WO completed",
+      "maintenance_due": "Maintenance Due",
       "mr_pending": "Material request",
       "mr_approved": "Request approved",
       "mr_rejected": "Request rejected",

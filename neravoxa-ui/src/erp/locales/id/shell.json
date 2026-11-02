@@ -234,6 +234,7 @@
       "wo_overdue": "WO Terlambat",
       "wo_assigned": "WO Ditugaskan",
       "wo_completed": "WO Selesai",
+      "maintenance_due": "Maintenance Jatuh Tempo",
       "mr_pending": "Permintaan Material",
       "mr_approved": "Permintaan Disetujui",
       "mr_rejected": "Permintaan Ditolak",

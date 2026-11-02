@@ -11,6 +11,7 @@ import {
   Info,
   Loader2,
   Package,
+  Wrench,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -65,6 +66,7 @@ const TYPE_META: Record<string, { icon: LucideIcon; tone: Tone }> = {
   approval_approved: { icon: CheckCheck, tone: 'success' },
   approval_rejected: { icon: Ban, tone: 'danger' },
   approval_revision: { icon: FileWarning, tone: 'warning' },
+  maintenance_due: { icon: Wrench, tone: 'warning' },
 };
 
 const FALLBACK_META = { icon: Info, tone: 'info' as Tone };

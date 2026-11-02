@@ -22,8 +22,14 @@
 ## Pemeliharaan
 - Work order (WO) perbaikan/perawatan per aset: Open → Ditugaskan → Dikerjakan → Selesai → Ditutup (atau Dibatalkan).
   Item checklist bertanda Wajib harus dicentang Selesai sebelum WO bisa diselesaikan.
-- Jadwal perawatan preventif per aset berdasarkan hari kalender, jam operasi, atau kilometer; jatuh tempo bergulir
-  otomatis saat WO terkait selesai.
+- Jadwal perawatan preventif per aset berdasarkan hari kalender, jam operasi, atau kilometer (Pemeliharaan → tab
+  Jadwal Preventif). Jatuh tempo bergulir otomatis saat WO terkait selesai: tanggal dari interval hari/jam, km dari
+  odometer terakhir kendaraan + interval km (kosongkan "Km jatuh tempo berikutnya" agar dihitung otomatis).
+- Jadwal dianggap terlambat bila tanggalnya lewat atau odometer sudah mencapai km jatuh tempo, dan segera jatuh tempo
+  bila tinggal ≤ 7 hari atau ≤ 500 km. Setiap pagi (07.00) pemegang izin Pemeliharaan (edit) mendapat notifikasi
+  "Maintenance Terlambat/Segera Jatuh Tempo" untuk jadwal yang belum punya WO aktif.
+- WO preventif tidak dibuat otomatis: buka tab Jadwal Preventif, pilih jadwal yang jatuh tempo, lalu "Buat WO dari
+  jadwal". Odometer diperbarui dari log servis, BBM, oli, dan inspeksi kendaraan.
 
 ## Permintaan Barang dan Inventaris Kantor
 - Permintaan Barang (MR): permintaan sparepart/barang dari work order atau permintaan mandiri. Disimpan sebagai Draf,

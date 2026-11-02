@@ -1380,11 +1380,14 @@
       },
       "dueFilter": {
         "overdue": "Lewat jatuh tempo",
-        "dueSoon": "Jatuh tempo 7 hari"
+        "dueSoon": "Segera jatuh tempo"
       },
       "asset": "Aset",
       "interval": "Interval",
       "nextDue": "Jatuh Tempo Berikutnya",
+      "kmDue": "Jatuh tempo {{km}} km",
+      "kmCurrent": "sekarang {{km}} km",
+      "kmUnknown": "odometer belum tercatat",
       "actionsFor": "Aksi untuk jadwal {{name}}",
       "createWo": "Buat WO dari jadwal",
       "edit": "Edit jadwal",
@@ -1393,8 +1396,8 @@
       "kpiActiveHint": "dari {{total}} jadwal",
       "kpiOverdue": "Lewat Jatuh Tempo",
       "kpiOverdueHint": "perlu dibuatkan WO",
-      "kpiDueSoon": "Jatuh Tempo 7 Hari",
-      "kpiDueSoonHint": "siapkan WO preventif",
+      "kpiDueSoon": "Segera Jatuh Tempo",
+      "kpiDueSoonHint": "≤ 7 hari atau ≤ 500 km lagi",
       "kpiInactive": "Nonaktif",
       "kpiInactiveHint": "tidak dipantau",
       "searchLabel": "Cari jadwal",
@@ -1419,7 +1422,7 @@
       "createFailed": "Gagal membuat jadwal.",
       "editTitle": "Edit Jadwal Preventif",
       "createTitle": "Buat Jadwal Preventif",
-      "description": "Jadwal perawatan berkala; jatuh tempo bergulir otomatis saat WO terkait selesai.",
+      "description": "Jadwal perawatan berkala; jatuh tempo (tanggal dan km) bergulir otomatis saat WO terkait selesai, dan pengingat dikirim lewat notifikasi.",
       "asset": "Aset",
       "loading": "Memuat…",
       "assetPlaceholder": "Pilih aset",
@@ -1429,6 +1432,9 @@
       "hours": "Jam",
       "km": "Km",
       "nextDue": "Jatuh tempo berikutnya",
+      "nextDueKm": "Km jatuh tempo berikutnya",
+      "nextDueKmHint": "Kosongkan agar dihitung dari odometer terakhir + interval km.",
+      "nextDueKmHintCurrent": "Odometer terakhir {{km}} km. Kosongkan agar dihitung dari odometer + interval km.",
       "active": "Jadwal aktif"
     }
   },
