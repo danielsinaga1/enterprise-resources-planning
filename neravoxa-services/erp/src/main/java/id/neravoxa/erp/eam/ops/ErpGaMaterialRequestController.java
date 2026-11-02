@@ -69,7 +69,7 @@ public class ErpGaMaterialRequestController {
 
     @PatchMapping("/{id}/submit")
     public Map<String, Object> submit(@PathVariable String id) {
-        return service.submit(id);
+        return service.submit(id, access.userId());
     }
 
     @PatchMapping("/{id}/approve")

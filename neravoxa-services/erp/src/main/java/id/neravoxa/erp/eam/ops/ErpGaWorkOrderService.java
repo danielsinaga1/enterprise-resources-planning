@@ -65,6 +65,7 @@ public class ErpGaWorkOrderService {
     static final long MAX_PHOTO_BYTES = 5L * 1024 * 1024;
 
     private final ErpFileStorage storage;
+    private final GaWorkflowNotifier notifier;
 
     @PersistenceContext(unitName = "erp")
     private EntityManager em;
@@ -399,6 +400,7 @@ public class ErpGaWorkOrderService {
             wo.setPriority(GaWorkOrderPriority.valueOf(in.priority()));
         }
         em.flush();
+        notifier.woAssigned(wo, userId);
         return idStatus(wo);
     }
 
@@ -526,6 +528,7 @@ public class ErpGaWorkOrderService {
             }
         }
         em.flush();
+        notifier.woCompleted(wo, userId);
         return idStatus(wo);
     }
 

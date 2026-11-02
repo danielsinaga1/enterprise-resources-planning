@@ -4,10 +4,12 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import {
   Ban,
   Bell,
+  Building2,
   CheckCheck,
   ClipboardCheck,
   CreditCard,
   FileWarning,
+  Gauge,
   Info,
   Loader2,
   Package,
@@ -67,6 +69,15 @@ const TYPE_META: Record<string, { icon: LucideIcon; tone: Tone }> = {
   approval_rejected: { icon: Ban, tone: 'danger' },
   approval_revision: { icon: FileWarning, tone: 'warning' },
   maintenance_due: { icon: Wrench, tone: 'warning' },
+  wo_assigned: { icon: Wrench, tone: 'info' },
+  wo_overdue: { icon: Wrench, tone: 'danger' },
+  wo_completed: { icon: CheckCheck, tone: 'success' },
+  mr_pending: { icon: ClipboardCheck, tone: 'warning' },
+  mr_approved: { icon: CheckCheck, tone: 'success' },
+  mr_rejected: { icon: Ban, tone: 'danger' },
+  calibration_due: { icon: Gauge, tone: 'warning' },
+  document_expiring: { icon: FileWarning, tone: 'warning' },
+  rental_expiring: { icon: Building2, tone: 'warning' },
 };
 
 const FALLBACK_META = { icon: Info, tone: 'info' as Tone };

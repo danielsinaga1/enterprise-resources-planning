@@ -21,6 +21,7 @@ import id.neravoxa.erp.entity.GaProcurementStatus;
 import id.neravoxa.erp.entity.GaWorkOrder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -44,9 +45,12 @@ import java.util.Set;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ErpGaMaterialRequestService {
 
     static final List<String> PROCUREMENT_STATUS = List.of("REQUESTED", "QUOTED", "ORDERED", "RECEIVED", "CANCELLED");
+
+    private final GaWorkflowNotifier notifier;
 
     @PersistenceContext(unitName = "erp")
     private EntityManager em;
@@ -359,6 +363,13 @@ public class ErpGaMaterialRequestService {
     /** Transisi status sederhana dengan penjaga BusinessError. */
     private Map<String, Object> transition(String id, List<GaMaterialRequestStatus> allowedFrom, String verbMessage,
                                            Mutator mutator) {
+        return transition(id, allowedFrom, verbMessage, mutator, mr -> {
+        });
+    }
+
+    /** Transisi status lalu {@code after} (mis. notifikasi) setelah perubahan di-flush. */
+    private Map<String, Object> transition(String id, List<GaMaterialRequestStatus> allowedFrom, String verbMessage,
+                                           Mutator mutator, Mutator after) {
         GaMaterialRequest mr = em.find(GaMaterialRequest.class, id);
         if (mr == null) {
             throw ErpException.business("Permintaan barang tidak ditemukan.");
@@ -369,14 +380,15 @@ public class ErpGaMaterialRequestService {
         mutator.apply(mr);
         mr.setUpdatedAt(Instant.now());
         em.flush();
+        after.apply(mr);
         return GaOpsJson.map("id", mr.getId(), "status", mr.getStatus());
     }
 
-    /** PATCH /:id/submit — DRAFT → SUBMITTED. */
+    /** PATCH /:id/submit — DRAFT → SUBMITTED; pemegang izin edit MR (penyetuju) diberi tahu. */
     @ErpTx
-    public Map<String, Object> submit(String id) {
+    public Map<String, Object> submit(String id, String userId) {
         return transition(id, List.of(GaMaterialRequestStatus.DRAFT), "Tidak bisa submit MR berstatus {status}.",
-                mr -> mr.setStatus(GaMaterialRequestStatus.SUBMITTED));
+                mr -> mr.setStatus(GaMaterialRequestStatus.SUBMITTED), mr -> notifier.mrSubmitted(mr, userId));
     }
 
     /** PATCH /:id/approve — SUBMITTED → APPROVED (izin edit modul ga_material_request, bukan capability). */
@@ -387,7 +399,7 @@ public class ErpGaMaterialRequestService {
                     mr.setStatus(GaMaterialRequestStatus.APPROVED);
                     mr.setApprovedById(userId);
                     mr.setApprovedAt(Instant.now());
-                });
+                }, mr -> notifier.mrApproved(mr, userId));
     }
 
     static String parseReject(JsonNode raw) {
@@ -404,7 +416,7 @@ public class ErpGaMaterialRequestService {
                     mr.setRejectedById(userId);
                     mr.setRejectedAt(Instant.now());
                     mr.setRejectReason(reason);
-                });
+                }, mr -> notifier.mrRejected(mr, userId));
     }
 
     /** PATCH /:id/cancel — DRAFT/SUBMITTED/APPROVED → CANCELLED. */

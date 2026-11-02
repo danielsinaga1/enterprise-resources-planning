@@ -39,6 +39,12 @@ Prasyarat: PostgreSQL (`localhost:5432`), Redis (`localhost:6379`), JDK 17, Node
 3. Frontend: `cd neravoxa-ui && npm install && npm run dev`.
 4. Buka `http://localhost:5180`, login dengan admin awal **NPK `admin` / `Admin@12345`** (ganti setelah
    login pertama), lalu beri role ERP ke pengguna lain di *Pengaturan → Manajemen User*.
+5. (Opsional, demo) Data contoh Aset & Pemeliharaan — mesin, alat ukur, gedung, jadwal preventif, work order di
+   semua status, permintaan material, kalibrasi, dokumen & sewa — dengan tanggal relatif hari ini. Jalankan
+   setelah admin pernah membuka modul ERP; aman diulang, dan cara menghapusnya ada di akhir file:
+   ```bash
+   psql -U postgres -d db_erp -f neravoxa-services/sql/erp_service/samples/eam_sample.sql
+   ```
 
 ### Produksi
 

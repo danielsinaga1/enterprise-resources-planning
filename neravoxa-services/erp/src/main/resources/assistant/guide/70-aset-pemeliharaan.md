@@ -31,6 +31,16 @@
 - WO preventif tidak dibuat otomatis: buka tab Jadwal Preventif, pilih jadwal yang jatuh tempo, lalu "Buat WO dari
   jadwal". Odometer diperbarui dari log servis, BBM, oli, dan inspeksi kendaraan.
 
+## Notifikasi Aset & Pemeliharaan
+- Langsung saat kejadian: teknisi diberi tahu ketika WO ditugaskan kepadanya; pelapor dan yang menugaskan diberi tahu
+  ketika teknisi menandai WO selesai (lalu WO perlu ditutup); pemegang izin edit Permintaan Barang diberi tahu ketika
+  MR diajukan; pengaju MR diberi tahu ketika MR disetujui atau ditolak (beserta alasannya).
+- Pemeriksaan harian 07.00: WO yang melewati tenggat (ke teknisi + pemegang izin Pemeliharaan edit), kalibrasi alat
+  ≤ 30 hari lagi atau terlambat (izin Peralatan edit), dokumen yang kedaluwarsa ≤ 30 hari lagi atau sudah lewat
+  (izin Dokumen edit), dan kontrak sewa yang berakhir ≤ 60 hari lagi (izin Gedung edit). Pengingat ini dikirim sekali
+  per keadaan (segera / lewat); bila tanggalnya diperbarui, pengingat baru dikirim lagi.
+- Klik notifikasi untuk langsung membuka WO, MR, atau dokumen terkait.
+
 ## Permintaan Barang dan Inventaris Kantor
 - Permintaan Barang (MR): permintaan sparepart/barang dari work order atau permintaan mandiri. Disimpan sebagai Draf,
   diajukan untuk persetujuan, lalu dipenuhi sampai barang masuk stok.

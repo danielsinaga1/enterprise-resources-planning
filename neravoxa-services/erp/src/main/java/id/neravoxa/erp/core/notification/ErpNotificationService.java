@@ -160,4 +160,29 @@ public class ErpNotificationService {
         }
         return out;
     }
+
+    /**
+     * Kunci deduplikasi notifikasi bertipe {@code type} yang pernah dibuat: nilai metadata {@code fields}
+     * digabung dengan "|". Untuk pengingat "sekali per keadaan" (mis. id + state + tanggal jatuh tempo).
+     */
+    public Set<String> sentKeys(String type, String... fields) {
+        StringBuilder key = new StringBuilder();
+        for (String f : fields) {
+            if (!f.matches("[A-Za-z]+")) {
+                throw new IllegalArgumentException("Nama field metadata tidak valid: " + f);
+            }
+            key.append(key.isEmpty() ? "" : " || '|' || ").append("coalesce(metadata->>'").append(f).append("', '')");
+        }
+        return new HashSet<>(jdbc.queryForList("SELECT DISTINCT " + key + " FROM notifications WHERE type = ?",
+                String.class, type));
+    }
+
+    /** Gabungan nilai untuk dicocokkan dengan {@link #sentKeys(String, String...)}. */
+    public static String key(Object... values) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < values.length; i++) {
+            sb.append(i == 0 ? "" : "|").append(values[i] == null ? "" : values[i]);
+        }
+        return sb.toString();
+    }
 }
