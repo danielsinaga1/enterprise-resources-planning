@@ -5,5 +5,6 @@
  */
 export function erpPortalContainer(): HTMLElement | undefined {
   if (typeof document === 'undefined') return undefined;
-  return (document.querySelector('.erp-root') as HTMLElement | null) ?? undefined;
+  // Lewati wrapper slot topbar (lonceng notifikasi di header platform) — bukan kontainer halaman.
+  return (document.querySelector('.erp-root:not([data-erp-slot])') as HTMLElement | null) ?? undefined;
 }

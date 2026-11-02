@@ -1,9 +1,11 @@
 /**
  * Layout halaman ERP di dalam konten platform (pengganti MainLayout ENTARIS): sidebar & menu
  * pengguna milik platform, ERP hanya menambah bar ringkas berisi breadcrumb dari registry rute,
- * pencarian global (Ctrl/⌘+K), notifikasi ERP, dan bantuan pintasan.
+ * pencarian global (Ctrl/⌘+K), dan bantuan pintasan. Lonceng notifikasi ERP dipasang di topbar
+ * platform (di samping pilihan bahasa) lewat portal ke slot {@link TOPBAR_SLOT_ID}.
  */
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
@@ -16,13 +18,27 @@ import { ShortcutHelp } from '@/components/ShortcutHelp';
 import { useHotkey } from '@/hooks/useHotkeys';
 import { useCompanySettings } from '@/contexts/CompanySettingsContext';
 
+/** Slot di VeronaTopbar (components/verona/VeronaTopbar.tsx). */
+const TOPBAR_SLOT_ID = 'nvx-topbar-actions';
+
+/**
+ * Wrapper `.erp-root` agar gaya ERP berlaku di topbar; `data-erp-slot` membuat erpPortalContainer
+ * melewatinya, dan gaya halaman `.erp-root` (tinggi penuh, latar) dinetralkan.
+ */
+const SLOT_STYLE = { minHeight: 0, minWidth: 0, background: 'transparent', display: 'flex', alignItems: 'center' } as const;
+
 export function ErpLayout() {
   const { t, i18n } = useTranslation('shell');
   const location = useLocation();
   const settings = useCompanySettings();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShortcutHelpOpen, setIsShortcutHelpOpen] = useState(false);
+  const [topbarSlot, setTopbarSlot] = useState<HTMLElement | null>(null);
   const language = i18n.language;
+
+  useEffect(() => {
+    setTopbarSlot(document.getElementById(TOPBAR_SLOT_ID));
+  }, []);
 
   const companyName = settings?.companyName?.trim() || null;
   useEffect(() => {
@@ -49,8 +65,16 @@ export function ErpLayout() {
           <span className="hidden sm:inline">{t('topbar.search', { defaultValue: 'Cari' })}</span>
           <kbd className="hidden rounded-sm border border-border px-1 text-[10px] text-muted-foreground md:inline">Ctrl K</kbd>
         </button>
-        <NotificationBell />
+        {/* Tanpa slot topbar (mis. layout lain), lonceng tetap di bar ini. */}
+        {!topbarSlot && <NotificationBell />}
       </div>
+      {topbarSlot &&
+        createPortal(
+          <div className="erp-root" data-erp-slot="" style={SLOT_STYLE}>
+            <NotificationBell />
+          </div>,
+          topbarSlot,
+        )}
 
       <main id="erp-content" className="min-w-0">
         <Outlet />

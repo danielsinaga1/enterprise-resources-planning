@@ -131,6 +131,8 @@ const VeronaTopbar = ({ onMenuToggle, isDesktop }: VeronaTopbarProps) => {
 
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Slot aksi modul: ERP memasang lonceng notifikasinya di sini lewat portal (ErpLayout). */}
+        <div id="nvx-topbar-actions" style={{ display: 'flex', alignItems: 'center' }} />
         <LanguageSwitcher />
 
         <Menu model={profileItems} popup ref={profileMenu} />
