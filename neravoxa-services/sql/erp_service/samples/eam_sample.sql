@@ -3,14 +3,16 @@
 --
 --   psql -U postgres -d db_erp -f sql/erp_service/samples/eam_sample.sql
 --
--- Syarat: skema & seed ERP sudah terpasang dan admin sudah pernah login ke ERP (baris di tabel users).
+-- Syarat: skema & seed ERP sudah terpasang (termasuk 04_eam_meter.sql, otomatis saat backend start) dan admin
+-- sudah pernah login ke ERP (baris di tabel users).
 -- Aman dijalankan ulang: id baris contoh tetap (awalan "smp-eam-") dan semua INSERT memakai ON CONFLICT
 -- DO NOTHING. Tanggal dihitung relatif dari hari ini, jadi status jatuh tempo (terlambat / segera / aman)
 -- selalu terlihat saat demo. Hapus semua data contoh dengan blok "HAPUS" di bagian paling bawah.
 --
 -- Isi: 14 aset (mesin, kendaraan, alat ukur, gedung, IT), detail kendaraan/peralatan/gedung, 8 sparepart +
 -- stok, 7 jadwal preventif (tanggal, km, jam), 10 work order di semua status (riwayat biaya untuk dashboard),
--- 5 permintaan material, log kalibrasi, 6 dokumen ber-masa berlaku, 2 kontrak sewa, log servis & BBM.
+-- 5 permintaan material, log kalibrasi, 6 dokumen ber-masa berlaku, 2 kontrak sewa, log servis & BBM, dan
+-- riwayat hour meter forklift (jadwal 250 jam segera jatuh tempo).
 -- =====================================================================================================
 
 BEGIN;
@@ -306,6 +308,19 @@ INSERT INTO ga_building_rentals (id, asset_id, arah, pihak, kontak, nilai_sewa, 
      pg_temp.d(-165), pg_temp.d(200), 'AKTIF', 'smp-eam-d06', NULL, (SELECT admin FROM smp), now(), now())
 ON CONFLICT DO NOTHING;
 
+-- ───────────────────────────── hour meter ─────────────────────────────
+
+-- Forklift: servis 250 jam terakhir di 4.750 jam, meter sekarang 4.960 → sisa 40 jam (segera jatuh tempo).
+INSERT INTO ga_meter_readings (id, asset_id, reading_at, hours, notes, created_by_id, created_at) VALUES
+    ('smp-eam-hm1', 'smp-eam-a07', pg_temp.d(-60), 4520, 'Cek mingguan', (SELECT admin FROM smp), now()),
+    ('smp-eam-hm2', 'smp-eam-a07', pg_temp.d(-30), 4640, 'Cek mingguan', (SELECT admin FROM smp), now()),
+    ('smp-eam-hm3', 'smp-eam-a07', pg_temp.d(-22), 4750, 'Saat servis 250 jam', (SELECT admin FROM smp), now()),
+    ('smp-eam-hm4', 'smp-eam-a07', pg_temp.d(-1), 4960, 'Cek mingguan', (SELECT admin FROM smp), now())
+ON CONFLICT DO NOTHING;
+
+UPDATE ga_maintenance_schedules SET last_done_at_hours = 4750, next_due_at_hours = 5000
+WHERE id = 'smp-eam-s05' AND next_due_at_hours IS NULL;
+
 -- ───────────────────────────── riwayat kendaraan ─────────────────────────────
 
 INSERT INTO ga_vehicle_service_logs (id, asset_id, tanggal, odometer, jenis_service, deskripsi, bengkel, biaya, source, created_by_id, created_at) VALUES
@@ -327,6 +342,7 @@ COMMIT;
 --
 -- BEGIN;
 -- DELETE FROM notifications WHERE metadata::text LIKE '%smp-eam-%';
+-- DELETE FROM ga_meter_readings WHERE id LIKE 'smp-eam-%';
 -- DELETE FROM ga_vehicle_fuel_logs WHERE id LIKE 'smp-eam-%';
 -- DELETE FROM ga_vehicle_service_logs WHERE id LIKE 'smp-eam-%';
 -- DELETE FROM ga_building_rentals WHERE id LIKE 'smp-eam-%';

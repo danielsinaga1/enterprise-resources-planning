@@ -1299,7 +1299,9 @@
       "noStockDeduction": "No stock deduction",
       "qty": "Qty",
       "unitCost": "Unit price (Rp)",
-      "subtotal": "Subtotal:"
+      "subtotal": "Subtotal:",
+      "meterHours": "Hour meter at completion",
+      "meterHoursHint": "Optional, for machines on an operating-hours schedule. Saved as a meter reading and moves the schedule's next due hours."
     },
     "detail": {
       "started": "Work order started.",
@@ -1397,7 +1399,7 @@
       "kpiOverdue": "Overdue",
       "kpiOverdueHint": "needs a work order",
       "kpiDueSoon": "Due Soon",
-      "kpiDueSoonHint": "≤ 7 days or ≤ 500 km left",
+      "kpiDueSoonHint": "≤ 7 days, 500 km, or 50 hours left",
       "kpiInactive": "Inactive",
       "kpiInactiveHint": "not monitored",
       "searchLabel": "Search schedules",
@@ -1410,7 +1412,11 @@
       "itemLabel": "schedules",
       "emptyTitle": "No preventive schedules yet",
       "emptyDescription": "Create periodic maintenance schedules per asset (days, operating hours, or km).",
-      "createFirst": "Create the first schedule"
+      "createFirst": "Create the first schedule",
+      "hoursDue": "Due at {{hours}} h",
+      "hoursCurrent": "now {{hours}} h",
+      "hoursUnknown": "hour meter not recorded",
+      "recordMeter": "Record hour meter"
     },
     "form": {
       "assetRequired": "Select an asset.",
@@ -1422,7 +1428,7 @@
       "createFailed": "Could not create the schedule.",
       "editTitle": "Edit preventive schedule",
       "createTitle": "Create preventive schedule",
-      "description": "Recurring maintenance; the due date and km roll forward automatically when the linked WO is completed, and reminders arrive as notifications.",
+      "description": "Recurring maintenance; the due date, km and operating hours roll forward automatically when the linked WO is completed, and reminders arrive as notifications.",
       "asset": "Asset",
       "loading": "Loading…",
       "assetPlaceholder": "Select asset",
@@ -1435,7 +1441,10 @@
       "nextDueKm": "Next due odometer (km)",
       "nextDueKmHint": "Leave empty to use the latest odometer + km interval.",
       "nextDueKmHintCurrent": "Latest odometer {{km}} km. Leave empty to use odometer + km interval.",
-      "active": "Schedule active"
+      "active": "Schedule active",
+      "nextDueHours": "Next due hour meter (h)",
+      "nextDueHoursHint": "Leave empty to use the latest hour meter + hour interval.",
+      "nextDueHoursHintCurrent": "Latest hour meter {{hours}} h. Leave empty to use meter + hour interval."
     }
   },
   "maintenance": {
@@ -2470,5 +2479,23 @@
   "itemImage": {
     "noPhoto": "No photo",
     "photo": "Inventory item photo"
+  },
+  "meter": {
+    "title": "Record hour meter",
+    "hours": "Hour meter (h)",
+    "hoursRequired": "Hour meter is required.",
+    "readingAt": "Reading date",
+    "readingAtHint": "Leave empty for today.",
+    "last": "Latest reading {{hours}} h · {{date}}",
+    "none": "No meter readings for this asset yet.",
+    "history": "Reading history",
+    "fromWo": "from {{code}}",
+    "by": "by {{name}}",
+    "saved": "Meter reading saved.",
+    "saveFailed": "Could not save the meter reading.",
+    "delete": "Delete reading {{hours}} h",
+    "deleted": "Meter reading deleted.",
+    "deleteFailed": "Could not delete the meter reading.",
+    "loadFailed": "Could not load the reading history."
   }
 }

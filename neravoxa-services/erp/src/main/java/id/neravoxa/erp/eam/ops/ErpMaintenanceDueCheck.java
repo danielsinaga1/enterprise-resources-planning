@@ -63,8 +63,9 @@ public class ErpMaintenanceDueCheck implements ErpNotificationCheck {
 
     private int check(Instant now, Instant since) {
         List<Map<String, Object>> due = jdbc.queryForList(
-                "SELECT s.id, s.next_due_at, s.next_due_at_km, a.id AS asset_id, a.code, a.name, "
-                        + MaintenanceDue.CURRENT_KM + " AS current_km, " + MaintenanceDue.OVERDUE_EXPR + " AS overdue "
+                "SELECT s.id, s.next_due_at, s.next_due_at_km, s.next_due_at_hours, a.id AS asset_id, a.code, a.name, "
+                        + MaintenanceDue.CURRENT_KM + " AS current_km, " + MaintenanceDue.CURRENT_HOURS + " AS current_hours, "
+                        + MaintenanceDue.OVERDUE_EXPR + " AS overdue "
                         + MaintenanceDue.FROM_WHERE + " ORDER BY s.next_due_at, a.code",
                 utc(now), utc(now.plus(Duration.ofDays(MaintenanceDue.DUE_SOON_DAYS))));
         if (due.isEmpty()) {
@@ -85,8 +86,12 @@ public class ErpMaintenanceDueCheck implements ErpNotificationCheck {
             String asset = s.get("name") + " (" + s.get("code") + ")";
             Integer currentKm = (Integer) s.get("current_km");
             Integer dueKm = (Integer) s.get("next_due_at_km");
-            String when = dueKm != null && currentKm != null
-                    ? "jatuh tempo di " + km(dueKm) + " km (odometer terakhir " + km(currentKm) + " km)"
+            Integer currentHours = (Integer) s.get("current_hours");
+            Integer dueHours = (Integer) s.get("next_due_at_hours");
+            String when = dueHours != null && currentHours != null
+                    ? "jatuh tempo di " + num(dueHours) + " jam operasi (hour meter terakhir " + num(currentHours) + " jam)"
+                    : dueKm != null && currentKm != null
+                    ? "jatuh tempo di " + num(dueKm) + " km (odometer terakhir " + num(currentKm) + " km)"
                     : "jatuh tempo " + LONG_DATE.format(instant(s.get("next_due_at")).atZone(ErpDates.businessZone()));
             created += notifications.notifyUsers(recipients, new ErpNotificationService.Notice(
                     TYPE,
@@ -104,7 +109,7 @@ public class ErpMaintenanceDueCheck implements ErpNotificationCheck {
                 + "WHERE type = ? AND created_at >= ? AND metadata->>'scheduleId' IS NOT NULL", String.class, TYPE, utc(since)));
     }
 
-    private static String km(int v) {
+    private static String num(int v) {
         return NumberFormat.getIntegerInstance(ID).format(v);
     }
 

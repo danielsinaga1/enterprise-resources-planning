@@ -421,7 +421,8 @@ public class ErpGaWorkOrderService {
     }
 
     record CompleteInput(String resolution, ArrayNode checklist, List<String> missingRequired,
-                         BigDecimal laborHours, BigDecimal laborCost, String externalVendor, BigDecimal externalCost) {
+                         BigDecimal laborHours, BigDecimal laborCost, String externalVendor, BigDecimal externalCost,
+                         Integer meterHours) {
     }
 
     /** {@code CompleteWoSchema}; checklist dinormalisasi seperti keluaran Zod (default required/done=false). */
@@ -459,7 +460,12 @@ public class ErpGaWorkOrderService {
         BigDecimal laborCost = GaZod.optNumber(GaZod.field(b, "laborCost"), GaZod.Sign.NONNEGATIVE, null);
         String vendor = GaZod.optString(GaZod.field(b, "externalVendor"), 0, null, 0);
         BigDecimal externalCost = GaZod.optNumber(GaZod.field(b, "externalCost"), GaZod.Sign.NONNEGATIVE, null);
-        return new CompleteInput(resolution, checklist, missing, laborHours, laborCost, vendor, externalCost);
+        BigDecimal meter = GaZod.optNumber(GaZod.field(b, "meterHours"), GaZod.Sign.NONNEGATIVE, "Jam meter tidak boleh negatif.");
+        if (meter != null && meter.stripTrailingZeros().scale() > 0) {
+            throw ErpException.business("Jam meter harus bilangan bulat.");
+        }
+        return new CompleteInput(resolution, checklist, missing, laborHours, laborCost, vendor, externalCost,
+                meter == null ? null : meter.intValueExact());
     }
 
     /** Jatuh tempo berikutnya jadwal preventif setelah selesai (interval km saja → tidak bergeser). */
@@ -489,7 +495,23 @@ public class ErpGaWorkOrderService {
         }
     }
 
-    /** PATCH /work-orders/:id/complete — ASSIGNED/IN_PROGRESS → DONE (hanya teknisi yang ditugaskan). */
+    /** Gulirkan jam jadwal ber-interval jam — sama seperti {@link #rollKm} dengan hour meter sebagai basis. */
+    static void rollHours(GaMaintenanceSchedule s, Integer currentHours) {
+        Integer interval = s.getIntervalHours();
+        if (interval == null || interval == 0) {
+            return;
+        }
+        Integer base = currentHours != null ? currentHours : s.getNextDueAtHours();
+        if (base != null) {
+            s.setLastDoneAtHours(base);
+            s.setNextDueAtHours(base + interval);
+        }
+    }
+
+    /**
+     * PATCH /work-orders/:id/complete — ASSIGNED/IN_PROGRESS → DONE (hanya teknisi yang ditugaskan). Bila
+     * {@code meterHours} diisi, pembacaan hour meter aset ikut dicatat (tertaut ke WO) sebelum jadwal digulir.
+     */
     @ErpTx
     public Map<String, Object> complete(String id, CompleteInput in, String userId) {
         GaWorkOrder wo = require(id);
@@ -516,6 +538,10 @@ public class ErpGaWorkOrderService {
         wo.setExternalVendor(in.externalVendor());
         wo.setExternalCost(in.externalCost());
         wo.setWasLate(wasLate);
+        if (in.meterHours() != null) {
+            ErpGaMeterReadingService.record(em, new ErpGaMeterReadingService.ReadingInput(wo.getAssetId(), in.meterHours(),
+                    completedAt, "Dicatat saat " + wo.getCode() + " selesai"), wo.getId(), userId);
+        }
 
         // Gulirkan jadwal preventif yang melahirkan WO ini.
         if (wo.getScheduleId() != null) {
@@ -524,6 +550,7 @@ public class ErpGaWorkOrderService {
                 s.setLastDoneAt(completedAt);
                 s.setNextDueAt(nextDue(completedAt, s.getIntervalDays(), s.getIntervalHours()));
                 rollKm(s, ErpGaMaintenanceScheduleService.currentKm(em, s.getAssetId()));
+                rollHours(s, ErpGaMeterReadingService.currentHours(em, s.getAssetId()));
                 s.setUpdatedAt(Instant.now());
             }
         }

@@ -29,6 +29,7 @@ export function ScheduleFormModal({ schedule, onClose }: { schedule?: ScheduleRo
     intervalHours: str(schedule?.intervalHours ?? null),
     intervalKm: str(schedule?.intervalKm ?? null),
     nextDueAtKm: str(schedule?.nextDueAtKm ?? null),
+    nextDueAtHours: str(schedule?.nextDueAtHours ?? null),
     nextDueAt: toDateInput(schedule?.nextDueAt),
     notes: schedule?.notes ?? '',
     isActive: schedule ? !!schedule.isActive : true,
@@ -47,6 +48,8 @@ export function ScheduleFormModal({ schedule, onClose }: { schedule?: ScheduleRo
     intervalKm: numOrNull(form.intervalKm),
     // Kosong = server menghitung dari odometer terakhir + interval.
     ...(form.intervalKm && form.nextDueAtKm ? { nextDueAtKm: numOrNull(form.nextDueAtKm) } : {}),
+    // Kosong = server menghitung dari hour meter terakhir + interval.
+    ...(form.intervalHours && form.nextDueAtHours ? { nextDueAtHours: numOrNull(form.nextDueAtHours) } : {}),
   };
 
   const mutation = useMutation({
@@ -132,6 +135,18 @@ export function ScheduleFormModal({ schedule, onClose }: { schedule?: ScheduleRo
           }
         >
           <NumberInput min={1} value={form.nextDueAtKm} onChange={(e) => set({ nextDueAtKm: e.target.value })} />
+        </Field>
+      )}
+      {form.intervalHours && (
+        <Field
+          label={t('schedule.form.nextDueHours')}
+          hint={
+            schedule?.currentHours != null
+              ? t('schedule.form.nextDueHoursHintCurrent', { hours: formatNumber(schedule.currentHours) })
+              : t('schedule.form.nextDueHoursHint')
+          }
+        >
+          <NumberInput min={1} value={form.nextDueAtHours} onChange={(e) => set({ nextDueAtHours: e.target.value })} />
         </Field>
       )}
       <Field label={t('shared.notes')}>

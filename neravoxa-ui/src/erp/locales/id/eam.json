@@ -1299,7 +1299,9 @@
       "noStockDeduction": "Tanpa pengurangan stok",
       "qty": "Qty",
       "unitCost": "Harga satuan (Rp)",
-      "subtotal": "Subtotal:"
+      "subtotal": "Subtotal:",
+      "meterHours": "Hour meter saat selesai",
+      "meterHoursHint": "Opsional, untuk mesin dengan jadwal jam operasi. Dicatat sebagai pembacaan meter dan menggeser jam jatuh tempo jadwal."
     },
     "detail": {
       "started": "Work order dimulai.",
@@ -1397,7 +1399,7 @@
       "kpiOverdue": "Lewat Jatuh Tempo",
       "kpiOverdueHint": "perlu dibuatkan WO",
       "kpiDueSoon": "Segera Jatuh Tempo",
-      "kpiDueSoonHint": "≤ 7 hari atau ≤ 500 km lagi",
+      "kpiDueSoonHint": "≤ 7 hari, 500 km, atau 50 jam lagi",
       "kpiInactive": "Nonaktif",
       "kpiInactiveHint": "tidak dipantau",
       "searchLabel": "Cari jadwal",
@@ -1410,7 +1412,11 @@
       "itemLabel": "jadwal",
       "emptyTitle": "Belum ada jadwal preventif",
       "emptyDescription": "Buat jadwal perawatan berkala per aset (hari, jam operasi, atau km).",
-      "createFirst": "Buat jadwal pertama"
+      "createFirst": "Buat jadwal pertama",
+      "hoursDue": "Jatuh tempo {{hours}} jam",
+      "hoursCurrent": "sekarang {{hours}} jam",
+      "hoursUnknown": "hour meter belum dicatat",
+      "recordMeter": "Catat jam meter"
     },
     "form": {
       "assetRequired": "Aset wajib dipilih.",
@@ -1422,7 +1428,7 @@
       "createFailed": "Gagal membuat jadwal.",
       "editTitle": "Edit Jadwal Preventif",
       "createTitle": "Buat Jadwal Preventif",
-      "description": "Jadwal perawatan berkala; jatuh tempo (tanggal dan km) bergulir otomatis saat WO terkait selesai, dan pengingat dikirim lewat notifikasi.",
+      "description": "Jadwal perawatan berkala; jatuh tempo (tanggal, km, dan jam operasi) bergulir otomatis saat WO terkait selesai, dan pengingat dikirim lewat notifikasi.",
       "asset": "Aset",
       "loading": "Memuat…",
       "assetPlaceholder": "Pilih aset",
@@ -1435,7 +1441,10 @@
       "nextDueKm": "Km jatuh tempo berikutnya",
       "nextDueKmHint": "Kosongkan agar dihitung dari odometer terakhir + interval km.",
       "nextDueKmHintCurrent": "Odometer terakhir {{km}} km. Kosongkan agar dihitung dari odometer + interval km.",
-      "active": "Jadwal aktif"
+      "active": "Jadwal aktif",
+      "nextDueHours": "Jam jatuh tempo berikutnya",
+      "nextDueHoursHint": "Kosongkan agar dihitung dari hour meter terakhir + interval jam.",
+      "nextDueHoursHintCurrent": "Hour meter terakhir {{hours}} jam. Kosongkan agar dihitung dari meter + interval jam."
     }
   },
   "maintenance": {
@@ -2470,5 +2479,23 @@
   "itemImage": {
     "noPhoto": "Tanpa foto",
     "photo": "Foto item inventaris"
+  },
+  "meter": {
+    "title": "Catat Jam Meter",
+    "hours": "Hour meter (jam)",
+    "hoursRequired": "Hour meter wajib diisi.",
+    "readingAt": "Tanggal pembacaan",
+    "readingAtHint": "Kosongkan untuk hari ini.",
+    "last": "Pembacaan terakhir {{hours}} jam · {{date}}",
+    "none": "Belum ada pembacaan meter untuk aset ini.",
+    "history": "Riwayat pembacaan",
+    "fromWo": "dari {{code}}",
+    "by": "oleh {{name}}",
+    "saved": "Pembacaan meter tersimpan.",
+    "saveFailed": "Gagal menyimpan pembacaan meter.",
+    "delete": "Hapus pembacaan {{hours}} jam",
+    "deleted": "Pembacaan meter dihapus.",
+    "deleteFailed": "Gagal menghapus pembacaan meter.",
+    "loadFailed": "Riwayat pembacaan gagal dimuat."
   }
 }

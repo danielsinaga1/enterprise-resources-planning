@@ -6,7 +6,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { CalendarCheck, CalendarClock, CalendarX, FilePlus, Pencil, Plus } from 'lucide-react';
+import { CalendarCheck, CalendarClock, CalendarX, FilePlus, Gauge, Pencil, Plus } from 'lucide-react';
 import api from '@/lib/api';
 import { formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -24,15 +24,20 @@ import {
 } from '@/components/shared';
 import { DueDate } from '@/components/ProjectGuaranteeDueDate';
 import { compareNullable, includesText, pageRows, sortRows, type Comparators } from './local-list';
+import { MeterReadingModal } from './meter-reading-modal';
 import { ScheduleFormModal } from './schedule-forms';
 import { SCHEDULE_FILTER_KEYS } from './queries';
 import {
+  assetLabel,
   intervalLabel,
   scheduleDateState,
   scheduleDueState,
+  scheduleHoursState,
   scheduleKmState,
+  scheduleTracksHours,
   scheduleTracksKm,
   scheduleUsesDate,
+  type DueState,
   toDateInput,
   type ScheduleRow,
   type WoPrefill,
@@ -43,6 +48,12 @@ import { useTranslation } from 'react-i18next';
 const ACTIVE_FILTER_VALUES = ['active', 'inactive'] as const;
 const DUE_FILTER_VALUES = ['overdue', 'dueSoon'] as const;
 const FILTER_CLASS = 'w-[calc(50%-0.25rem)] sm:w-44';
+
+const meterClass = (state: DueState | null) =>
+  cn(
+    'num whitespace-nowrap text-xs',
+    state === 'overdue' ? 'font-medium text-danger-text' : state === 'dueSoon' ? 'font-medium text-warning-text' : 'text-muted-foreground',
+  );
 
 const COMPARATORS: Comparators<ScheduleRow> = {
   asset: (a, b) => compareNullable(a.asset?.code, b.asset?.code),
@@ -62,6 +73,7 @@ export function SchedulesTab({ canEdit, onCreate, onCreateWorkOrder }: Schedules
   const activeFilter = useMemo(() => ACTIVE_FILTER_VALUES.map((value) => ({ value, label: t(`schedule.tab.activeFilter.${value}`) })), [t]);
   const dueFilter = useMemo(() => DUE_FILTER_VALUES.map((value) => ({ value, label: t(`schedule.tab.dueFilter.${value}`) })), [t]);
   const [editing, setEditing] = useState<ScheduleRow | null>(null);
+  const [metering, setMetering] = useState<ScheduleRow | null>(null);
 
   const query = useQuery({
     queryKey: ['ga-schedules'],
@@ -133,21 +145,25 @@ export function SchedulesTab({ canEdit, onCreate, onCreateWorkOrder }: Schedules
           const s = row.original;
           const showDate = scheduleUsesDate(s) && !!s.nextDueAt;
           const tracksKm = scheduleTracksKm(s);
-          if (!showDate && !tracksKm) return <span className="text-muted-foreground">—</span>;
-          const kmState = scheduleKmState(s);
+          const tracksHours = scheduleTracksHours(s);
+          if (!showDate && !tracksKm && !tracksHours) return <span className="text-muted-foreground">—</span>;
           return (
             <div className="space-y-0.5">
               {showDate && <DueDate date={s.nextDueAt!} dueState={scheduleDateState(s)} />}
               {tracksKm && (
-                <p
-                  className={cn(
-                    'num whitespace-nowrap text-xs',
-                    kmState === 'overdue' ? 'font-medium text-danger-text' : kmState === 'dueSoon' ? 'font-medium text-warning-text' : 'text-muted-foreground',
-                  )}
-                >
+                <p className={meterClass(scheduleKmState(s))}>
                   {t('schedule.tab.kmDue', { km: formatNumber(s.nextDueAtKm ?? 0) })}
                   {' · '}
                   {s.currentKm != null ? t('schedule.tab.kmCurrent', { km: formatNumber(s.currentKm) }) : t('schedule.tab.kmUnknown')}
+                </p>
+              )}
+              {tracksHours && (
+                <p className={meterClass(scheduleHoursState(s))}>
+                  {t('schedule.tab.hoursDue', { hours: formatNumber(s.nextDueAtHours ?? 0) })}
+                  {' · '}
+                  {s.currentHours != null
+                    ? t('schedule.tab.hoursCurrent', { hours: formatNumber(s.currentHours) })
+                    : t('schedule.tab.hoursUnknown')}
                 </p>
               )}
             </div>
@@ -193,6 +209,12 @@ export function SchedulesTab({ canEdit, onCreate, onCreateWorkOrder }: Schedules
                       scheduleId: s.id,
                       dueAt: toDateInput(s.nextDueAt),
                     }),
+                },
+                {
+                  label: t('schedule.tab.recordMeter'),
+                  icon: Gauge,
+                  hidden: !canEdit || !s.intervalHours || !s.asset?.id,
+                  onSelect: () => setMetering(s),
                 },
                 { label: t('schedule.tab.edit'), icon: Pencil, hidden: !canEdit, onSelect: () => setEditing(s) },
               ]}
@@ -263,6 +285,9 @@ export function SchedulesTab({ canEdit, onCreate, onCreateWorkOrder }: Schedules
       </div>
 
       {editing && <ScheduleFormModal schedule={editing} onClose={() => setEditing(null)} />}
+      {metering?.asset?.id && (
+        <MeterReadingModal assetId={metering.asset.id} assetLabel={assetLabel(metering.asset)} onClose={() => setMetering(null)} />
+      )}
     </div>
   );
 }

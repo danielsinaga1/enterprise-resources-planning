@@ -41,6 +41,12 @@ public class GaMaintenanceSchedule {
     @Column(name = "next_due_at_km")
     private Integer nextDueAtKm;
 
+    @Column(name = "last_done_at_hours")
+    private Integer lastDoneAtHours;
+
+    @Column(name = "next_due_at_hours")
+    private Integer nextDueAtHours;
+
     @Column(name = "next_due_at", nullable = false)
     private Instant nextDueAt;
 

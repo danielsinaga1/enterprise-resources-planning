@@ -226,7 +226,7 @@ export function AssignModal({
 
 export function CompleteModal({ id, onClose, onDone }: { id: string; onClose: () => void; onDone: () => void }) {
   const { t } = useTranslation('eam');
-  const [form, setForm] = useState({ resolution: '', laborHours: '', laborCost: '', externalVendor: '', externalCost: '' });
+  const [form, setForm] = useState({ resolution: '', laborHours: '', laborCost: '', externalVendor: '', externalCost: '', meterHours: '' });
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
@@ -244,6 +244,7 @@ export function CompleteModal({ id, onClose, onDone }: { id: string; onClose: ()
         laborCost: numOrNull(form.laborCost),
         externalVendor: form.externalVendor || null,
         externalCost: numOrNull(form.externalCost),
+        meterHours: numOrNull(form.meterHours),
       }),
     onSuccess: () => {
       toast.success(t('workOrder.form.completed'));
@@ -285,6 +286,9 @@ export function CompleteModal({ id, onClose, onDone }: { id: string; onClose: ()
           <NumberInput min={0} value={form.externalCost} onChange={(e) => set({ externalCost: e.target.value })} />
         </Field>
       </div>
+      <Field label={t('workOrder.form.meterHours')} hint={t('workOrder.form.meterHoursHint')}>
+        <NumberInput min={0} step={1} value={form.meterHours} onChange={(e) => set({ meterHours: e.target.value })} />
+      </Field>
       {totalCost > 0 && (
         <p className="text-sm text-muted-foreground">
           {t('workOrder.form.costSum')} <span className="num font-medium text-foreground">{formatRupiah(totalCost)}</span>{' '}

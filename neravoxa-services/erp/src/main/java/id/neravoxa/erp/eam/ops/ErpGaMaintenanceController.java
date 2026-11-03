@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 /**
  * Pemeliharaan GA — port {@code routes/ga/maintenance.ts} (mount {@code requirePerm('ga_maintenance')},
- * dijalankan ErpRouteGuard): jadwal preventif dan work order.
+ * dijalankan ErpRouteGuard): jadwal preventif, pembacaan hour meter, dan work order.
  */
 @RestController
 @RequestMapping("/api/erp/ga/maintenance")
@@ -34,6 +35,7 @@ public class ErpGaMaintenanceController {
 
     private final ErpGaMaintenanceScheduleService schedules;
     private final ErpGaWorkOrderService workOrders;
+    private final ErpGaMeterReadingService meters;
     private final ErpAccess access;
 
     // ─────────────── jadwal ───────────────
@@ -52,6 +54,23 @@ public class ErpGaMaintenanceController {
     @PutMapping("/schedules/{id}")
     public Map<String, Object> updateSchedule(@PathVariable String id, @RequestBody(required = false) JsonNode body) {
         return schedules.update(id, ErpGaMaintenanceScheduleService.parseUpdate(body));
+    }
+
+    // ─────────────── pembacaan hour meter ───────────────
+
+    @GetMapping("/meter-readings")
+    public Object listMeterReadings(@RequestParam(required = false) String assetId) {
+        return meters.list(assetId);
+    }
+
+    @PostMapping("/meter-readings")
+    public ResponseEntity<Object> createMeterReading(@RequestBody(required = false) JsonNode body) {
+        return ResponseEntity.status(201).body(meters.create(ErpGaMeterReadingService.parse(body), access.userId()));
+    }
+
+    @DeleteMapping("/meter-readings/{id}")
+    public Map<String, Object> deleteMeterReading(@PathVariable String id) {
+        return meters.delete(id);
     }
 
     // ─────────────── work order ───────────────

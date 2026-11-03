@@ -113,6 +113,11 @@ export interface ScheduleRow {
   lastDoneAtKm?: number | null;
   /** Odometer terakhir aset (null bila belum tercatat). */
   currentKm?: number | null;
+  /** Jam jatuh tempo berikutnya (jadwal ber-interval jam, dari hour meter). */
+  nextDueAtHours?: number | null;
+  lastDoneAtHours?: number | null;
+  /** Pembacaan hour meter terakhir aset (null bila belum pernah dicatat). */
+  currentHours?: number | null;
   notes: string | null;
   isActive: boolean;
   asset?: { id: string; code?: string; name?: string } | null;
@@ -144,26 +149,35 @@ export function woDueState(wo: Pick<WorkOrderRow, 'status' | 'dueAt'>, now: Date
 
 /** Km remaining before a schedule counts as "due soon" (server: MaintenanceDue.DUE_SOON_KM). */
 export const DUE_SOON_KM = 500;
+/** Operating hours remaining before a schedule counts as "due soon" (server: MaintenanceDue.DUE_SOON_HOURS). */
+export const DUE_SOON_HOURS = 50;
 
-type ScheduleDueFields = Pick<ScheduleRow, 'isActive' | 'nextDueAt' | 'intervalDays' | 'intervalHours' | 'intervalKm' | 'nextDueAtKm' | 'currentKm'>;
+type ScheduleDueFields = Pick<
+  ScheduleRow,
+  'isActive' | 'nextDueAt' | 'intervalDays' | 'intervalHours' | 'intervalKm' | 'nextDueAtKm' | 'currentKm' | 'nextDueAtHours' | 'currentHours'
+>;
 
 /** Km tracking applies when the schedule has a km interval and a known km due point. */
 export const scheduleTracksKm = (s: Pick<ScheduleRow, 'intervalKm' | 'nextDueAtKm'>): boolean => !!s.intervalKm && s.nextDueAtKm != null;
 
-/** The due date applies unless the schedule is km-only with km tracking in place. */
-export const scheduleUsesDate = (s: Pick<ScheduleRow, 'intervalDays' | 'intervalHours' | 'intervalKm' | 'nextDueAtKm'>): boolean =>
-  !!s.intervalDays || !!s.intervalHours || !scheduleTracksKm(s);
+/** Hour-meter tracking applies when the schedule has an hour interval and a known due hour meter. */
+export const scheduleTracksHours = (s: Pick<ScheduleRow, 'intervalHours' | 'nextDueAtHours'>): boolean =>
+  !!s.intervalHours && s.nextDueAtHours != null;
+
+/** The due date applies with a day interval, or when no meter interval (km / hours) is tracked yet. */
+export const scheduleUsesDate = (
+  s: Pick<ScheduleRow, 'intervalDays' | 'intervalHours' | 'intervalKm' | 'nextDueAtKm' | 'nextDueAtHours'>,
+): boolean => !!s.intervalDays || (!scheduleTracksKm(s) && !scheduleTracksHours(s));
 
 /**
- * Preventive schedule due state, whichever comes first: the date (≤ 7 days) or the odometer (≤ 500 km).
- * Same rule as the server's notification check (MaintenanceDue.java). Inactive schedules never flag.
+ * Preventive schedule due state, whichever comes first: the date (≤ 7 days), the odometer (≤ 500 km) or the
+ * hour meter (≤ 50 h). Same rule as the server's notification check (MaintenanceDue.java). Inactive schedules never flag.
  */
 export function scheduleDueState(s: ScheduleDueFields, now: Date = new Date()): DueState | null {
   if (!s.isActive) return null;
-  const byDate = scheduleDateState(s, now);
-  const byKm = scheduleKmState(s);
-  if (byDate === 'overdue' || byKm === 'overdue') return 'overdue';
-  return byDate ?? byKm;
+  const states = [scheduleDateState(s, now), scheduleKmState(s), scheduleHoursState(s)];
+  if (states.includes('overdue')) return 'overdue';
+  return states.includes('dueSoon') ? 'dueSoon' : null;
 }
 
 /** Date part of {@link scheduleDueState} (null when the date does not apply). */
@@ -177,6 +191,13 @@ export function scheduleKmState(s: ScheduleDueFields): DueState | null {
   if (!s.isActive || !scheduleTracksKm(s) || s.currentKm == null) return null;
   const left = (s.nextDueAtKm as number) - s.currentKm;
   return left <= 0 ? 'overdue' : left <= DUE_SOON_KM ? 'dueSoon' : null;
+}
+
+/** Hour-meter part of {@link scheduleDueState} (null without hour tracking or a meter reading). */
+export function scheduleHoursState(s: ScheduleDueFields): DueState | null {
+  if (!s.isActive || !scheduleTracksHours(s) || s.currentHours == null) return null;
+  const left = (s.nextDueAtHours as number) - s.currentHours;
+  return left <= 0 ? 'overdue' : left <= DUE_SOON_HOURS ? 'dueSoon' : null;
 }
 
 export function intervalLabel(s: Pick<ScheduleRow, 'intervalDays' | 'intervalHours' | 'intervalKm'>): string {

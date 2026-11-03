@@ -20,9 +20,10 @@ import java.util.Map;
 /**
  * Jadwal pemeliharaan preventif GA — bagian {@code /schedules} dari {@code routes/ga/maintenance.ts}.
  * Jadwal tidak membuat WO otomatis: WO preventif dibuat pengguna (POST /work-orders dengan scheduleId),
- * dan penyelesaian WO itu menggulirkan {@code nextDueAt}/{@code nextDueAtKm} (lihat ErpGaWorkOrderService.complete).
- * Jadwal ber-interval km memakai odometer terakhir kendaraan ({@code ga_vehicle_data}); aturan jatuh tempo ada
- * di {@link MaintenanceDue}.
+ * dan penyelesaian WO itu menggulirkan {@code nextDueAt}/{@code nextDueAtKm}/{@code nextDueAtHours} (lihat
+ * ErpGaWorkOrderService.complete). Jadwal ber-interval km memakai odometer terakhir kendaraan ({@code ga_vehicle_data}),
+ * jadwal ber-interval jam memakai pembacaan hour meter terakhir ({@link ErpGaMeterReadingService}); aturan jatuh
+ * tempo ada di {@link MaintenanceDue}.
  */
 @Service
 public class ErpGaMaintenanceScheduleService {
@@ -42,18 +43,24 @@ public class ErpGaMaintenanceScheduleService {
         List<GaMaintenanceSchedule> rows = w.bind(em.createQuery("select s from GaMaintenanceSchedule s "
                 + "left join fetch s.asset" + w.clause() + " order by s.nextDueAt asc", GaMaintenanceSchedule.class))
                 .getResultList();
-        Map<String, Integer> odometers = odometers(rows.stream().map(GaMaintenanceSchedule::getAssetId).distinct().toList());
+        List<String> assetIds = rows.stream().map(GaMaintenanceSchedule::getAssetId).distinct().toList();
+        Map<String, Integer> odometers = odometers(assetIds);
+        Map<String, Integer> meters = ErpGaMeterReadingService.currentHours(em, assetIds);
         return rows.stream().map(s -> {
             ObjectNode o = GaOpsJson.scalars(s);
             o.set("asset", ErpJson.tree(GaOpsJson.assetWithPic(s.getAsset())));
-            Integer km = odometers.get(s.getAssetId());
-            if (km == null) {
-                o.putNull("currentKm");
-            } else {
-                o.put("currentKm", km);
-            }
+            putInt(o, "currentKm", odometers.get(s.getAssetId()));
+            putInt(o, "currentHours", meters.get(s.getAssetId()));
             return o;
         }).toList();
+    }
+
+    private static void putInt(ObjectNode o, String field, Integer v) {
+        if (v == null) {
+            o.putNull(field);
+        } else {
+            o.put(field, v);
+        }
     }
 
     /** Odometer terakhir per aset (hanya aset yang punya data kendaraan dengan odometer). */
@@ -87,8 +94,14 @@ public class ErpGaMaintenanceScheduleService {
         return km == null ? null : km + intervalKm;
     }
 
+    /** Jam jatuh tempo awal: hour meter terakhir + interval, null bila meter belum pernah dicatat. */
+    private Integer initialDueHours(String assetId, Integer intervalHours) {
+        Integer h = intervalHours == null ? null : ErpGaMeterReadingService.currentHours(em, assetId);
+        return h == null ? null : h + intervalHours;
+    }
+
     record CreateInput(String assetId, Integer intervalDays, Integer intervalHours, Integer intervalKm,
-                       Integer nextDueAtKm, String nextDueAt, String notes, boolean isActive) {
+                       Integer nextDueAtKm, Integer nextDueAtHours, String nextDueAt, String notes, boolean isActive) {
     }
 
     /** {@code MaintenanceScheduleSchema} (refine: salah satu interval wajib). */
@@ -99,13 +112,15 @@ public class ErpGaMaintenanceScheduleService {
         Integer hours = GaZod.optPositiveInt(GaZod.field(b, "intervalHours"));
         Integer km = GaZod.optPositiveInt(GaZod.field(b, "intervalKm"));
         Integer dueKm = GaZod.optPositiveInt(GaZod.field(b, "nextDueAtKm"));
+        Integer dueHours = GaZod.optPositiveInt(GaZod.field(b, "nextDueAtHours"));
         String nextDueAt = GaZod.reqString(GaZod.field(b, "nextDueAt"), 1, "nextDueAt wajib diisi.", 0);
         String notes = GaZod.optString(GaZod.field(b, "notes"), 0, null, 0);
         boolean isActive = GaZod.boolDefault(GaZod.field(b, "isActive"), true);
         if (days == null && hours == null && km == null) {
             throw ErpException.business("Isi salah satu interval (hari, jam, atau km).");
         }
-        return new CreateInput(assetId, days, hours, km, km == null ? null : dueKm, nextDueAt, notes, isActive);
+        return new CreateInput(assetId, days, hours, km, km == null ? null : dueKm, hours == null ? null : dueHours,
+                nextDueAt, notes, isActive);
     }
 
     /** {@code new Date(str)} tak valid → galat Prisma → 500 dengan pesan cadangan rute. */
@@ -129,6 +144,7 @@ public class ErpGaMaintenanceScheduleService {
         s.setIntervalHours(in.intervalHours());
         s.setIntervalKm(in.intervalKm());
         s.setNextDueAtKm(in.nextDueAtKm() != null ? in.nextDueAtKm() : initialDueKm(in.assetId(), in.intervalKm()));
+        s.setNextDueAtHours(in.nextDueAtHours() != null ? in.nextDueAtHours() : initialDueHours(in.assetId(), in.intervalHours()));
         s.setNextDueAt(date(in.nextDueAt(), "Gagal membuat jadwal maintenance."));
         s.setNotes(in.notes());
         s.setIsActive(in.isActive());
@@ -140,7 +156,7 @@ public class ErpGaMaintenanceScheduleService {
 
     /** {@code UpdateScheduleSchema}: semua opsional; field absen tidak diubah, null = kosongkan. */
     record UpdateInput(JsonNode body, Integer intervalDays, Integer intervalHours, Integer intervalKm,
-                       Integer nextDueAtKm, String nextDueAt, String notes, Boolean isActive) {
+                       Integer nextDueAtKm, Integer nextDueAtHours, String nextDueAt, String notes, Boolean isActive) {
         boolean has(String f) {
             return !GaZod.absent(GaZod.field(body, f));
         }
@@ -152,10 +168,11 @@ public class ErpGaMaintenanceScheduleService {
         Integer hours = GaZod.optPositiveInt(GaZod.field(b, "intervalHours"));
         Integer km = GaZod.optPositiveInt(GaZod.field(b, "intervalKm"));
         Integer dueKm = GaZod.optPositiveInt(GaZod.field(b, "nextDueAtKm"));
+        Integer dueHours = GaZod.optPositiveInt(GaZod.field(b, "nextDueAtHours"));
         String nextDueAt = GaZod.optStringNotNull(GaZod.field(b, "nextDueAt"), 1, null, 0);
         String notes = GaZod.optString(GaZod.field(b, "notes"), 0, null, 0);
         Boolean isActive = GaZod.optBool(GaZod.field(b, "isActive"));
-        return new UpdateInput(b, days, hours, km, dueKm, nextDueAt, notes, isActive);
+        return new UpdateInput(b, days, hours, km, dueKm, dueHours, nextDueAt, notes, isActive);
     }
 
     /** PUT /schedules/:id → {@code { id }}; id tak dikenal = P2025. */
@@ -181,6 +198,14 @@ public class ErpGaMaintenanceScheduleService {
             s.setNextDueAtKm(in.nextDueAtKm());
         } else if (s.getNextDueAtKm() == null) {
             s.setNextDueAtKm(initialDueKm(s.getAssetId(), s.getIntervalKm()));
+        }
+        if (s.getIntervalHours() == null) {
+            s.setNextDueAtHours(null);
+            s.setLastDoneAtHours(null);
+        } else if (in.has("nextDueAtHours") && in.nextDueAtHours() != null) {
+            s.setNextDueAtHours(in.nextDueAtHours());
+        } else if (s.getNextDueAtHours() == null) {
+            s.setNextDueAtHours(initialDueHours(s.getAssetId(), s.getIntervalHours()));
         }
         if (in.nextDueAt() != null && !in.nextDueAt().isEmpty()) {
             s.setNextDueAt(date(in.nextDueAt(), "Gagal update jadwal maintenance."));
