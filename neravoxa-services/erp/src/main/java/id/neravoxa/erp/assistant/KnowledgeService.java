@@ -86,7 +86,7 @@ public class KnowledgeService {
     // ───────────────────────────── query ─────────────────────────────
 
     public Map<String, Object> overview() {
-        return ErpJson.map("documents", store.listDocuments(), "stats", store.stats(props.getEmbeddingModel()));
+        return ErpJson.map("documents", store.listDocuments(), "stats", store.stats(props.activeEmbeddingModel()));
     }
 
     /** Potongan paling relevan untuk pertanyaan (kosong bila basis pengetahuan kosong). */
@@ -95,8 +95,8 @@ public class KnowledgeService {
             return List.of();
         }
         String q = question.length() > 2000 ? question.substring(0, 2000) : question;
-        float[] vector = models.embed(List.of(props.getQueryPrefix() + q))[0];
-        return store.search(vector, props.getEmbeddingModel(), props.getTopK(), props.getMinScore());
+        float[] vector = models.embed(List.of(props.activeQueryPrefix() + q))[0];
+        return store.search(vector, props.activeEmbeddingModel(), props.getTopK(), props.activeMinScore());
     }
 
     // ───────────────────────────── unggah & kelola ─────────────────────────────
@@ -194,7 +194,7 @@ public class KnowledgeService {
                 continue;
             }
             String title = guideTitle(text, fileName);
-            String hash = sha256(text + "\n" + props.getEmbeddingModel() + "\n" + props.getPassagePrefix());
+            String hash = sha256(text + "\n" + props.activeEmbeddingModel() + "\n" + props.activePassagePrefix());
             var existing = store.findBySourceKey(key);
             if (!force && existing.isPresent() && hash.equals(existing.get().get("content_hash"))
                     && "ready".equals(existing.get().get("status"))) {
@@ -235,14 +235,14 @@ public class KnowledgeService {
             for (TextChunker.Chunk c : chunks) {
                 // Judul dokumen & bagian ikut di-embed agar potongan pendek tetap punya konteks.
                 String context = c.heading() == null ? title : title + " — " + c.heading();
-                inputs.add(props.getPassagePrefix() + context + "\n" + c.content());
+                inputs.add(props.activePassagePrefix() + context + "\n" + c.content());
             }
             float[][] vectors = models.embed(inputs);
             List<KnowledgeStore.ChunkRow> rows = new ArrayList<>(chunks.size());
             for (int i = 0; i < chunks.size(); i++) {
                 rows.add(new KnowledgeStore.ChunkRow(chunks.get(i).heading(), chunks.get(i).content(), vectors[i]));
             }
-            store.replaceChunks(documentId, rows, props.getEmbeddingModel());
+            store.replaceChunks(documentId, rows, props.activeEmbeddingModel());
         } catch (RuntimeException e) {
             log.warn("Asisten AI: dokumen {} gagal di-embed: {}", documentId, e.getMessage());
             store.markFailed(documentId, e.getMessage());

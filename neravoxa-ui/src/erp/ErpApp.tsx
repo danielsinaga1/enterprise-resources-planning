@@ -52,6 +52,7 @@ const GaInventoryPage = lazyPage(() => import('./pages/ga/GaInventoryPage').then
 const GaMaintenancePage = lazyPage(() => import('./pages/ga/GaMaintenancePage').then((m) => ({ default: m.GaMaintenancePage })));
 const GaMaterialRequestPage = lazyPage(() => import('./pages/ga/GaMaterialRequestPage').then((m) => ({ default: m.GaMaterialRequestPage })));
 const GaVehiclePage = lazyPage(() => import('./pages/ga/GaVehiclePage').then((m) => ({ default: m.GaVehiclePage })));
+const GaMaintenanceReportPage = lazyPage(() => import('./pages/ga/GaMaintenanceReportPage').then((m) => ({ default: m.GaMaintenanceReportPage })));
 const GaFleetReportPage = lazyPage(() => import('./pages/ga/GaFleetReportPage').then((m) => ({ default: m.GaFleetReportPage })));
 const GaBuildingPage = lazyPage(() => import('./pages/ga/GaBuildingPage').then((m) => ({ default: m.GaBuildingPage })));
 const GaEquipmentPage = lazyPage(() => import('./pages/ga/GaEquipmentPage').then((m) => ({ default: m.GaEquipmentPage })));
@@ -113,6 +114,7 @@ export default function ErpApp() {
           <Route path="ga/documents" element={<Perm module="ga_documents"><GaDocumentsPage /></Perm>} />
           <Route path="ga/inventory" element={<Perm module="ga_inventory"><GaInventoryPage /></Perm>} />
           <Route path="ga/maintenance" element={<Perm module="ga_maintenance"><GaMaintenancePage /></Perm>} />
+          <Route path="ga/maintenance/report" element={<Perm module="ga_maintenance"><GaMaintenanceReportPage /></Perm>} />
           <Route path="ga/material-requests" element={<Perm module="ga_material_request"><GaMaterialRequestPage /></Perm>} />
           <Route path="ga/vehicle" element={<Perm module="ga_vehicle"><GaVehiclePage /></Perm>} />
           <Route path="ga/vehicle/report" element={<Perm module="ga_vehicle"><GaFleetReportPage /></Perm>} />

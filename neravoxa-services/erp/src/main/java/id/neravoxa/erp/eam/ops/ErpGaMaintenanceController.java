@@ -25,7 +25,7 @@ import java.util.Map;
 
 /**
  * Pemeliharaan GA — port {@code routes/ga/maintenance.ts} (mount {@code requirePerm('ga_maintenance')},
- * dijalankan ErpRouteGuard): jadwal preventif, pembacaan hour meter, dan work order.
+ * dijalankan ErpRouteGuard): jadwal preventif, pembacaan hour meter, work order, dan laporan biaya.
  */
 @RestController
 @RequestMapping("/api/erp/ga/maintenance")
@@ -36,6 +36,7 @@ public class ErpGaMaintenanceController {
     private final ErpGaMaintenanceScheduleService schedules;
     private final ErpGaWorkOrderService workOrders;
     private final ErpGaMeterReadingService meters;
+    private final ErpMaintenanceCostReportService costReport;
     private final ErpAccess access;
 
     // ─────────────── jadwal ───────────────
@@ -54,6 +55,13 @@ public class ErpGaMaintenanceController {
     @PutMapping("/schedules/{id}")
     public Map<String, Object> updateSchedule(@PathVariable String id, @RequestBody(required = false) JsonNode body) {
         return schedules.update(id, ErpGaMaintenanceScheduleService.parseUpdate(body));
+    }
+
+    // ─────────────── laporan biaya ───────────────
+
+    @GetMapping("/cost-report")
+    public Map<String, Object> costReport(@RequestParam(required = false) String from, @RequestParam(required = false) String to) {
+        return costReport.report(from, to, java.time.Instant.now());
     }
 
     // ─────────────── pembacaan hour meter ───────────────

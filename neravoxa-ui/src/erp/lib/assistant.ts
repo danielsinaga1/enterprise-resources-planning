@@ -10,6 +10,8 @@ import api from './api';
 
 export interface AssistantStatus {
   configured: boolean;
+  /** 'huggingface' | 'ollama' (model lokal). */
+  provider?: string;
   chatModel: string;
   embeddingModel: string;
   canManageKnowledge: boolean;

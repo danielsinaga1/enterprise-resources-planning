@@ -52,6 +52,7 @@
     "gaBuildings": "Buildings & leases",
     "gaEquipment": "Equipment & calibration",
     "gaMaintenance": "Maintenance",
+    "gaMaintenanceReport": "Maintenance report",
     "gaMaterialRequests": "Material requests",
     "gaInventory": "Office inventory",
     "gaDocuments": "Documents & certificates",
@@ -242,6 +243,18 @@
       "document_expiring": "Document expiring",
       "rental_expiring": "Lease ending",
       "system": "System"
+    },
+    "email": {
+      "title": "Email copy",
+      "hint": "Also send notifications to {{email}}. Notifications close together are combined into one email.",
+      "unavailable": "Email notifications are not enabled by the administrator. Notifications still appear in the bell.",
+      "noAddress": "Your account has no email address, so email copies cannot be sent.",
+      "sendTest": "Send test email",
+      "testSent": "Test email sent to {{email}}.",
+      "testFailed": "Could not send the test email.",
+      "turnedOn": "Email copies turned on.",
+      "turnedOff": "Email copies turned off.",
+      "saveFailed": "Could not save the email preference."
     }
   },
   "auditTrail": {

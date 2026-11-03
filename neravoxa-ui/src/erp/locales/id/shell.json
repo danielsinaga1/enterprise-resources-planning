@@ -52,6 +52,7 @@
     "gaBuildings": "Gedung & Sewa",
     "gaEquipment": "Peralatan & Kalibrasi",
     "gaMaintenance": "Pemeliharaan",
+    "gaMaintenanceReport": "Laporan Pemeliharaan",
     "gaMaterialRequests": "Permintaan Barang",
     "gaInventory": "Inventaris Kantor",
     "gaDocuments": "Dokumen & Sertifikat",
@@ -242,6 +243,18 @@
       "document_expiring": "Dokumen Kedaluwarsa",
       "rental_expiring": "Sewa Berakhir",
       "system": "Sistem"
+    },
+    "email": {
+      "title": "Salinan email",
+      "hint": "Kirim juga notifikasi ke {{email}}. Notifikasi yang berdekatan digabung menjadi satu email.",
+      "unavailable": "Email notifikasi belum diaktifkan administrator. Notifikasi tetap muncul di lonceng.",
+      "noAddress": "Akun Anda belum punya alamat email, jadi salinan email tidak bisa dikirim.",
+      "sendTest": "Kirim email uji",
+      "testSent": "Email uji dikirim ke {{email}}.",
+      "testFailed": "Email uji gagal dikirim.",
+      "turnedOn": "Salinan email diaktifkan.",
+      "turnedOff": "Salinan email dimatikan.",
+      "saveFailed": "Gagal menyimpan preferensi email."
     }
   },
   "auditTrail": {

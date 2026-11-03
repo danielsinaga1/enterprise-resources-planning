@@ -43,8 +43,9 @@ public class ErpAssistantController {
     public Map<String, Object> status() {
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("configured", props.configured());
-        out.put("chatModel", props.getChatModel());
-        out.put("embeddingModel", props.getEmbeddingModel());
+        out.put("provider", props.activeProvider());
+        out.put("chatModel", props.activeChatModel());
+        out.put("embeddingModel", props.activeEmbeddingModel());
         out.put("canManageKnowledge", access.can("settings", "edit"));
         return out;
     }

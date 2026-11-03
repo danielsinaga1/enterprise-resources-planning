@@ -1459,7 +1459,8 @@
       "tabsLabel": "Bagian pemeliharaan",
       "tabWo": "Work Order",
       "tabSchedules": "Jadwal Preventif",
-      "tabRequests": "Pengajuan"
+      "tabRequests": "Pengajuan",
+      "costReport": "Laporan Biaya"
     },
     "checklist": {
       "empty": "Belum ada item checklist.",
@@ -2497,5 +2498,62 @@
     "deleted": "Pembacaan meter dihapus.",
     "deleteFailed": "Gagal menghapus pembacaan meter.",
     "loadFailed": "Riwayat pembacaan gagal dimuat."
+  },
+  "maintenanceReport": {
+    "title": "Laporan Biaya Pemeliharaan",
+    "description": "Biaya work order yang selesai per aset: tenaga kerja, vendor luar, dan part, beserta tingkat keterlambatan.",
+    "maintenance": "Pemeliharaan",
+    "exportExcel": "Ekspor Excel",
+    "noExportData": "Tidak ada data untuk diekspor.",
+    "exported": "Laporan diekspor.",
+    "exportFailed": "Gagal mengekspor laporan.",
+    "filePrefix": "laporan-biaya-pemeliharaan",
+    "summaryLabel": "Ringkasan biaya pemeliharaan",
+    "totalCost": "Total Biaya",
+    "perMonthHint": "≈ {{amount}} per bulan",
+    "completed": "WO Selesai",
+    "completedHint": "{{share}} preventif · {{assets}} aset",
+    "lateRate": "Selesai Terlambat",
+    "lateHint": "{{late}} dari {{total}} WO · {{open}} WO aktif lewat tenggat",
+    "resolution": "Rata-rata Penyelesaian",
+    "hours": "{{n}} jam",
+    "resolutionHint": "dari dilaporkan s.d. selesai · {{hours}} jam kerja",
+    "trend": "Tren biaya bulanan",
+    "periodDescription": "{{count}} bulan · {{from}} – {{to}}",
+    "noCost": "Belum ada biaya WO selesai pada periode ini.",
+    "trendCaption": "Total biaya per bulan: {{list}}",
+    "topTitle": "Aset dengan biaya tertinggi",
+    "topDescription": "Delapan aset teratas pada periode ini.",
+    "detailTitle": "Biaya per aset",
+    "detailDescription": "Menampilkan {{shown}} dari {{total}} aset",
+    "search": "Cari aset",
+    "searchPlaceholder": "Cari kode, nama, atau kategori",
+    "tableLabel": "Tabel biaya pemeliharaan per aset",
+    "itemLabel": "aset",
+    "emptyTitle": "Belum ada aset dengan WO selesai",
+    "emptyDescription": "Biaya muncul setelah work order ditandai selesai dalam periode yang dipilih.",
+    "asset": "Aset",
+    "workOrders": "WO",
+    "mix": "{{preventive}} prev · {{corrective}} kor",
+    "late": "Terlambat",
+    "total": "Total",
+    "footerTotal_one": "Total {{n}} aset",
+    "footerTotal_other": "Total {{n}} aset",
+    "cost": {
+      "labor": "Tenaga kerja",
+      "external": "Vendor luar",
+      "parts": "Part"
+    },
+    "export": {
+      "code": "Kode",
+      "name": "Nama aset",
+      "category": "Kategori",
+      "workOrders": "WO selesai",
+      "preventive": "Preventif",
+      "corrective": "Korektif",
+      "late": "Terlambat",
+      "total": "Total biaya",
+      "lastCompleted": "WO terakhir selesai"
+    }
   }
 }

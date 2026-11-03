@@ -28,7 +28,7 @@ import java.util.UUID;
  *   <li>Bila {@code app.erp.auto-init=true} (default) dan tabel {@code accounts} belum ada, jalankan
  *       {@code db/erp/01_schema.sql} lalu {@code 02_seed.sql} (salinan sql/erp_service/). Untuk
  *       produksi, skrip yang sama dijalankan manual oleh ops dan auto-init boleh dimatikan.</li>
- *   <li>Skrip tambahan yang idempoten ({@code 03_assistant.sql}, {@code 04_eam_meter.sql}) dijalankan setiap boot bila auto-init
+ *   <li>Skrip tambahan yang idempoten ({@code 03_assistant.sql}, {@code 04_eam_meter.sql}, {@code 05_notification_email.sql}) dijalankan setiap boot bila auto-init
  *       aktif, sehingga database lama ikut mendapat tabel baru.</li>
  *   <li>Role ERP bawaan + matriks izin default dibuat bila belum ada (tidak menimpa perubahan admin).</li>
  *   <li>Peringatan di log bila pemetaan akun sistem wajib belum lengkap.</li>
@@ -69,6 +69,7 @@ public class ErpBootstrap {
                 // Tabel tambahan setelah rilis awal; idempoten (IF NOT EXISTS), aman tiap boot.
                 runScript("db/erp/03_assistant.sql");
                 runScript("db/erp/04_eam_meter.sql");
+                runScript("db/erp/05_notification_email.sql");
             }
             if (!tableExists("roles")) {
                 log.warn("ERP: tabel db_erp belum ada. Jalankan sql/erp_service/01_schema.sql & 02_seed.sql.");

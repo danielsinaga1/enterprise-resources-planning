@@ -54,7 +54,27 @@ Backend: `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` wajib;
 bisnis, bawaan `+07:00`), `ERP_STORAGE_DIR` (lampiran privat, bawaan `./erp-files`).
 Gateway: `BACKEND_SERVICE_URL` (bawaan `http://localhost:8090`).
 
-## Asisten AI (RAG + Hugging Face)
+## Notifikasi email
+
+Notifikasi in-app ERP (persetujuan, WO ditugaskan/terlambat, kalibrasi, dokumen & sewa jatuh tempo, dsb.) bisa
+juga dikirim sebagai email. Notifikasi yang muncul berdekatan digabung menjadi satu email per pengguna (digest),
+jadi pemeriksaan harian 07.00 tidak membanjiri inbox. Setiap pengguna bisa mematikan salinan email dan mengirim
+email uji di halaman *Notifikasi*. Nonaktif bawaan.
+
+| Variabel | Bawaan | Keterangan |
+|---|---|---|
+| `ERP_EMAIL_ENABLED` | `false` | `true` = kirim salinan email. |
+| `ERP_EMAIL_FROM` | — | Pengirim, mis. `Neravoxa ERP <erp@perusahaan.co.id>`. |
+| `MAIL_HOST` / `MAIL_PORT` | — / `587` | Server SMTP. |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | — | Kredensial SMTP (kosongkan bila relay tanpa login). |
+| `MAIL_SMTP_AUTH` / `MAIL_STARTTLS` / `MAIL_SSL` | `true` / `true` / `false` | Untuk port 465 pakai `MAIL_SSL=true`, `MAIL_STARTTLS=false`. |
+| `ERP_EMAIL_DIGEST_SECONDS` | `60` | Jeda pengumpulan notifikasi sebelum email dikirim. |
+| `APP_BASE_URL` | — | Dipakai untuk tautan "Buka notifikasi" di email. |
+
+Preferensi disimpan di tabel `notification_preferences` (`sql/erp_service/05_notification_email.sql`, dipasang
+otomatis bila `ERP_AUTO_INIT=true`).
+
+## Asisten AI (RAG + Hugging Face atau Ollama)
 
 Panel **Asisten AI** (pojok kanan bawah di semua halaman ERP):
 
@@ -93,6 +113,30 @@ penyedia model chat melalui Hugging Face. Saat dokumen diunggah/diindeks, **selu
 tidak disimpan di server (hanya di tab browser pengguna). Akun HF gratis tidak punya kredit Inference Providers
 (error 402); beli kredit atau PRO di *Settings → Billing*, dan nonaktifkan penyedia yang tidak disetujui di
 *Settings → Inference Providers*.
+
+### Model lokal (Ollama) — gratis, data tidak keluar dari server
+
+Sebagai ganti Hugging Face, asisten bisa memakai model yang berjalan di server sendiri lewat
+[Ollama](https://ollama.com) (API kompatibel OpenAI: `/v1/chat/completions` dan `/v1/embeddings`):
+
+```bash
+# di server (Windows/Linux/macOS), setelah memasang Ollama
+ollama pull qwen2.5:7b     # chat + tool calling, ±4,7 GB (butuh RAM ±8 GB; GPU mempercepat)
+ollama pull bge-m3         # embedding multibahasa, ±1,2 GB
+ASSISTANT_PROVIDER=ollama ./gradlew bootRun
+```
+
+| Variabel | Bawaan | Keterangan |
+|---|---|---|
+| `ASSISTANT_PROVIDER` | `huggingface` | `ollama` = pakai model lokal (HF_TOKEN tidak diperlukan). |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Alamat Ollama (bisa server lain di jaringan internal). |
+| `OLLAMA_CHAT_MODEL` / `OLLAMA_EMBEDDING_MODEL` | `qwen2.5:7b` / `bge-m3` | Model yang sudah di-`pull`; model chat harus mendukung tool calling. |
+| `OLLAMA_MIN_SCORE` | `0.45` | Ambang kemiripan (skor bge-m3 lebih rendah daripada E5). |
+| `OLLAMA_TIMEOUT_SECONDS` | `180` | Batas waktu per permintaan (model di CPU bisa lambat). |
+
+Nama model embedding disimpan per potongan, jadi saat berganti penyedia panduan bawaan otomatis di-embed ulang
+dan vektor lama tidak tercampur; proses ulang dokumen unggahan di *Pengaturan → Asisten AI*. Kualitas jawaban
+model 7B di bawah model besar di cloud, tetapi cukup untuk tanya-jawab panduan dan pencarian data ERP.
 
 ## Pengujian
 

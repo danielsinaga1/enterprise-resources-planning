@@ -35,7 +35,8 @@ import java.util.regex.Pattern;
  * Jejak audit ERP — port {@code middleware/auditTrail.ts} + {@code auditSnapshot.ts}.
  *
  * <p>Setiap request POST/PUT/PATCH/DELETE ke {@code /api/erp/**} dicatat ke {@code audit_trail}:
- * entityType = segmen pertama path, entityId = {@code body.id} (atau id dari path),
+ * entityType = segmen pertama path (untuk modul GA/EAM: path sumber daya, mis. {@code ga/maintenance/work-orders}),
+ * entityId = {@code body.id} (atau id dari path),
  * newValues = body respons (rahasia disamarkan), oldValues = snapshot sebelum perubahan
  * untuk dokumen/master yang terdaftar di {@link #REGISTRY}. Kegagalan audit tidak pernah
  * menggagalkan request.
@@ -106,7 +107,12 @@ public class ErpAuditService {
             by("payment-requests/eam/VEHICLE_TAX", GaVehicleTax.class),
             by("payment-requests/eam/SERVICE_LOG", GaVehicleServiceLog.class),
             by("payment-requests/eam/MATERIAL_REQUEST", GaMaterialRequest.class),
-            by("payment-request-types", PaymentRequestType.class));
+            by("payment-request-types", PaymentRequestType.class),
+            by("ga/assets", GaAsset.class),
+            by("ga/maintenance/work-orders", GaWorkOrder.class),
+            by("ga/maintenance/schedules", GaMaintenanceSchedule.class),
+            by("ga/material-requests", GaMaterialRequest.class, "items"),
+            by("ga/documents", GaDocument.class));
 
     private static final List<Entry> SORTED = REGISTRY.stream()
             .sorted(Comparator.comparingInt((Entry e) -> e.prefix().length()).reversed()).toList();
@@ -191,7 +197,7 @@ public class ErpAuditService {
         }
         try {
             String[] segs = segments(request.getRequestURI());
-            String entityType = segs.length > 0 ? segs[0] : "unknown";
+            String entityType = entityType(segs);
             Before before = (Before) request.getAttribute(BEFORE_ATTR);
             String entityId = body != null && body.hasNonNull("id") ? body.get("id").asText()
                     : before != null && before.id() != null ? before.id() : "N/A";
@@ -212,6 +218,29 @@ public class ErpAuditService {
         } catch (RuntimeException e) {
             log.error("ERP audit: penulisan audit log gagal (diabaikan): {}", e.getMessage());
         }
+    }
+
+    private static final Pattern RESOURCE = Pattern.compile("^[a-z][a-z-]*$");
+
+    /**
+     * Tipe entitas audit: segmen pertama path. Modul GA/EAM berbagi awalan {@code ga}, jadi dipakai path sumber
+     * dayanya — segmen berurutan sampai id pertama, maks. 3 (mis. {@code ga/maintenance/work-orders}).
+     */
+    public static String entityType(String... segs) {
+        if (segs.length == 0) {
+            return "unknown";
+        }
+        if (!"ga".equals(segs[0])) {
+            return segs[0];
+        }
+        StringBuilder type = new StringBuilder("ga");
+        for (int i = 1; i < Math.min(segs.length, 3); i++) {
+            if (!RESOURCE.matcher(segs[i]).matches()) {
+                break;
+            }
+            type.append('/').append(segs[i]);
+        }
+        return type.toString();
     }
 
     private static String clientIp(HttpServletRequest request) {

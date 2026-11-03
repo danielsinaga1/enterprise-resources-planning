@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 public class AssistantChatService {
 
     public static final String NOT_CONFIGURED = "Asisten AI belum dikonfigurasi. Administrator perlu mengisi HF_TOKEN "
-            + "(token Hugging Face) di server lalu memulai ulang backend.";
+            + "(token Hugging Face) atau memakai model lokal (ASSISTANT_PROVIDER=ollama) di server lalu memulai ulang backend.";
 
     static final int MAX_TOOL_ROUNDS = 5;
     static final int MAX_HISTORY = 12;

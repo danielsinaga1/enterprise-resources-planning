@@ -118,6 +118,17 @@ class GaWorkflowNotificationTest extends GaOpsTestSupport {
     }
 
     @Test
+    void email_copies_are_off_by_default() throws Exception {
+        adminId();
+        asAdmin();
+        com.fasterxml.jackson.databind.JsonNode prefs = ok(get("/api/erp/notifications/preferences"));
+        assertTrue(!prefs.get("emailAvailable").asBoolean());
+        assertTrue(prefs.get("emailEnabled").asBoolean());
+        expectError(400, "Email notifikasi belum diaktifkan administrator (ERP_EMAIL_ENABLED, MAIL_HOST, ERP_EMAIL_FROM).",
+                post("/api/erp/notifications/preferences/test-email", Map.of()));
+    }
+
+    @Test
     void calibration_document_and_rental_reminders_once_per_state() throws Exception {
         String admin = adminId();
         String docRole = customRole(Map.of("ga_documents", "edit"));

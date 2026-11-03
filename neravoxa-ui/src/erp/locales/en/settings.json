@@ -175,7 +175,7 @@
       },
       "assistant": {
         "label": "AI Assistant",
-        "description": "Assistant status (Hugging Face models) and knowledge base: upload company SOPs, policies, or manuals."
+        "description": "Assistant status (Hugging Face or local Ollama models) and knowledge base: upload company SOPs, policies, or manuals."
       },
       "appearance": {
         "label": "Appearance",

@@ -175,7 +175,7 @@
       },
       "assistant": {
         "label": "Asisten AI",
-        "description": "Status asisten (model Hugging Face) dan basis pengetahuan: unggah SOP, kebijakan, atau manual perusahaan."
+        "description": "Status asisten (model Hugging Face atau Ollama lokal) dan basis pengetahuan: unggah SOP, kebijakan, atau manual perusahaan."
       },
       "appearance": {
         "label": "Tampilan",

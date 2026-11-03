@@ -12,7 +12,7 @@
   "thinking": "Sedang memeriksa…",
   "error": "Asisten gagal menjawab. Coba lagi sebentar.",
   "greeting": "Halo {{name}}! Saya bisa memandu langkah berikutnya, menjawab cara pakai Neravoxa dari panduan & dokumen perusahaan, mengambil data sesuai hak akses Anda, dan menyiapkan draft input data.",
-  "notConfigured": "Asisten AI belum aktif: administrator perlu mengisi HF_TOKEN (token Hugging Face) di server. Saran langkah berikutnya di bawah tetap tersedia.",
+  "notConfigured": "Asisten AI belum aktif: administrator perlu mengisi HF_TOKEN (token Hugging Face) atau memakai model lokal Ollama di server. Saran langkah berikutnya di bawah tetap tersedia.",
   "nextSteps": "Langkah berikutnya",
   "nextStepsCount": "Langkah berikutnya ({{count}})",
   "loadingNextSteps": "Memeriksa pekerjaan tertunda…",
@@ -85,7 +85,7 @@
     "statusTitle": "Status asisten",
     "active": "Aktif",
     "inactive": "Belum aktif",
-    "inactiveHelp": "Isi variabel lingkungan HF_TOKEN di server (token Hugging Face dengan izin Inference Providers), lalu mulai ulang backend.",
+    "inactiveHelp": "Pilih salah satu: isi variabel lingkungan HF_TOKEN di server (token Hugging Face dengan izin Inference Providers), atau pakai model lokal gratis dengan ASSISTANT_PROVIDER=ollama (pasang Ollama lalu unduh model qwen2.5:7b dan bge-m3). Setelah itu mulai ulang backend.",
     "chatModel": "Model chat",
     "embeddingModel": "Model embedding",
     "privacy": "Saat asisten dipakai, pertanyaan, potongan dokumen yang relevan, dan data hasil pencarian dikirim ke penyedia model melalui Hugging Face. Vektor pengetahuan disimpan di database Neravoxa.",
@@ -121,6 +121,10 @@
       "processing": "Diproses",
       "ready": "Siap",
       "failed": "Gagal"
-    }
+    },
+    "provider": "Penyedia model",
+    "providerHuggingFace": "Hugging Face (cloud)",
+    "providerOllama": "Ollama (lokal di server)",
+    "privacyLocal": "Model berjalan di server sendiri lewat Ollama: pertanyaan, potongan dokumen, dan data hasil pencarian tidak dikirim ke luar. Vektor pengetahuan disimpan di database Neravoxa."
   }
 }

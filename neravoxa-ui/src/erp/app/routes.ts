@@ -216,6 +216,7 @@ export const ROUTES: readonly RouteEntry[] = [
   r({ path: '/ga/building', labelKey: 'nav.gaBuildings', section: 'assets', icon: Building2, module: 'ga_building', keywords: ['gedung', 'sewa', 'building', 'properti'] }),
   r({ path: '/ga/equipment', labelKey: 'nav.gaEquipment', section: 'assets', icon: ScanLine, module: 'ga_equipment', keywords: ['equipment', 'kalibrasi', 'alat ukur'] }),
   r({ path: '/ga/maintenance', labelKey: 'nav.gaMaintenance', shortLabel: 'WO', section: 'assets', icon: Wrench, module: 'ga_maintenance', keywords: ['maintenance', 'wo', 'work order', 'perintah kerja', 'perbaikan'] }),
+  r({ path: '/ga/maintenance/report', labelKey: 'nav.gaMaintenanceReport', section: 'assets', icon: BarChart3, module: 'ga_maintenance', parent: '/ga/maintenance', keywords: ['laporan biaya', 'biaya maintenance', 'maintenance cost', 'laporan pemeliharaan'] }),
   r({ path: '/ga/material-requests', labelKey: 'nav.gaMaterialRequests', shortLabel: 'MR', section: 'assets', icon: PackageSearch, module: 'ga_material_request', keywords: ['mr', 'material request', 'permintaan'] }),
   r({ path: '/ga/inventory', labelKey: 'nav.gaInventory', section: 'assets', icon: ClipboardList, module: 'ga_inventory', keywords: ['inventaris', 'inventory ga', 'atk'] }),
   r({ path: '/ga/documents', labelKey: 'nav.gaDocuments', section: 'assets', icon: FileText, module: 'ga_documents', keywords: ['dokumen', 'sertifikat', 'izin', 'legalitas'] }),

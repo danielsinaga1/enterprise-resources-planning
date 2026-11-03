@@ -12,7 +12,7 @@
   "thinking": "Checking…",
   "error": "The assistant could not answer. Please try again shortly.",
   "greeting": "Hi {{name}}! I can guide your next step, answer how-to questions from the Neravoxa guide and company documents, look up data you have access to, and prepare drafts for data entry.",
-  "notConfigured": "The AI Assistant is not active yet: an administrator needs to set HF_TOKEN (Hugging Face token) on the server. The next-step suggestions below still work.",
+  "notConfigured": "The AI Assistant is not active yet: an administrator needs to set HF_TOKEN (Hugging Face token) or use a local Ollama model on the server. The next-step suggestions below still work.",
   "nextSteps": "Next steps",
   "nextStepsCount": "Next steps ({{count}})",
   "loadingNextSteps": "Checking pending work…",
@@ -110,7 +110,7 @@
     "statusTitle": "Assistant status",
     "active": "Active",
     "inactive": "Not active",
-    "inactiveHelp": "Set the HF_TOKEN environment variable on the server (a Hugging Face token with Inference Providers permission), then restart the backend.",
+    "inactiveHelp": "Choose one: set the HF_TOKEN environment variable on the server (a Hugging Face token with Inference Providers permission), or use a free local model with ASSISTANT_PROVIDER=ollama (install Ollama, then pull qwen2.5:7b and bge-m3). Then restart the backend.",
     "chatModel": "Chat model",
     "embeddingModel": "Embedding model",
     "privacy": "When the assistant is used, questions, relevant document passages, and looked-up data are sent to model providers through Hugging Face. Knowledge vectors are stored in the Neravoxa database.",
@@ -147,6 +147,10 @@
       "processing": "Processing",
       "ready": "Ready",
       "failed": "Failed"
-    }
+    },
+    "provider": "Model provider",
+    "providerHuggingFace": "Hugging Face (cloud)",
+    "providerOllama": "Ollama (local on the server)",
+    "privacyLocal": "The model runs on your own server through Ollama: questions, document passages, and looked-up data are not sent outside. Knowledge vectors are stored in the Neravoxa database."
   }
 }

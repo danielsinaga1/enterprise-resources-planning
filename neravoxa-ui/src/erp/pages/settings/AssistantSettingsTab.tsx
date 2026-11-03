@@ -92,12 +92,16 @@ export function AssistantSettingsTab() {
           <div className="space-y-3 text-sm">
             {!configured && <p className="rounded-md bg-warning-subtle px-3 py-2 text-warning-text">{t('settings.inactiveHelp')}</p>}
             <dl className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-[max-content_1fr]">
+              <dt className="text-muted-foreground">{t('settings.provider')}</dt>
+              <dd>{status.data?.provider === 'ollama' ? t('settings.providerOllama') : t('settings.providerHuggingFace')}</dd>
               <dt className="text-muted-foreground">{t('settings.chatModel')}</dt>
               <dd className="font-mono text-xs leading-5">{status.data?.chatModel}</dd>
               <dt className="text-muted-foreground">{t('settings.embeddingModel')}</dt>
               <dd className="font-mono text-xs leading-5">{status.data?.embeddingModel}</dd>
             </dl>
-            <p className="text-xs text-muted-foreground">{t('settings.privacy')}</p>
+            <p className="text-xs text-muted-foreground">
+              {status.data?.provider === 'ollama' ? t('settings.privacyLocal') : t('settings.privacy')}
+            </p>
           </div>
         )}
       </SettingsCard>

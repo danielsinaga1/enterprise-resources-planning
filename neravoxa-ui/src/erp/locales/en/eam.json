@@ -1459,7 +1459,8 @@
       "tabsLabel": "Maintenance sections",
       "tabWo": "Work orders",
       "tabSchedules": "Preventive schedules",
-      "tabRequests": "Requests"
+      "tabRequests": "Requests",
+      "costReport": "Cost report"
     },
     "checklist": {
       "empty": "No checklist items yet.",
@@ -2497,5 +2498,62 @@
     "deleted": "Meter reading deleted.",
     "deleteFailed": "Could not delete the meter reading.",
     "loadFailed": "Could not load the reading history."
+  },
+  "maintenanceReport": {
+    "title": "Maintenance Cost Report",
+    "description": "Cost of completed work orders per asset: labor, outside suppliers and parts, with the late-completion rate.",
+    "maintenance": "Maintenance",
+    "exportExcel": "Export Excel",
+    "noExportData": "Nothing to export.",
+    "exported": "Report exported.",
+    "exportFailed": "Could not export the report.",
+    "filePrefix": "maintenance-cost-report",
+    "summaryLabel": "Maintenance cost summary",
+    "totalCost": "Total cost",
+    "perMonthHint": "≈ {{amount}} per month",
+    "completed": "Completed WOs",
+    "completedHint": "{{share}} preventive · {{assets}} assets",
+    "lateRate": "Completed late",
+    "lateHint": "{{late}} of {{total}} WOs · {{open}} active WOs overdue",
+    "resolution": "Average resolution",
+    "hours": "{{n}} h",
+    "resolutionHint": "reported to completed · {{hours}} labor hours",
+    "trend": "Monthly cost trend",
+    "periodDescription": "{{count}} months · {{from}} – {{to}}",
+    "noCost": "No completed work-order costs in this period.",
+    "trendCaption": "Total cost per month: {{list}}",
+    "topTitle": "Highest-cost assets",
+    "topDescription": "Top eight assets in this period.",
+    "detailTitle": "Cost per asset",
+    "detailDescription": "Showing {{shown}} of {{total}} assets",
+    "search": "Search assets",
+    "searchPlaceholder": "Search code, name or category",
+    "tableLabel": "Maintenance cost per asset",
+    "itemLabel": "assets",
+    "emptyTitle": "No assets with completed work orders",
+    "emptyDescription": "Costs appear once work orders are completed in the selected period.",
+    "asset": "Asset",
+    "workOrders": "WOs",
+    "mix": "{{preventive}} prev · {{corrective}} corr",
+    "late": "Late",
+    "total": "Total",
+    "footerTotal_one": "Total of {{n}} asset",
+    "footerTotal_other": "Total of {{n}} assets",
+    "cost": {
+      "labor": "Labor",
+      "external": "Outside supplier",
+      "parts": "Parts"
+    },
+    "export": {
+      "code": "Code",
+      "name": "Asset name",
+      "category": "Category",
+      "workOrders": "Completed WOs",
+      "preventive": "Preventive",
+      "corrective": "Corrective",
+      "late": "Late",
+      "total": "Total cost",
+      "lastCompleted": "Last WO completed"
+    }
   }
 }

@@ -31,6 +31,7 @@ import { notificationLink, currentUserRole } from '@/lib/notificationNav';
 import { useListState } from '@/hooks/useListState';
 import { useTableDensity } from '@/hooks/useTableDensity';
 import { Button } from '@/components/ui/button';
+import { NotificationEmailPreference } from '@/components/NotificationEmailPreference';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DataTable,
@@ -91,6 +92,7 @@ const TYPE_META: Record<string, { key: TypeKey; tone: StatusTone; icon: LucideIc
   wo_overdue: { key: 'wo_overdue', tone: 'danger', icon: Wrench },
   wo_assigned: { key: 'wo_assigned', tone: 'info', icon: Wrench },
   wo_completed: { key: 'wo_completed', tone: 'success', icon: Wrench },
+  maintenance_due: { key: 'maintenance_due', tone: 'warning', icon: Wrench },
   mr_pending: { key: 'mr_pending', tone: 'warning', icon: ClipboardCheck },
   mr_approved: { key: 'mr_approved', tone: 'success', icon: CheckCheck },
   mr_rejected: { key: 'mr_rejected', tone: 'danger', icon: Ban },
@@ -283,6 +285,8 @@ export const Notifications = () => {
           </Button>
         }
       />
+
+      <NotificationEmailPreference />
 
       <div className="space-y-3">
         <FilterBar

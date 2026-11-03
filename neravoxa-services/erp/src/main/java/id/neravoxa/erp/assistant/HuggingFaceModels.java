@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import id.neravoxa.erp.core.ErpException;
 import id.neravoxa.erp.core.ErpJson;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URI;
@@ -27,10 +26,10 @@ import java.util.List;
  *   <li>Chat: {@code POST /v1/chat/completions} (kompatibel OpenAI, termasuk tool calling); router
  *       memilih penyedia (Groq, Together, Cerebras, …) untuk model tersebut.</li>
  * </ul>
- * Token tidak pernah ditulis ke log; pesan error dari server dipotong sebelum diteruskan.
+ * Token tidak pernah ditulis ke log; pesan error dari server dipotong sebelum diteruskan. Dipilih oleh
+ * {@link AssistantModelClient} bila penyedia = huggingface.
  */
 @Slf4j
-@Component
 public class HuggingFaceModels implements AssistantModels {
 
     static final int EMBED_BATCH = 16;
@@ -38,7 +37,7 @@ public class HuggingFaceModels implements AssistantModels {
     private final AssistantProperties props;
     private final HttpClient http;
 
-    public HuggingFaceModels(AssistantProperties props) {
+    HuggingFaceModels(AssistantProperties props) {
         this.props = props;
         this.http = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(15))
@@ -71,8 +70,14 @@ public class HuggingFaceModels implements AssistantModels {
     @Override
     public ChatReply chat(List<ObjectNode> messages, ArrayNode tools) {
         requireConfigured();
+        JsonNode res = post(props.normalizedBaseUrl() + "/v1/chat/completions", chatBody(props.getChatModel(), messages, tools), "chat");
+        return parseChatReply(res);
+    }
+
+    /** Body Chat Completions (format OpenAI) — dipakai juga {@link OllamaModels}. */
+    static ObjectNode chatBody(String model, List<ObjectNode> messages, ArrayNode tools) {
         ObjectNode body = ErpJson.object();
-        body.put("model", props.getChatModel());
+        body.put("model", model);
         ArrayNode msgs = body.putArray("messages");
         messages.forEach(msgs::add);
         if (tools != null && !tools.isEmpty()) {
@@ -81,7 +86,11 @@ public class HuggingFaceModels implements AssistantModels {
         }
         body.put("temperature", 0.2);
         body.put("max_tokens", 1800);
-        JsonNode res = post(props.normalizedBaseUrl() + "/v1/chat/completions", body, "chat");
+        return body;
+    }
+
+    /** Jawaban Chat Completions (format OpenAI) → {@link ChatReply}. */
+    static ChatReply parseChatReply(JsonNode res) {
         JsonNode message = res.path("choices").path(0).path("message");
         if (!message.isObject()) {
             throw ErpException.of(502, "Jawaban model tidak dikenali (tidak ada choices[0].message).");

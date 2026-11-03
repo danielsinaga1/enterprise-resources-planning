@@ -4,9 +4,9 @@
  * ga_vehicle; creating an MR from a WO needs ga_material_request edit.
  */
 import { useCallback, useMemo, useState } from 'react';
-import { useSearchParams } from '@/lib/router';
+import { Link, useSearchParams } from '@/lib/router';
 import { useQueryClient } from '@tanstack/react-query';
-import { CalendarPlus, Plus } from 'lucide-react';
+import { BarChart3, CalendarPlus, Plus } from 'lucide-react';
 import { can } from '@/lib/permissions';
 import { LIST_PARAM } from '@/hooks/useListState';
 import { Button } from '@/components/ui/button';
@@ -134,7 +134,18 @@ export const GaMaintenancePage = () => {
       <PageHeader
         title={t('maintenance.page.title')}
         description={t('maintenance.page.description')}
-        actions={headerActions}
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link to="/ga/maintenance/report">
+                <BarChart3 aria-hidden />
+                <span className="hidden sm:inline">{t('maintenance.page.costReport')}</span>
+                <span className="sr-only sm:hidden">{t('maintenance.page.costReport')}</span>
+              </Link>
+            </Button>
+            {headerActions}
+          </>
+        }
       />
 
       <Tabs value={tab} onValueChange={changeTab}>

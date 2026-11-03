@@ -74,6 +74,7 @@ public class ErpMenuProvider {
                     i("Gedung & Sewa", "/ga/building", "ga_building"),
                     i("Peralatan & Kalibrasi", "/ga/equipment", "ga_equipment"),
                     i("Pemeliharaan", "/ga/maintenance", "ga_maintenance"),
+                    i("Laporan Pemeliharaan", "/ga/maintenance/report", "ga_maintenance"),
                     i("Permintaan Barang", "/ga/material-requests", "ga_material_request"),
                     i("Inventaris Kantor", "/ga/inventory", "ga_inventory"),
                     i("Dokumen & Sertifikat", "/ga/documents", "ga_documents"),

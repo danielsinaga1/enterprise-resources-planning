@@ -34,7 +34,8 @@ import java.util.UUID;
  * <p>Notifikasi tidak boleh menggagalkan operasi bisnis: semua method menelan error dan
  * mengembalikan jumlah yang dibuat. Bila dipanggil di dalam transaksi aktif, penulisan ditunda
  * sampai transaksi COMMIT (setara "panggil setelah transaksi selesai" di sumber) — rollback
- * berarti tidak ada notifikasi.
+ * berarti tidak ada notifikasi. Setelah tersimpan, salinannya diantrekan ke {@link ErpNotificationMailer}
+ * (email digest; hanya bila diaktifkan administrator).
  */
 @Slf4j
 @Service
@@ -44,16 +45,19 @@ public class ErpNotificationService {
     private final TransactionTemplate tx;
     private final ErpPermissionService permissions;
     private final String baseUrl;
+    private final ErpNotificationMailer mailer;
 
     public ErpNotificationService(@Qualifier("erpJdbcTemplate") JdbcTemplate jdbc,
                                   @Qualifier(ErpTx.MANAGER) PlatformTransactionManager tm,
                                   ErpPermissionService permissions,
-                                  @Value("${app.base-url:}") String baseUrl) {
+                                  @Value("${app.base-url:}") String baseUrl,
+                                  ErpNotificationMailer mailer) {
         this.jdbc = jdbc;
         this.tx = new TransactionTemplate(tm);
         this.tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.permissions = permissions;
         this.baseUrl = baseUrl == null ? "" : baseUrl.replaceAll("/+$", "");
+        this.mailer = mailer;
     }
 
     /** Isi notifikasi. {@code metadata} boleh Map/JsonNode/null. */
@@ -101,6 +105,9 @@ public class ErpNotificationService {
                 }
                 return c;
             });
+            if (created != null && created > 0) {
+                mailer.enqueue(ids, n);
+            }
             return created == null ? 0 : created;
         } catch (RuntimeException e) {
             log.error("ERP notifyUsers gagal (diabaikan) type={}: {}", n.type(), e.getMessage());
