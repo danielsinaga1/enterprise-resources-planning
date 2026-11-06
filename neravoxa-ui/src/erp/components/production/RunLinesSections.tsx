@@ -28,12 +28,16 @@ interface InputsSectionProps {
   onSplit: (idx: number) => void;
   onAdd: () => void;
   onRemove: (idx: number) => void;
+  /** Produksi maklon: bahan dari stok titipan pelanggan — tanpa batch stok sendiri. */
+  hideBatches?: boolean;
+  /** Ganti petunjuk stok per item (mis. saldo titipan pelanggan). */
+  stockHint?: (itemId: string) => string | undefined;
 }
 
 const rowClass = 'rounded-lg border border-border bg-muted/40 p-3';
 
 export function RunInputsSection({
-  inputs, itemOptions, warehouseId, getItemById, onUpdate, onPickBatch, onSplit, onAdd, onRemove,
+  inputs, itemOptions, warehouseId, getItemById, onUpdate, onPickBatch, onSplit, onAdd, onRemove, hideBatches, stockHint,
 }: InputsSectionProps) {
   const { t } = useTranslation('production');
   return (
@@ -58,7 +62,9 @@ export function RunInputsSection({
                     onChange={(v) => onUpdate(idx, 'itemId', v)}
                     placeholder={t('runLinesSections.selectItem')}
                     hint={
-                      item
+                      stockHint
+                        ? stockHint(row.itemId)
+                        : item
                         ? t('runLinesSections.warehouseStock', { qty: Number(item.currentStock).toLocaleString(LOCALE, { maximumFractionDigits: 3 }), unit: item.unit ?? '' })
                         : undefined
                     }
@@ -89,7 +95,7 @@ export function RunInputsSection({
                   )}
                 </div>
               </div>
-              {row.itemId && (
+              {row.itemId && !hideBatches && (
                 <div>
                   <span className="mb-1 block text-xs font-semibold text-muted-foreground">{t('runLinesSections.sourceBatch')}</span>
                   <div className="flex flex-wrap items-start gap-2">

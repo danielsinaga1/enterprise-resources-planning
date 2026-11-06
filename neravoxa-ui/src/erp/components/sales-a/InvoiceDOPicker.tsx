@@ -28,6 +28,7 @@ export interface PendingDO {
   date: string;
   items: PendingDOItem[];
   // No. PO pelanggan / No. SO utk auto-isi referensi invoice.
+  salesOrderId?: string | null;
   salesOrder?: { soNumber: string; customerRefNo: string | null } | null;
 }
 

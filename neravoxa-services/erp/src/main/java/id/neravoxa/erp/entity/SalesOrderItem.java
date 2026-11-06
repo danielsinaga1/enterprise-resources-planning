@@ -63,6 +63,13 @@ public class SalesOrderItem {
     @Column(name = "description")
     private String description;
 
+    /** product | service — baris jasa tidak dikirim lewat Surat Jalan. */
+    @Column(name = "item_type", nullable = false)
+    private String itemType = "product";
+
+    @Column(name = "service_item_id")
+    private String serviceItemId;
+
     @Column(name = "delivered_qty", nullable = false, precision = 15, scale = 3)
     private BigDecimal deliveredQty = BigDecimal.ZERO;
 

@@ -215,8 +215,8 @@
     "date": "Date",
     "supplier": "Supplier",
     "supplierPlaceholder": "Select supplier",
-    "customerOwned": "Customer-owned goods (reprocessing service)",
-    "customerOwnedHint": "Goods owned by a customer for reprocessing. Only quantities are recorded, with no inventory value or payable, and they cannot be turned into a Purchase Invoice. Bill the service through a Sales Invoice (service line).",
+    "customerOwned": "Customer-owned goods (toll processing / reprocessing)",
+    "customerOwnedHint": "Goods owned by the customer for processing. Recorded in consignment stock (not your own stock or inventory value), no payable, and cannot become a purchase invoice. Link a toll order and bill the service from the Toll Processing page.",
     "poOptional": "PO (optional)",
     "poNotApplicable": "Not applicable to customer-owned goods",
     "loadingPOLines": "Loading PO lines…",
@@ -247,7 +247,11 @@
       "title": "Replace lines with the PO balance?",
       "description": "The lines you entered will be replaced with {{count}} outstanding lines from {{number}} (item, remaining qty, unit, destination warehouse). Choose Cancel to keep your lines; the PO stays selected but your lines are not linked to the PO lines.",
       "confirm": "Replace lines"
-    }
+    },
+    "owner": "Customer (goods owner)",
+    "ownerPlaceholder": "Select the customer who owns the goods…",
+    "tollOrder": "Toll order",
+    "tollOrderNone": "No order (consignment only)"
   },
   "invoiceForm": {
     "toastUploadFailed": "Attachment upload failed: {{error}}",

@@ -41,6 +41,7 @@ public final class ErpModules {
             new ModuleDef("stock_transfer", "Transfer Stok", "Stok & Produksi"),
             new ModuleDef("stock_opname", "Stok Opname", "Stok & Produksi"),
             new ModuleDef("production", "Produksi", "Stok & Produksi"),
+            new ModuleDef("toll_service", "Jasa Maklon & Stok Titipan", "Stok & Produksi"),
             new ModuleDef("warehouse", "Daftar Gudang", "Stok & Produksi"),
             new ModuleDef("payment", "Transaksi Bank/Kas", "Bank & Kas"),
             new ModuleDef("reconciliation", "Rekonsiliasi Bank", "Bank & Kas"),
@@ -91,19 +92,19 @@ public final class ErpModules {
                 "sales_order", "edit", "delivery_order", "edit", "sales_invoice", "edit", "quotation", "edit",
                 "sales_return", "edit", "customer_deposit", "edit",
                 "purchase_order", "edit", "goods_receipt", "edit", "purchase_invoice", "edit", "vendor_deposit", "edit",
-                "inventory", "edit", "stock_transfer", "edit", "stock_opname", "edit", "production", "edit", "warehouse", "edit",
+                "inventory", "edit", "stock_transfer", "edit", "stock_opname", "edit", "production", "edit", "toll_service", "edit", "warehouse", "edit",
                 "payment", "edit", "reconciliation", "edit", "recurring", "edit", "project_guarantee", "edit", "payment_request", "edit",
                 "coa", "view", "journal", "edit", "fixed_assets", "edit", "approvals", "edit",
                 "reports", "view", "parties", "edit"));
         m.put("ERP_PRODUCTION", perms(
                 "sales_order", "edit", "delivery_order", "edit", "sales_return", "edit",
                 "purchase_order", "edit", "goods_receipt", "edit", "purchase_invoice", "edit", "vendor_deposit", "view",
-                "inventory", "edit", "stock_transfer", "edit", "production", "edit", "warehouse", "view",
+                "inventory", "edit", "stock_transfer", "edit", "production", "edit", "toll_service", "edit", "warehouse", "view",
                 "approvals", "edit", "parties", "edit"));
         m.put("ERP_VIEWER", perms(
                 "sales_order", "view", "delivery_order", "view", "sales_invoice", "view", "quotation", "view",
                 "purchase_order", "view", "goods_receipt", "view",
-                "inventory", "view", "payment", "view", "project_guarantee", "view",
+                "inventory", "view", "toll_service", "view", "payment", "view", "project_guarantee", "view",
                 "coa", "view", "journal", "view", "fixed_assets", "view", "reports", "view"));
         return m;
     }

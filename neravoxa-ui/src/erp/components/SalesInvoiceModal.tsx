@@ -41,7 +41,9 @@ const SalesInvoiceModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   prefillFromDO?: { doId: string; partyId: string } | null;
-}> = ({ isOpen, onClose, prefillFromDO }) => {
+  /** Tagih baris jasa Sales Order (tanpa Surat Jalan). */
+  prefillFromSO?: { soId: string; partyId: string; refNo?: string | null } | null;
+}> = ({ isOpen, onClose, prefillFromDO, prefillFromSO }) => {
   const { t } = useTranslation('sales');
   const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [dueDate, setDueDate] = useState(() => new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]);
@@ -239,16 +241,45 @@ const SalesInvoiceModal: React.FC<{
     setItems(next);
   };
 
+  const appendSalesOrderServices = async (soId: string) => {
+    try {
+      const { data: so } = await api.get(`/sales-orders/${soId}`);
+      const svc: InvoiceItem[] = ((so?.items ?? []) as any[])
+        .filter((it) => it.itemType === 'service' && Number(it.quantity) - Number(it.invoicedQty ?? 0) > 0.0005)
+        .map((it) => ({
+          ...defaultItem(),
+          itemName: it.itemName,
+          itemType: 'service' as const,
+          serviceItemId: it.serviceItemId ?? '',
+          description: it.description ?? '',
+          quantity: Math.round((Number(it.quantity) - Number(it.invoicedQty ?? 0)) * 1000) / 1000,
+          unit: it.unit || 'Jasa',
+          rate: Number(it.rate) || 0,
+          discount: Number(it.discount) || 0,
+          salesOrderItemId: it.id,
+          sourceSalesOrderId: soId,
+        }));
+      if (svc.length === 0) return;
+      setItems((prev) => [...prev, ...svc.filter((r) => !prev.some((p) => p.salesOrderItemId === r.salesOrderItemId))]);
+    } catch {
+      // Detail SO gagal dimuat: baris jasa bisa ditambah manual.
+    }
+  };
+
   const toggleDOSelection = (doId: string) => {
     const doc = pendingDOs?.find((d) => d.id === doId);
     if (!doc) return;
 
     if (selectedDOIds.includes(doId)) {
       // Deselect → remove all rows linked to this DO
-      setSelectedDOIds(selectedDOIds.filter((id) => id !== doId));
+      const nextSelected = selectedDOIds.filter((id) => id !== doId);
+      setSelectedDOIds(nextSelected);
       const itemIdsToRemove = new Set(doc.items.map((it) => it.id));
+      // Baris jasa SO ikut dilepas bila tidak ada lagi Surat Jalan terpilih dari SO yang sama.
+      const soStillSelected = !!doc.salesOrderId && nextSelected.some((id) => pendingDOs?.find((d) => d.id === id)?.salesOrderId === doc.salesOrderId);
       const remaining = items.filter(
-        (row) => !row.deliveryOrderItemId || !itemIdsToRemove.has(row.deliveryOrderItemId),
+        (row) => (!row.deliveryOrderItemId || !itemIdsToRemove.has(row.deliveryOrderItemId))
+          && (soStillSelected || !doc.salesOrderId || row.sourceSalesOrderId !== doc.salesOrderId),
       );
       setItems(remaining.length > 0 ? remaining : [defaultItem()]);
     } else {
@@ -279,6 +310,8 @@ const SalesInvoiceModal: React.FC<{
         (row) => row.deliveryOrderItemId || row.itemName || row.inventoryItemId || row.serviceItemId,
       );
       setItems([...base, ...newRows]);
+      // Baris jasa SO (tidak lewat Surat Jalan) yang belum ditagih ikut ditambahkan.
+      if (doc.salesOrderId) void appendSalesOrderServices(doc.salesOrderId);
       // Auto-isi No. PO/SO di invoice (bila belum diisi manual): PO pelanggan
       // dari SO; kalau SO tak punya No. PO, pakai No. SO.
       if (!customerRefNo.trim()) {
@@ -287,6 +320,22 @@ const SalesInvoiceModal: React.FC<{
       }
     }
   };
+
+  // Tagih jasa SO: pelanggan + baris jasa yang belum ditagih (sekali per pembukaan).
+  const soPrefilled = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!isOpen) {
+      soPrefilled.current = null;
+      return;
+    }
+    if (!prefillFromSO || soPrefilled.current === prefillFromSO.soId) return;
+    soPrefilled.current = prefillFromSO.soId;
+    setPartyId(prefillFromSO.partyId);
+    if (prefillFromSO.refNo) setCustomerRefNo(prefillFromSO.refNo);
+    setItems([]);
+    void appendSalesOrderServices(prefillFromSO.soId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, prefillFromSO]);
 
   // Auto-pilih DO saat deep-link dari Surat Jalan, begitu daftar pending termuat.
   React.useEffect(() => {
@@ -391,6 +440,8 @@ const SalesInvoiceModal: React.FC<{
         pphPct: i.pphPct,
         deliveryOrderItemId: i.deliveryOrderItemId ?? null,
         sourceMovementId: i.sourceMovementId || null,
+        salesOrderItemId: i.salesOrderItemId || null,
+        sourceSalesOrderId: undefined,
       })),
     });
 

@@ -215,8 +215,8 @@
     "date": "Tanggal",
     "supplier": "Supplier",
     "supplierPlaceholder": "Pilih Supplier",
-    "customerOwned": "Barang Titipan Customer (Jasa Repros)",
-    "customerOwnedHint": "Barang milik customer untuk diproses ulang. Hanya kuantitas yang dicatat, tanpa nilai persediaan/hutang, dan tidak bisa dijadikan Invoice Pembelian. Tagih jasanya lewat Invoice Penjualan (baris jasa).",
+    "customerOwned": "Barang Titipan Pelanggan (Jasa Maklon / Repros)",
+    "customerOwnedHint": "Barang milik pelanggan untuk diproses. Masuk Stok Titipan (bukan stok & nilai persediaan sendiri), tanpa hutang, dan tidak bisa dijadikan Invoice Pembelian. Tautkan ke Order Jasa Maklon lalu tagih ongkosnya dari halaman Jasa Maklon.",
     "poOptional": "PO (opsional)",
     "poNotApplicable": "Tidak berlaku untuk barang titipan",
     "loadingPOLines": "Memuat baris PO…",
@@ -247,7 +247,11 @@
       "title": "Ganti baris dengan sisa PO?",
       "description": "Baris yang sudah Anda isi akan diganti dengan {{count}} baris sisa {{number}} (item, qty sisa, satuan, gudang tujuan). Pilih Batal untuk tetap memakai baris Anda; PO tetap terpilih tetapi baris Anda tidak terhubung ke baris PO.",
       "confirm": "Ganti baris"
-    }
+    },
+    "owner": "Pelanggan (pemilik barang)",
+    "ownerPlaceholder": "Pilih pelanggan pemilik barang…",
+    "tollOrder": "Order jasa maklon",
+    "tollOrderNone": "Tanpa order (titipan saja)"
   },
   "invoiceForm": {
     "toastUploadFailed": "Lampiran gagal diunggah: {{error}}",

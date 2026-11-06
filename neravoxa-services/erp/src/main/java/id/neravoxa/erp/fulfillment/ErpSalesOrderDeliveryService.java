@@ -92,9 +92,14 @@ public class ErpSalesOrderDeliveryService {
         if (so.getStatus() == SalesOrderStatus.Cancelled || so.getStatus() == SalesOrderStatus.Draft) {
             return;
         }
-        boolean allFully = items.stream()
+        // Baris jasa tidak dikirim lewat Surat Jalan → tidak ikut menentukan status pengiriman.
+        List<SalesOrderItem> goods = items.stream().filter(it -> !"service".equals(it.getItemType())).toList();
+        if (goods.isEmpty()) {
+            return;
+        }
+        boolean allFully = goods.stream()
                 .allMatch(it -> Money.nz(it.getDeliveredQty()).compareTo(Money.nz(it.getQuantity())) >= 0);
-        boolean anyDelivered = items.stream().anyMatch(it -> Money.nz(it.getDeliveredQty()).signum() > 0);
+        boolean anyDelivered = goods.stream().anyMatch(it -> Money.nz(it.getDeliveredQty()).signum() > 0);
         SalesOrderStatus next = allFully ? SalesOrderStatus.FullyDelivered
                 : anyDelivered ? SalesOrderStatus.PartiallyDelivered : SalesOrderStatus.Submitted;
         if (next != so.getStatus()) {

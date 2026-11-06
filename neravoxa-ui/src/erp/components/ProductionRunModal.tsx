@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { DateInput, Field, type ComboboxOption } from '@/components/shared';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { NONE_VALUE } from './sales/dialog-classes-b';
+import { TOLL_BASE, qty, useTollOrderOptions, type TollOrderOption } from './toll/common';
 import { PinnedBody, PinnedFooter, PinnedHeader, pinnedDialogClass } from '@/components/overlays/dialog-parts';
 import { WarehouseSelectField } from '@/components/overlays/WarehouseSelectField';
 import { RunInputsSection, RunOutputsSection } from './production/RunLinesSections';
@@ -58,6 +61,7 @@ export function ProductionRunModal({ isOpen, onClose, items, editRun, prefillPay
   const [date, setDate] = useState(today());
   const [warehouseId, setWarehouseId] = useState('');
   const [referenceNumber, setReferenceNumber] = useState('');
+  const [tollOrderId, setTollOrderId] = useState('');
   const [notes, setNotes] = useState('');
   const [inputs, setInputs] = useState<LineItem[]>([{ itemId: '', quantity: '', sourceMovementId: '', batchUnitCost: '' }]);
   const [outputs, setOutputs] = useState<OutputLineItem[]>([{ itemId: '', quantity: '', unitPrice: '', isByProduct: false }]);
@@ -96,6 +100,7 @@ export function ProductionRunModal({ isOpen, onClose, items, editRun, prefillPay
         setDate(p.date ? new Date(p.date).toISOString().split('T')[0] : today());
         setWarehouseId(p.warehouseId ?? '');
         setReferenceNumber(p.referenceNumber ?? '');
+        setTollOrderId(typeof p.tollOrderId === 'string' ? p.tollOrderId : '');
         setNotes(p.notes ?? '');
         setInputs(Array.isArray(p.inputs) && p.inputs.length > 0
           ? p.inputs.map((i: any) => ({
@@ -149,6 +154,7 @@ export function ProductionRunModal({ isOpen, onClose, items, editRun, prefillPay
         const firstItem = (editRun.items ?? [])[0];
         setWarehouseId(firstItem?.warehouseId ?? firstItem?.warehouse?.id ?? '');
         setReferenceNumber(editRun.referenceNumber ?? '');
+        setTollOrderId(editRun.tollOrderId ?? '');
         setNotes(editRun.notes ?? '');
         setInputs(inputItems.length > 0
           ? inputItems.map((i: any) => ({
@@ -172,6 +178,7 @@ export function ProductionRunModal({ isOpen, onClose, items, editRun, prefillPay
         setDate(today());
         setWarehouseId('');
         setReferenceNumber('');
+        setTollOrderId('');
         setNotes('');
         setInputs([{ itemId: '', quantity: '', sourceMovementId: '', batchUnitCost: '' }]);
         setOutputs([{ itemId: '', quantity: '', unitPrice: '', isByProduct: false }]);
@@ -260,6 +267,34 @@ export function ProductionRunModal({ isOpen, onClose, items, editRun, prefillPay
   }, [isOpen, editRun, prefillPayload]);
 
   const { standards, allProcesses, machines, machineById } = useRunFormLookups(isOpen, warehouseId);
+
+  // Produksi maklon: bahan dari & hasil ke stok titipan pelanggan order terpilih.
+  const { t: tToll } = useTranslation('toll');
+  const { data: tollOrderOptions } = useTollOrderOptions(null, 'PROCESS', isOpen);
+  const tollOrderList = useMemo(() => {
+    const list = tollOrderOptions ?? [];
+    // Run lama dari order yang sudah Selesai tetap tampil namanya.
+    if (tollOrderId && !list.some((o) => o.id === tollOrderId) && editRun?.tollOrder) {
+      return [{ ...editRun.tollOrder, id: tollOrderId } as TollOrderOption, ...list];
+    }
+    return list;
+  }, [tollOrderOptions, tollOrderId, editRun]);
+  const selectedTollOrder = tollOrderList.find((o) => o.id === tollOrderId);
+  const { data: tollBalances } = useQuery({
+    queryKey: ['toll-stock', 'balances', selectedTollOrder?.partyId, warehouseId],
+    queryFn: async () =>
+      (await api.get(`${TOLL_BASE}/stock/balances`, { params: { partyId: selectedTollOrder?.partyId, warehouseId } })).data
+        .data as Array<{ itemId: string; quantity: number; unit: string }>,
+    enabled: isOpen && !!selectedTollOrder && !!warehouseId,
+  });
+  const tollStockHint = (itemId: string) => {
+    if (!itemId) return undefined;
+    const row = (tollBalances ?? []).find((b) => b.itemId === itemId);
+    return tToll('returnForm.available', { qty: qty(row?.quantity ?? 0) }) + (row ? ` ${row.unit}` : '');
+  };
+  const tTollHint = selectedTollOrder
+    ? `${tToll('picker.orderHint')} ${tToll(`owner.${selectedTollOrder.byProductOwner}`)}.`
+    : undefined;
 
   const toggleProcess = (id: string) => {
     setProcessIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -485,11 +520,12 @@ export function ProductionRunModal({ isOpen, onClose, items, editRun, prefillPay
         warehouseId,
         notes: notes || null,
         referenceNumber: referenceNumber || null,
+        tollOrderId: tollOrderId || null,
         inputs: validInputs.map(i => ({
           itemId: i.itemId,
           quantity: parseFloat(i.quantity),
-          sourceMovementId: i.sourceMovementId || null,
-          batchUnitCost: i.batchUnitCost ? parseFloat(i.batchUnitCost) : null,
+          sourceMovementId: tollOrderId ? null : (i.sourceMovementId || null),
+          batchUnitCost: tollOrderId ? null : (i.batchUnitCost ? parseFloat(i.batchUnitCost) : null),
         })),
         outputs: validOutputs.map(o => ({
           itemId: o.itemId,
@@ -671,6 +707,22 @@ export function ProductionRunModal({ isOpen, onClose, items, editRun, prefillPay
               </Field>
             </div>
 
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label={tToll('picker.order')} hint={tollOrderId ? tTollHint : undefined}>
+                {(control) => (
+                  <Select value={tollOrderId || NONE_VALUE} onValueChange={(v) => setTollOrderId(v === NONE_VALUE ? '' : v)}>
+                    <SelectTrigger {...control}><SelectValue placeholder={tToll('picker.orderPlaceholder')} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE_VALUE}>{tToll('picker.noOrder')}</SelectItem>
+                      {tollOrderList.map((o) => (
+                        <SelectItem key={o.id} value={o.id}>{o.orderNumber} · {o.partyName}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </Field>
+            </div>
+
             <Field label={t('productionRunModal.notes')}>
               <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder={t('productionRunModal.notesPlaceholder')} className="resize-none" />
             </Field>
@@ -685,6 +737,8 @@ export function ProductionRunModal({ isOpen, onClose, items, editRun, prefillPay
               onSplit={(idx) => void splitInputRow(idx)}
               onAdd={addInput}
               onRemove={removeInput}
+              hideBatches={!!tollOrderId}
+              stockHint={tollOrderId ? tollStockHint : undefined}
             />
 
             <RunOutputsSection

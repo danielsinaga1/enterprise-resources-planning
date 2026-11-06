@@ -4,8 +4,8 @@
  */
 import { CHANGELOG_EN } from './changelog.en';
 
-export const APP_VERSION = '4.1.3';
-export const APP_BUILD_DATE = '2026-10-14';
+export const APP_VERSION = '4.2.0';
+export const APP_BUILD_DATE = '2026-11-06';
 export const APP_NAME = 'ERP';
 
 export interface ChangelogEntry {
@@ -25,6 +25,21 @@ export function localizedChangelog(language: string): ChangelogEntry[] {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '4.2.0',
+    date: '2026-11-06',
+    title: 'Jasa Maklon & Stok Titipan Pelanggan',
+    changes: [
+      'Modul baru Persediaan & Produksi → Jasa Maklon & Titipan: Order Jasa Maklon (OJM) mengikat STT titipan, produksi, surat jalan pengembalian, dan invoice; tarif per kg input, per kg hasil, atau borongan, dengan ongkos minimum, PPN, target rendemen, dan tarif simpan',
+      'Stok titipan pelanggan kini dicatat di buku tersendiri per pelanggan × item × gudang, terpisah dari stok, harga rata-rata, opname, dan nilai persediaan sendiri; STT titipan lama dipindahkan otomatis',
+      'Data Produksi bisa memilih Order Jasa Maklon: bahan diambil dari stok titipan dan hasil masuk stok titipan; biaya konversi direklas ke 5.13 Beban Pokok Jasa Maklon; produk samping bisa menjadi milik pabrik (stok sendiri senilai NRV, lawan pendapatan jasa)',
+      'Surat Jalan Pengembalian Titipan (SJT), kartu stok titipan, umur titipan, dan pindah gudang stok titipan',
+      'Invoice otomatis dari order: ongkos proses yang belum ditagih, penyesuaian ongkos minimum setelah order Selesai, dan biaya simpan; tarif khusus per pelanggan di master Item Jasa',
+      'Laporan Rendemen Maklon dan Biaya Simpan Titipan; cetak Tanda Terima Barang Titipan, Berita Acara Hasil Proses, dan Surat Jalan Pengembalian',
+      'Sales Order kini mendukung baris jasa: tidak ikut Surat Jalan, ditagih langsung lewat Invoice Penjualan (tombol Tagih jasa) dengan qty tertagih terlacak',
+      'Asisten AI memberi saran order maklon yang belum ditagih dan titipan yang mengendap lebih dari 30 hari',
+    ],
+  },
   {
     version: '4.1.3',
     date: '2026-10-14',

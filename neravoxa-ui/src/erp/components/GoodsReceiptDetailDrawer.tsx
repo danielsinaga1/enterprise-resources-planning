@@ -88,6 +88,8 @@ const GoodsReceiptDetailDrawer: React.FC<Props> = ({ sttId, onClose }) => {
       driverName={doc.driverName}
       recipientName={doc.recipientName}
       notes={doc.notes}
+      customerOwned={!!doc.isCustomerOwned}
+      tollOrderNumber={doc.tollOrder?.orderNumber ?? null}
       items={items.map((it: any) => ({
         code: it.inventoryItem?.code ?? null,
         name: it.itemName,

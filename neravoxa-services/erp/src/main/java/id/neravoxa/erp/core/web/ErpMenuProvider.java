@@ -58,6 +58,7 @@ public class ErpMenuProvider {
             new Group("Persediaan & Produksi", "pi pi-box", List.of(
                     i("Stok & Produksi", "/inventory", "inventory"),
                     i("Stok per Gudang", "/warehouse-stock", "inventory"),
+                    i("Jasa Maklon & Titipan", "/toll-service", "toll_service"),
                     i("Stok Opname", "/stock-opname", "stock_opname"),
                     i("Transfer Stok", "/stock-transfers", "stock_transfer"),
                     i("Daftar Gudang", "/warehouses", "warehouse"))),

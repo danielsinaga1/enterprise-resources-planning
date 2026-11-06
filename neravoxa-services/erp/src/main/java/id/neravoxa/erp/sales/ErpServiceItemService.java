@@ -113,6 +113,8 @@ public class ErpServiceItemService {
         s.setDefaultRate(body.defaultRate());
         s.setAccountId(body.accountId());
         s.setDescription(body.description());
+        s.setPricingBasis(body.pricingBasis() == null || body.pricingBasis().isBlank() ? null : body.pricingBasis());
+        s.setMinimumCharge(body.minimumCharge());
         em.persist(s);
         SalesSupport.flush(em);
         return withAccounts(List.of(s)).get(0);
@@ -146,6 +148,12 @@ public class ErpServiceItemService {
         }
         if (body.has("isActive")) {
             s.setIsActive(body.isActive());
+        }
+        if (body.has("pricingBasis")) {
+            s.setPricingBasis(body.pricingBasis());
+        }
+        if (body.has("minimumCharge")) {
+            s.setMinimumCharge(body.minimumCharge());
         }
         s.setUpdatedAt(Instant.now());
         SalesSupport.flush(em);

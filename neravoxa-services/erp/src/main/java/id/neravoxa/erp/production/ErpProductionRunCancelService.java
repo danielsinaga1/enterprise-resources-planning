@@ -58,5 +58,6 @@ public class ErpProductionRunCancelService {
 
         run.setIsCancelled(true);
         em.flush();
+        support.refreshTollStatus(run.getTollOrderId());
     }
 }

@@ -120,6 +120,18 @@ public class SalesInvoiceItem {
     @Column(name = "source_movement_id")
     private String sourceMovementId;
 
+    /** Baris tagihan Order Jasa Maklon. */
+    @Column(name = "toll_order_id")
+    private String tollOrderId;
+
+    /** Service | Minimum | Storage (hanya baris Order Jasa Maklon). */
+    @Column(name = "toll_charge_type")
+    private String tollChargeType;
+
+    /** Baris jasa Sales Order yang ditagihkan baris ini. */
+    @Column(name = "sales_order_item_id")
+    private String salesOrderItemId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_movement_id", insertable = false, updatable = false)
     @JsonIgnoreProperties(value = {"consumingSalesItems", "hibernateLazyInitializer", "handler"}, allowSetters = true)

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Pencil, Send, Ban, Truck, CheckCircle2, Download } from 'lucide-react';
+import { Pencil, Send, Ban, Truck, CheckCircle2, Download, Receipt } from 'lucide-react';
+import SalesInvoiceModal from './SalesInvoiceModal';
 import { LOCALE, formatRupiah, formatDate } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -58,6 +59,7 @@ const SalesOrderDetailDrawer: React.FC<Props> = ({ soId, onClose, onEdit }) => {
   const [dpError, setDpError] = useState('');
 
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [serviceInvoiceOpen, setServiceInvoiceOpen] = useState(false);
 
   const { data: so, isLoading } = useQuery({
     queryKey: ['sales-order', soId],
@@ -250,7 +252,11 @@ const SalesOrderDetailDrawer: React.FC<Props> = ({ soId, onClose, onEdit }) => {
 
   if (!soId) return null;
 
-  const canGenerateDO = so && (so.status === 'Submitted' || so.status === 'PartiallyDelivered');
+  const hasGoodsLines = !!so?.items?.some((it: any) => it.itemType !== 'service');
+  const canGenerateDO = so && hasGoodsLines && (so.status === 'Submitted' || so.status === 'PartiallyDelivered');
+  // Baris jasa SO yang belum (seluruhnya) ditagih.
+  const canInvoiceServices = so && so.status !== 'Draft' && so.status !== 'Cancelled'
+    && so.items?.some((it: any) => it.itemType === 'service' && Number(it.quantity) - Number(it.invoicedQty ?? 0) > 0.0005);
   const canCancel = so && (so.status === 'Draft' || so.status === 'Submitted');
   const showFooter = so && (so.status === 'Draft' || canGenerateDO || canCancel);
   const metaLabel = 'text-muted-foreground';
@@ -534,7 +540,8 @@ const SalesOrderDetailDrawer: React.FC<Props> = ({ soId, onClose, onEdit }) => {
                         <tbody>
                           {so.items?.map((it: any) => {
                             const remaining = Number(it.quantity) - Number(it.deliveredQty);
-                            if (remaining <= 0) return null;
+                            // Baris jasa tidak dikirim lewat Surat Jalan (ditagih langsung).
+                            if (remaining <= 0 || it.itemType === 'service') return null;
                             return (
                               <tr key={it.id} className="border-t border-border">
                                 <td className="px-2 py-1.5">{it.itemName}</td>
@@ -603,6 +610,11 @@ const SalesOrderDetailDrawer: React.FC<Props> = ({ soId, onClose, onEdit }) => {
                     </Button>
                   </>
                 )}
+                {canInvoiceServices && (
+                  <Button variant="outline" className="max-sm:h-11" onClick={() => setServiceInvoiceOpen(true)}>
+                    <Receipt aria-hidden /> {t('salesOrderDetailDrawer.invoiceServices')}
+                  </Button>
+                )}
                 {canGenerateDO && !genDOOpen && (
                   <Button className="max-sm:h-11" onClick={() => setGenDOOpen(true)}>
                     <Truck aria-hidden /> {t('salesOrderDetailDrawer.generateDo.title')}
@@ -613,6 +625,17 @@ const SalesOrderDetailDrawer: React.FC<Props> = ({ soId, onClose, onEdit }) => {
           )}
         </SheetContent>
       </Sheet>
+
+      {so && serviceInvoiceOpen && (
+        <SalesInvoiceModal
+          isOpen
+          prefillFromSO={{ soId: so.id, partyId: so.partyId, refNo: so.customerRefNo || so.soNumber }}
+          onClose={() => {
+            setServiceInvoiceOpen(false);
+            queryClient.invalidateQueries({ queryKey: ['sales-order', so.id] });
+          }}
+        />
+      )}
 
       <ConfirmDialog
         open={cancelOpen}

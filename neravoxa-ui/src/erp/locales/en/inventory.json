@@ -320,7 +320,9 @@
       "defaultRate": "Default rate (Rp)",
       "description": "Description",
       "name": "Service name",
-      "unit": "Unit"
+      "unit": "Unit",
+      "pricingBasis": "Toll pricing basis",
+      "minimumCharge": "Minimum charge (Rp)"
     },
     "noAccount": "Select account",
     "placeholders": {
@@ -336,6 +338,15 @@
       "missingFields": "Code, name, and revenue account are required.",
       "saveFailed": "Could not save the service.",
       "updated": "Service updated."
+    },
+    "hints": {
+      "pricingBasis": "Default for toll processing orders."
+    },
+    "pricingBasis": {
+      "manual": "Manual quantity (regular invoice)",
+      "InputQty": "Per kg of input processed",
+      "OutputQty": "Per kg of main output",
+      "Flat": "Flat fee"
     }
   },
   "serviceItemsTab": {

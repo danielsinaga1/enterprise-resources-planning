@@ -63,6 +63,7 @@ public class ErpTestApplication {
             jdbc.execute(read("db/erp/03_assistant.sql"));
             jdbc.execute(read("db/erp/04_eam_meter.sql"));
             jdbc.execute(read("db/erp/05_notification_email.sql"));
+            jdbc.execute(read("db/erp/06_toll_service.sql"));
         }
         HikariDataSource ds = new HikariDataSource();
         ds.setJdbcUrl(postgres.getJdbcUrl("postgres", "postgres"));

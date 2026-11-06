@@ -251,6 +251,9 @@ export interface ServiceItemRow {
   description?: string | null;
   isActive: boolean;
   account?: { id: string; accountNumber: string; name: string } | null;
+  /** Dasar tarif default Order Jasa Maklon (null = qty manual). */
+  pricingBasis?: 'InputQty' | 'OutputQty' | 'Flat' | null;
+  minimumCharge?: Qty | null;
 }
 
 export const errorMessage = (err: unknown, fallback: string): string =>

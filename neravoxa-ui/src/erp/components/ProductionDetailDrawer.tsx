@@ -47,6 +47,7 @@ const SHIFT_VALUES = new Set(['1', '2', '3']);
 
 export default function ProductionDetailDrawer({ runId, onClose, onCancel, canCancel, canEdit, onEdit }: Props) {
   const { t } = useTranslation('production');
+  const { t: tToll } = useTranslation('toll');
   const { data: run, isLoading } = useQuery({
     queryKey: ['production-run-detail', runId],
     queryFn: () => api.get(`/inventory/production-runs/${runId}`).then(r => r.data),
@@ -147,6 +148,15 @@ export default function ProductionDetailDrawer({ runId, onClose, onCancel, canCa
                   </p>
                 </div>
               </div>
+
+              {/* Produksi maklon: bahan & hasil milik pelanggan (stok titipan). */}
+              {run.tollOrder && (
+                <div className="rounded-lg border border-info/30 bg-info-subtle px-3 py-2 text-sm text-info-text">
+                  <span className="font-medium">{tToll('picker.order')}:</span>{' '}
+                  <span className="font-mono">{run.tollOrder.orderNumber}</span> · {run.tollOrder.partyName}
+                  <span className="mt-0.5 block text-xs">{tToll('picker.orderHint')} {tToll(`owner.${run.tollOrder.byProductOwner}`)}.</span>
+                </div>
+              )}
 
               {/* Reference & Notes */}
               {(run.referenceNumber || run.notes) && (

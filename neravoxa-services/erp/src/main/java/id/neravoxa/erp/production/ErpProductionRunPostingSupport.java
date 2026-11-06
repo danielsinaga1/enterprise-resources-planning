@@ -29,6 +29,8 @@ import id.neravoxa.erp.production.ProductionRequests.InputLine;
 import id.neravoxa.erp.production.ProductionRequests.MachineLine;
 import id.neravoxa.erp.production.ProductionRequests.OutputLine;
 import id.neravoxa.erp.production.ProductionRequests.ProductionRunRequest;
+import id.neravoxa.erp.toll.CustomerStockLedger;
+import id.neravoxa.erp.toll.ErpTollOrderService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -76,6 +78,8 @@ public class ErpProductionRunPostingSupport {
     private final ErpGlPostingService gl;
     private final ErpAccountBalanceService balances;
     private final ErpSystemAccountService systemAccounts;
+    private final CustomerStockLedger customerStock;
+    private final ErpTollOrderService tollOrders;
 
     @PersistenceContext(unitName = "erp")
     private EntityManager em;
@@ -165,6 +169,7 @@ public class ErpProductionRunPostingSupport {
      * yang hanya dicatat di log). Pesan stok sesuai varian submit/edit.
      */
     public void validateInputs(ProductionRunRequest body, Map<String, ItemInfo> itemMap, boolean submitVariant) {
+        boolean toll = isToll(body);
         for (InputLine input : body.inputs()) {
             ItemInfo item = itemMap.get(input.itemId());
             if (item == null) {
@@ -172,6 +177,14 @@ public class ErpProductionRunPostingSupport {
             }
             if (!item.active()) {
                 throw ErpException.business("Item '" + item.name() + "' tidak aktif.");
+            }
+            if (toll) {
+                // Bahan maklon diambil dari stok titipan pelanggan (dicek saat posting), bukan batch stok sendiri.
+                if (input.sourceMovementId() != null && !input.sourceMovementId().isEmpty()) {
+                    throw ErpException.business("Produksi maklon tidak memakai batch stok sendiri: bahan '" + item.name()
+                            + "' diambil dari stok titipan pelanggan.");
+                }
+                continue;
             }
             if (item.currentStock().compareTo(input.quantity()) < 0) {
                 if (!body.negativeStock()) {
@@ -286,6 +299,7 @@ public class ErpProductionRunPostingSupport {
         run.setReferenceType(blankToNull(body.referenceType()));
         run.setReferenceId(blankToNull(body.referenceId()));
         run.setReferenceNumber(blankToNull(body.referenceNumber()));
+        run.setTollOrderId(blankToNull(body.tollOrderId()));
         run.setYieldPct(yieldPct(body));
         // Kolom OEE; machineId/startAt/endAt tunggal hanya disimpan (kompatibilitas), tidak dipakai OEE.
         run.setMachineId(body.machineId());
@@ -336,10 +350,18 @@ public class ErpProductionRunPostingSupport {
                               List<BatchSnapshot> snaps, String warehouseId, Instant txDate, String fiscalYearId,
                               String userId, Stamps stamps) {
         BigDecimal totalMaterialCost = BigDecimal.ZERO;
+        ErpTollOrderService.OrderRef toll = tollOrder(body);
         for (int i = 0; i < body.inputs().size(); i++) {
             InputLine input = body.inputs().get(i);
             ItemInfo item = itemMap.get(input.itemId());
             if (item == null) {
+                continue;
+            }
+            if (toll != null) {
+                // Barang milik pelanggan: keluar dari stok titipan, tanpa nilai & tanpa gerakan stok sendiri.
+                customerStock.post(new CustomerStockLedger.Move(toll.partyId(), input.itemId(), warehouseId,
+                        CustomerStockLedger.OUT, input.quantity(), txDate, CustomerStockLedger.SRC_PRODUCTION, runId, runNumber,
+                        null, toll.id(), "Bahan maklon " + runNumber + " (" + toll.orderNumber() + ")", userId));
                 continue;
             }
             BatchSnapshot snap = snaps.get(i);
@@ -415,7 +437,15 @@ public class ErpProductionRunPostingSupport {
     public void stockInOutputs(String runId, String runNumber, ProductionRunRequest body, Hpp hpp, String warehouseId,
                         Instant txDate, String fiscalYearId, String userId, Stamps stamps) {
         BigDecimal computedHppNum = hpp.computedHppNum();
+        ErpTollOrderService.OrderRef toll = tollOrder(body);
         for (OutputLine output : body.outputs()) {
+            if (toll != null && !(output.byProduct() && toll.factoryOwnsByProducts())) {
+                // Hasil maklon (dan produk samping milik pelanggan) masuk stok titipan pelanggan.
+                customerStock.post(new CustomerStockLedger.Move(toll.partyId(), output.itemId(), warehouseId,
+                        CustomerStockLedger.IN, output.quantity(), txDate, CustomerStockLedger.SRC_PRODUCTION, runId, runNumber,
+                        null, toll.id(), "Hasil maklon " + runNumber + " (" + toll.orderNumber() + ")", userId));
+                continue;
+            }
             ErpWarehouseStockService.ItemStock fresh = stock.currentItemStock(output.itemId());
             BigDecimal unitCost = outputUnitCost(output, computedHppNum);
             BigDecimal newAvg = fresh != null && unitCost.signum() > 0
@@ -447,6 +477,10 @@ public class ErpProductionRunPostingSupport {
     public List<ErpGlPostingService.Line> journalLines(ProductionRunRequest body, Map<String, ItemInfo> itemMap,
                                                 List<BatchSnapshot> snaps, Hpp hpp, String runNumber) {
         String defaultInv = systemAccounts.getAccountId(SystemAccountRole.INVENTORY);
+        ErpTollOrderService.OrderRef toll = tollOrder(body);
+        if (toll != null) {
+            return tollJournalLines(body, itemMap, hpp, runNumber, toll, defaultInv);
+        }
         List<ErpGlPostingService.Line> lines = new ArrayList<>();
         BigDecimal totalInputCost = BigDecimal.ZERO;
         for (int i = 0; i < body.inputs().size(); i++) {
@@ -502,6 +536,78 @@ public class ErpProductionRunPostingSupport {
         return lines;
     }
 
+    /**
+     * Jurnal run maklon. Bahan & hasil milik pelanggan tidak dijurnal (bukan aset kita). Yang dijurnal:
+     * <ul>
+     *   <li>produk samping milik pabrik (kompensasi jasa): DR Persediaan @NRV / CR Pendapatan jasa order;</li>
+     *   <li>reklas biaya konversi (biaya proses yang dicatat di run): DR 5.13 Beban Pokok Jasa Maklon /
+     *       CR 5.12 Biaya Konversi Dibebankan — biaya tidak dikapitalisasi ke persediaan, tetapi disajikan
+     *       sebagai beban pokok jasa yang berpasangan dengan pendapatan jasanya.</li>
+     * </ul>
+     */
+    private List<ErpGlPostingService.Line> tollJournalLines(ProductionRunRequest body, Map<String, ItemInfo> itemMap, Hpp hpp,
+                                                         String runNumber, ErpTollOrderService.OrderRef toll, String defaultInv) {
+        List<ErpGlPostingService.Line> lines = new ArrayList<>();
+        if (toll.factoryOwnsByProducts()) {
+            BigDecimal total = BigDecimal.ZERO;
+            for (OutputLine output : body.outputs()) {
+                if (!output.byProduct()) {
+                    continue;
+                }
+                BigDecimal val = Money.round2(output.quantity().multiply(Money.nz(output.unitPrice())));
+                if (val.signum() <= 0) {
+                    continue;
+                }
+                ItemInfo item = itemMap.get(output.itemId());
+                lines.add(new ErpGlPostingService.Line(accountOr(item == null ? null : item.accountId(), defaultInv), val,
+                        BigDecimal.ZERO, "Produk samping maklon " + (item == null ? "" : item.name()) + ": " + runNumber, null, null));
+                total = total.add(val);
+            }
+            if (total.signum() > 0) {
+                String revenue = tollOrders.revenueAccountId(toll.id());
+                if (revenue == null) {
+                    revenue = systemAccounts.getAccountId(SystemAccountRole.SERVICE_REVENUE);
+                }
+                lines.add(new ErpGlPostingService.Line(revenue, BigDecimal.ZERO, total,
+                        "Kompensasi jasa maklon (produk samping) " + toll.orderNumber() + ": " + runNumber, null, null));
+            }
+        }
+        BigDecimal conv = Money.round2(hpp.totalCostInputSide().add(hpp.totalCostOutputSide()));
+        if (conv.signum() > 0) {
+            Account costOfService = systemAccounts.findByNumber("5.13");
+            Account absorbed = systemAccounts.findByNumber("5.12");
+            if (costOfService != null && absorbed != null && Boolean.TRUE.equals(costOfService.getIsActive())
+                    && Boolean.TRUE.equals(absorbed.getIsActive())) {
+                lines.add(new ErpGlPostingService.Line(costOfService.getId(), conv, BigDecimal.ZERO,
+                        "Beban pokok jasa maklon " + toll.orderNumber() + ": " + runNumber, null, null));
+                lines.add(new ErpGlPostingService.Line(absorbed.getId(), BigDecimal.ZERO, conv,
+                        "Biaya konversi maklon direklas: " + runNumber, null, null));
+            }
+        }
+        return lines;
+    }
+
+    /** Run maklon? (body menyebut order jasa maklon). */
+    static boolean isToll(ProductionRunRequest body) {
+        return body.tollOrderId() != null && !body.tollOrderId().isEmpty();
+    }
+
+    /**
+     * Order maklon run ini, divalidasi untuk proses (ada, belum Selesai/Batal). Null bila bukan run maklon.
+     */
+    public ErpTollOrderService.OrderRef tollOrder(ProductionRunRequest body) {
+        return isToll(body) ? tollOrders.requireUsable(body.tollOrderId(), null, ErpTollOrderService.Use.PROCESS) : null;
+    }
+
+    /** Status order Open/InProgress diselaraskan setelah run dibuat/diedit/dibatalkan. */
+    public void refreshTollStatus(String... tollOrderIds) {
+        for (String id : new LinkedHashSet<>(java.util.Arrays.asList(tollOrderIds))) {
+            if (id != null && !id.isEmpty()) {
+                tollOrders.refreshStatus(id);
+            }
+        }
+    }
+
     private static String accountOr(String accountId, String fallback) {
         return accountId == null || accountId.isEmpty() ? fallback : accountId;
     }
@@ -547,7 +653,9 @@ public class ErpProductionRunPostingSupport {
         for (OutputLine o : body.outputs()) {
             // Harga tersimpan = eksplisit atau HPP loaded (back-fill) agar query hilir tidak menghitung ulang.
             BigDecimal explicit = o.unitPrice();
-            BigDecimal persisted = o.byProduct() ? explicit
+            // Hasil maklon milik pelanggan tidak bernilai di buku kita (HPP/kg run = biaya proses per kg, informatif).
+            BigDecimal persisted = isToll(body) && !o.byProduct() ? null
+                    : o.byProduct() ? explicit
                     : explicit != null && explicit.signum() > 0 ? explicit
                     : computedHppNum.signum() > 0 ? computedHppNum : null;
             ProductionRunItem x = new ProductionRunItem();
@@ -713,6 +821,12 @@ public class ErpProductionRunPostingSupport {
             em.createQuery("update StockMovement m set m.isCancelled = true, m.updatedAt = :now where m.id = :id")
                     .setParameter("now", Instant.now()).setParameter("id", movementId).executeUpdate();
         }
+        // Run maklon: mutasi stok titipan (bahan keluar / hasil masuk) ikut dibalik. Hasil yang sudah
+        // dikembalikan ke pelanggan menghalangi pembalikan (batalkan surat jalan pengembaliannya dulu).
+        List<String> runNumbers = em.createQuery("select r.runNumber from ProductionRun r where r.id = :id", String.class)
+                .setParameter("id", runId).getResultList();
+        customerStock.reverseSource(CustomerStockLedger.SRC_PRODUCTION, runId,
+                (forEdit ? "mengedit " : "") + "proses produksi " + (runNumbers.isEmpty() ? "" : runNumbers.get(0)));
         return affected;
     }
 

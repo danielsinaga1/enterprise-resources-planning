@@ -134,6 +134,27 @@ public class NextStepAdvisor {
                     "%d Purchase Order belum punya penerimaan barang; catat STT saat barang datang.", "/goods-receipts",
                     List.of("/purchase-orders", "/goods-receipts")));
         }
+        if (access.can("toll_service", "view")) {
+            // Order maklon yang sudah diproses tetapi ongkos prosesnya belum (seluruhnya) ditagih.
+            add(out, () -> simple("tollOrdersToInvoice",
+                    "SELECT COUNT(*) FROM toll_orders o WHERE o.status IN ('InProgress', 'Completed') AND o.rate > 0 AND "
+                            + "(CASE o.pricing_basis WHEN 'Flat' THEN 1 ELSE (SELECT COALESCE(SUM(x.quantity), 0) "
+                            + "FROM production_run_items x JOIN production_runs r ON r.id = x.production_run_id "
+                            + "WHERE r.toll_order_id = o.id AND r.is_cancelled = FALSE AND x.line_type = "
+                            + "(CASE o.pricing_basis WHEN 'OutputQty' THEN 'Output' ELSE 'Input' END)) END) "
+                            + "> (SELECT COALESCE(SUM(x.quantity), 0) FROM sales_invoice_items x JOIN sales_invoices v "
+                            + "ON v.id = x.sales_invoice_id WHERE x.toll_order_id = o.id AND v.status <> 'Cancelled' "
+                            + "AND COALESCE(x.toll_charge_type, 'Service') = 'Service') + 0.0005",
+                    "%d order jasa maklon sudah diproses tetapi ongkosnya belum ditagih; buat invoice dari order.",
+                    "/toll-service", List.of("/", "/toll-service", "/sales")));
+            // Titipan pelanggan yang mengendap > 30 hari sejak mutasi masuk terakhir.
+            add(out, () -> simple("customerStockAging",
+                    "SELECT COUNT(*) FROM customer_stocks s WHERE s.current_stock > 0 AND (SELECT MAX(m.date) FROM "
+                            + "customer_stock_movements m WHERE m.party_id = s.party_id AND m.item_id = s.item_id "
+                            + "AND m.warehouse_id = s.warehouse_id AND m.is_cancelled = FALSE) < (now() AT TIME ZONE 'UTC') - interval '30 days'",
+                    "%d saldo stok titipan pelanggan tidak bergerak lebih dari 30 hari; proses, kembalikan, atau tagih biaya simpannya.",
+                    "/toll-service?tab=stock", List.of("/toll-service", "/warehouse-stock")));
+        }
         if (access.can("purchase_invoice", "view")) {
             add(out, () -> simple("receiptsToInvoice",
                     "SELECT COUNT(*) FROM goods_receipts WHERE status = 'Submitted' AND invoiced_at IS NULL AND invoice_id IS NULL "
@@ -393,7 +414,9 @@ public class NextStepAdvisor {
             }
             case "goods_receipt" -> {
                 if (Boolean.TRUE.equals(r.get("is_customer_owned"))) {
-                    step(steps, "Barang milik customer: tidak dibuatkan Invoice Pembelian; tagih jasanya lewat Invoice Penjualan.", "/sales");
+                    step(steps, "Barang titipan pelanggan masuk Stok Titipan (bukan stok sendiri). Proses lewat Data Produksi "
+                            + "dengan Order Jasa Maklon, kembalikan hasilnya lewat Surat Jalan Pengembalian, lalu tagih ongkosnya "
+                            + "dari halaman Jasa Maklon.", "/toll-service");
                 } else if ("Submitted".equals(status) && r.get("invoiced_at") == null && r.get("invoice_id") == null) {
                     step(steps, "Buat Invoice Pembelian dari STT ini saat tagihan supplier diterima (harga aktual diisi di invoice).",
                             "/purchase");

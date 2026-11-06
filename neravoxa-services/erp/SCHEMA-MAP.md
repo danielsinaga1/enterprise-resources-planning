@@ -236,6 +236,8 @@ Sisi balik relasi 1:1 dipetakan sebagai `List<X> <nama>Ref` (pakai untuk JOIN FE
 | discount | Decimal | `discount` |
 | amount | Decimal | `amount` |
 | description | String? | `description` |
+| itemType | String | `item_type` |
+| serviceItemId | String? | `service_item_id` |
 | deliveredQty | Decimal | `delivered_qty` |
 | deliveryOrderItems | DeliveryOrderItem[] | <- DeliveryOrderItem.salesOrderItem (list) |
 | createdAt | DateTime | `created_at` |
@@ -379,6 +381,9 @@ Sisi balik relasi 1:1 dipetakan sebagai `List<X> <nama>Ref` (pakai untuk JOIN FE
 | account | Account | -> Account via `account_id` |
 | description | String? | `description` |
 | sourceMovementId | String? | `source_movement_id` |
+| tollOrderId | String? | `toll_order_id` |
+| tollChargeType | String? | `toll_charge_type` |
+| salesOrderItemId | String? | `sales_order_item_id` |
 | sourceMovement | StockMovement | -> StockMovement via `source_movement_id` |
 | unitCostLoaded | Decimal? | `unit_cost_loaded` |
 
@@ -980,6 +985,7 @@ _Pola keterangan ternormalisasi -> akun, dipelajari dari koreksi manusia saat po
 | referenceType | String? | `reference_type` |
 | referenceId | String? | `reference_id` |
 | referenceNumber | String? | `reference_number` |
+| tollOrderId | String? | `toll_order_id` |
 | yieldPct | Decimal? | `yield_pct` |
 | totalMaterialCost | Decimal? | `total_material_cost` |
 | totalCostInputSide | Decimal? | `total_cost_input_side` |
@@ -1317,6 +1323,8 @@ _Pola keterangan ternormalisasi -> akun, dipelajari dari koreksi manusia saat po
 | name | String | `name` |
 | unit | String | `unit` |
 | defaultRate | Decimal? | `default_rate` |
+| pricingBasis | String? | `pricing_basis` |
+| minimumCharge | Decimal? | `minimum_charge` |
 | accountId | String | `account_id` |
 | account | Account | -> Account via `account_id` |
 | description | String? | `description` |
@@ -1534,6 +1542,7 @@ _Pola keterangan ternormalisasi -> akun, dipelajari dari koreksi manusia saat po
 | partyId | String | `party_id` |
 | supplier | Party | -> Party via `party_id` |
 | isCustomerOwned | Boolean | `is_customer_owned` |
+| tollOrderId | String? | `toll_order_id` |
 | purchaseOrderId | String? | `purchase_order_id` |
 | purchaseOrder | PurchaseOrder | -> PurchaseOrder via `purchase_order_id` |
 | status | DocumentStatus | `status` |
@@ -2624,3 +2633,10 @@ _Foto bukti visual per KATEGORI checklist inspeksi (mesin/kelistrikan/rem/ban/ k
 - `GaWeighingUnit`: KG, GRAM, TON, LBS
 - `GaCalibrationResult`: PASS, FAIL, CONDITIONAL
 - `GaCalibrationMode`: ON_SITE, SHIPPED
+
+## Jasa maklon (tanpa entity JPA, `06_toll_service.sql`)
+
+Tabel `toll_orders`, `customer_stocks`, `customer_stock_movements`, `customer_goods_returns`,
+`customer_goods_return_items`, `service_item_party_rates` diakses lewat SQL native di paket `erp.toll`
+(nama kolom snake_case; respons memakai alias camelCase).
+

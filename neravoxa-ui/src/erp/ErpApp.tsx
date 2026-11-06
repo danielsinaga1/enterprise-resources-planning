@@ -26,6 +26,7 @@ const WarehouseStockDashboard = lazyPage(() => import('./pages/WarehouseStockDas
 const StockTransfers = lazyPage(() => import('./pages/StockTransfers'));
 const DeliveryOrders = lazyPage(() => import('./pages/DeliveryOrders'));
 const GoodsReceipts = lazyPage(() => import('./pages/GoodsReceipts'));
+const TollService = lazyPage(() => import('./pages/TollService'));
 const PurchaseOrders = lazyPage(() => import('./pages/PurchaseOrders'));
 const Payments = lazyPage(() => import('./pages/Payments').then((m) => ({ default: m.Payments })));
 const PartiesPage = lazyPage(() => import('./pages/PartiesPage').then((m) => ({ default: m.PartiesPage })));
@@ -128,6 +129,7 @@ export default function ErpApp() {
           <Route path="stock-opname" element={<Perm module="stock_opname"><StockOpnamePage /></Perm>} />
           <Route path="warehouses" element={<Perm module="warehouse"><Warehouses /></Perm>} />
           <Route path="warehouse-stock" element={<Perm module="inventory"><WarehouseStockDashboard /></Perm>} />
+          <Route path="toll-service" element={<Perm module="toll_service"><TollService /></Perm>} />
           <Route path="stock-transfers" element={<Perm module="stock_transfer"><StockTransfers /></Perm>} />
           <Route path="delivery-orders" element={<Perm module="delivery_order"><DeliveryOrders /></Perm>} />
           <Route path="goods-receipts" element={<Perm module="goods_receipt"><GoodsReceipts /></Perm>} />

@@ -147,7 +147,9 @@ public final class PurchaseRequests {
             @Size(max = 200, message = "Too big: expected string to have <=200 characters") String recipientName,
             String notes,
             @NotNull(message = ARR) @Size(min = 1, message = "Minimal satu item.")
-            List<@NotNull(message = OBJ_NULL) @Valid GoodsReceiptItemInput> items) {
+            List<@NotNull(message = OBJ_NULL) @Valid GoodsReceiptItemInput> items,
+            // Jasa maklon: Order Jasa Maklon penerima barang titipan (hanya STT titipan).
+            @Pattern(regexp = UUID_RE, message = BAD_UUID) String tollOrderId) {
     }
 
     // ───────────────────────── Purchase Order ─────────────────────────

@@ -154,7 +154,11 @@
       "sender": "PENGIRIM (SUPPLIER)",
       "driver": "SUPIR",
       "recipient": "PENERIMA (KAMI)"
-    }
+    },
+    "customerOwnedDocTitle": "Tanda Terima Barang Titipan {{number}}",
+    "customerOwnedTitle": "TANDA TERIMA BARANG TITIPAN",
+    "fromOwner": "Dari (Pemilik Barang)",
+    "ownerSignature": "PEMILIK BARANG"
   },
   "transfer": {
     "docTitle": "Surat Jalan Antar Gudang {{number}}",
@@ -662,5 +666,51 @@
   },
   "company": {
     "fallbackName": "Perusahaan"
+  },
+  "toll": {
+    "orderRef": "Order: {{number}}",
+    "return": {
+      "docTitle": "Surat Jalan Pengembalian Titipan {{number}}",
+      "title": "SURAT JALAN PENGEMBALIAN TITIPAN",
+      "date": "Tanggal Kirim",
+      "to": "Kepada (Pemilik Barang)",
+      "driver": "Supir",
+      "recipient": "Diterima Oleh",
+      "ownershipNote": "Barang milik pelanggan (titipan/hasil jasa maklon) dikembalikan kepada pemiliknya.",
+      "signatures": {
+        "warehouse": "GUDANG (KAMI)",
+        "driver": "SUPIR",
+        "recipient": "PENERIMA (PELANGGAN)"
+      }
+    },
+    "report": {
+      "docTitle": "Berita Acara Hasil Proses {{number}}",
+      "title": "BERITA ACARA HASIL PROSES MAKLON",
+      "customer": "Pelanggan",
+      "orderDate": "Tanggal Order",
+      "status": "Status",
+      "summary": "Ringkasan Proses",
+      "input": "Input",
+      "mainOutput": "Hasil Utama",
+      "byProduct": "Produk Samping",
+      "shrink": "Susut",
+      "yield": "Rendemen",
+      "target": "Target",
+      "stock": "Mutasi Barang Titipan",
+      "item": "Item",
+      "received": "Diterima",
+      "processed": "Diproses",
+      "produced": "Hasil",
+      "returned": "Dikembalikan",
+      "balance": "Sisa",
+      "runs": "Data Produksi ({{count}} run)",
+      "runNumber": "No. Produksi",
+      "runDate": "Tanggal",
+      "factoryByProducts": "Produk samping menjadi milik pabrik sebagai kompensasi jasa: {{items}}.",
+      "signatures": {
+        "production": "PRODUKSI (KAMI)",
+        "customer": "PELANGGAN"
+      }
+    }
   }
 }

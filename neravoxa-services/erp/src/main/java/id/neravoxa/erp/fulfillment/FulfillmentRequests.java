@@ -2,6 +2,7 @@ package id.neravoxa.erp.fulfillment;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import id.neravoxa.erp.core.ErpException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -20,8 +21,12 @@ final class FulfillmentRequests {
 
     // ───────────────────────────── Sales Order ─────────────────────────────
 
+    /** {@code itemType}: product (dikirim lewat Surat Jalan) | service (jasa, langsung ditagih di invoice). */
     record SoItem(String inventoryItemId, String itemName, BigDecimal quantity, String unit, BigDecimal rate,
-                  BigDecimal discount, BigDecimal amount, String description) {
+                  BigDecimal discount, BigDecimal amount, String description, String itemType, String serviceItemId) {
+        boolean service() {
+            return "service".equals(itemType);
+        }
     }
 
     /**
@@ -54,7 +59,14 @@ final class FulfillmentRequests {
             Zod.lte(Zod.gte(discount, 0, null), 100, null);
             BigDecimal amount = Zod.gte(Zod.coerceNumber(it, "amount"), 0, null);
             String description = Zod.nullableString(it, "description");
-            items.add(new SoItem(Zod.truthy(inventoryItemId), itemName, quantity, unit, rate, discount, amount, description));
+            String itemType = Zod.nullableString(it, "itemType");
+            if (itemType != null && !itemType.equals("product") && !itemType.equals("service")) {
+                throw ErpException.business("Jenis item harus product atau service.");
+            }
+            boolean service = "service".equals(itemType);
+            String serviceItemId = service ? Zod.truthy(Zod.nullableString(it, "serviceItemId")) : null;
+            items.add(new SoItem(service ? null : Zod.truthy(inventoryItemId), itemName, quantity, unit, rate, discount, amount,
+                    description, service ? "service" : "product", serviceItemId));
         }
         Zod.minItems(rawItems, 1, null);
         String notes = Zod.nullableString(o, "notes");

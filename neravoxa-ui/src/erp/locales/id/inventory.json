@@ -320,7 +320,9 @@
       "defaultRate": "Tarif Default (Rp)",
       "description": "Deskripsi",
       "name": "Nama Layanan",
-      "unit": "Satuan"
+      "unit": "Satuan",
+      "pricingBasis": "Dasar tarif maklon",
+      "minimumCharge": "Ongkos minimum (Rp)"
     },
     "noAccount": "Pilih Akun",
     "placeholders": {
@@ -336,6 +338,15 @@
       "missingFields": "Kode, nama, dan akun pendapatan wajib diisi.",
       "saveFailed": "Gagal menyimpan layanan.",
       "updated": "Layanan diubah."
+    },
+    "hints": {
+      "pricingBasis": "Default untuk Order Jasa Maklon."
+    },
+    "pricingBasis": {
+      "manual": "Qty manual (invoice biasa)",
+      "InputQty": "Per kg bahan diproses",
+      "OutputQty": "Per kg hasil utama",
+      "Flat": "Borongan (flat)"
     }
   },
   "serviceItemsTab": {

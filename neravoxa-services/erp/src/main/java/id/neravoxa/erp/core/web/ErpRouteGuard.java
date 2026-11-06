@@ -100,6 +100,7 @@ public class ErpRouteGuard implements HandlerInterceptor {
             perm("sales-orders", "sales_order"),
             perm("sales-returns", "sales_return"),
             perm("goods-receipts", "goods_receipt"),
+            perm("toll", "toll_service"),
             perm("purchase-orders", "purchase_order"),
             perm("cogs-backfill", "journal"),
             perm("approvals", "approvals"),

@@ -13,6 +13,7 @@ import { FormDialog } from './purchase-cash/FormDialog';
 import { OptionPicker, type PickerOption as SelectOption } from './purchase-cash/OptionPicker';
 import { usePartyPicker } from '@/hooks/usePartyPicker';
 import { ErrorAlert, Callout } from './purchase-cash/ErrorAlert';
+import { useTollOrderOptions } from './toll/common';
 
 const UNITS = ['Kg', 'Ton', 'Sak', 'Liter', 'Pcs', 'Box', 'Unit', 'Set', 'Meter'];
 
@@ -112,6 +113,7 @@ const GoodsReceiptModal: React.FC<Props> = ({ onClose, initialPurchaseOrder = nu
   const [recipientName, _setRecipientName] = useState(() => getCurrentUserName());
   const [notes, setNotes] = useState('');
   const [isCustomerOwned, setIsCustomerOwned] = useState(false);
+  const [tollOrderId, setTollOrderId] = useState('');
   const [items, setItems] = useState<GRItem[]>(() =>
     initialPurchaseOrder ? itemsFromPO(initialPurchaseOrder) : [defaultItem()],
   );
@@ -160,7 +162,13 @@ const GoodsReceiptModal: React.FC<Props> = ({ onClose, initialPurchaseOrder = nu
     }
   };
 
-  const partyPicker = usePartyPicker({ type: 'Supplier', selectedId: partyId || null });
+  // Barang titipan: pihaknya pelanggan pemilik barang; pembelian biasa: supplier.
+  const partyPicker = usePartyPicker({ type: isCustomerOwned ? 'Customer' : 'Supplier', selectedId: partyId || null });
+  const { data: tollOrders } = useTollOrderOptions(partyId, 'RECEIVE', isCustomerOwned && !!partyId);
+  const tollOrderOptions: SelectOption[] = [
+    { value: '', label: t('receiptForm.tollOrderNone') },
+    ...((tollOrders ?? []).map((o) => ({ value: o.id, label: o.serviceItemName ? `${o.orderNumber} · ${o.serviceItemName}` : o.orderNumber })) as SelectOption[]),
+  ];
 
   const { data: inventoryItems } = useQuery({
     queryKey: ['inventory-items-gr'],
@@ -261,6 +269,7 @@ const GoodsReceiptModal: React.FC<Props> = ({ onClose, initialPurchaseOrder = nu
       partyId,
       purchaseOrderId: isCustomerOwned ? null : (purchaseOrderId || null),
       isCustomerOwned,
+      tollOrderId: isCustomerOwned ? (tollOrderId || null) : null,
       nomorMobil: nomorMobil.trim() || null,
       driverName: driverName.trim() || null,
       recipientName: recipientName.trim() || null,
@@ -309,8 +318,9 @@ const GoodsReceiptModal: React.FC<Props> = ({ onClose, initialPurchaseOrder = nu
         <Field label={t('receiptForm.date')} required>
           <DateInput value={date} onChange={setDate} />
         </Field>
-        <Field label={t('receiptForm.supplier')} required className="sm:col-span-2">
-          <OptionPicker {...partyPicker.pickerProps} value={partyId} onChange={setPartyId} placeholder={t('receiptForm.supplierPlaceholder')} />
+        <Field label={isCustomerOwned ? t('receiptForm.owner') : t('receiptForm.supplier')} required className="sm:col-span-2">
+          <OptionPicker {...partyPicker.pickerProps} value={partyId} onChange={(v) => { setPartyId(v); setTollOrderId(''); }}
+            placeholder={isCustomerOwned ? t('receiptForm.ownerPlaceholder') : t('receiptForm.supplierPlaceholder')} />
         </Field>
       </div>
 
@@ -322,6 +332,7 @@ const GoodsReceiptModal: React.FC<Props> = ({ onClose, initialPurchaseOrder = nu
           onCheckedChange={(v) => {
             const checked = v === true;
             setIsCustomerOwned(checked);
+            setTollOrderId('');
             if (checked) setPurchaseOrderId('');
           }}
         />
@@ -334,9 +345,9 @@ const GoodsReceiptModal: React.FC<Props> = ({ onClose, initialPurchaseOrder = nu
       </label>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Field label={t('receiptForm.poOptional')}>
+        <Field label={isCustomerOwned ? t('receiptForm.tollOrder') : t('receiptForm.poOptional')}>
           {isCustomerOwned ? (
-            <Input value={t('receiptForm.poNotApplicable')} disabled readOnly />
+            <OptionPicker options={tollOrderOptions} value={tollOrderId} onChange={setTollOrderId} placeholder={t('receiptForm.tollOrderNone')} />
           ) : (
             <OptionPicker
               options={poOptions}

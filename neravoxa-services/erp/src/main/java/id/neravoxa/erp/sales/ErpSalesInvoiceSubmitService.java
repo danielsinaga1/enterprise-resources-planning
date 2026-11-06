@@ -73,10 +73,71 @@ public class ErpSalesInvoiceSubmitService {
                                 String serviceItemId, BigDecimal quantity, String unit, BigDecimal rate,
                                 BigDecimal discount, BigDecimal amount, BigDecimal taxPct, BigDecimal pphPct,
                                 String accountId, String description, String deliveryOrderItemId,
-                                String sourceMovementId) {
+                                String sourceMovementId, String tollOrderId, String tollChargeType,
+                                String salesOrderItemId) {
     }
 
     private record JLine(String accountId, BigDecimal debit, BigDecimal credit, String description, String partyId) {
+    }
+
+    /**
+     * Tautan baris jasa: Order Jasa Maklon wajib milik pelanggan invoice dan tidak dibatalkan; baris jasa
+     * Sales Order wajib baris jasa dari SO pelanggan yang sama, sudah submit, dan tidak ditagih melebihi qty-nya.
+     */
+    private void validateServiceLinks(List<ResolvedItem> items, Party party) {
+        Set<String> tollIds = new LinkedHashSet<>();
+        Map<String, BigDecimal> soQty = new LinkedHashMap<>();
+        for (ResolvedItem it : items) {
+            if (it.tollOrderId() != null) {
+                tollIds.add(it.tollOrderId());
+            }
+            if (it.salesOrderItemId() != null) {
+                soQty.merge(it.salesOrderItemId(), it.quantity(), BigDecimal::add);
+            }
+        }
+        if (!tollIds.isEmpty()) {
+            List<Object[]> rows = em.createNativeQuery(
+                            "SELECT id, order_number, party_id, status FROM toll_orders WHERE id IN (:ids)")
+                    .setParameter("ids", tollIds).getResultList();
+            if (rows.size() != tollIds.size()) {
+                throw ErpException.business("Order Jasa Maklon pada baris invoice tidak ditemukan.");
+            }
+            for (Object[] r : rows) {
+                if (!party.getId().equals(r[2])) {
+                    throw ErpException.business("Order Jasa Maklon " + r[1] + " milik pelanggan lain.");
+                }
+                if ("Cancelled".equals(r[3])) {
+                    throw ErpException.business("Order Jasa Maklon " + r[1] + " sudah dibatalkan.");
+                }
+            }
+        }
+        if (!soQty.isEmpty()) {
+            List<Object[]> rows = em.createNativeQuery("SELECT s.id, s.item_name, s.quantity, s.item_type, o.party_id, o.status, "
+                            + "o.so_number, COALESCE((SELECT SUM(x.quantity) FROM sales_invoice_items x "
+                            + "JOIN sales_invoices v ON v.id = x.sales_invoice_id "
+                            + "WHERE x.sales_order_item_id = s.id AND v.status <> 'Cancelled'), 0) "
+                            + "FROM sales_order_items s JOIN sales_orders o ON o.id = s.sales_order_id WHERE s.id IN (:ids)")
+                    .setParameter("ids", soQty.keySet()).getResultList();
+            if (rows.size() != soQty.size()) {
+                throw ErpException.business("Baris jasa Sales Order tidak ditemukan.");
+            }
+            for (Object[] r : rows) {
+                if (!"service".equals(r[3])) {
+                    throw ErpException.business("Baris '" + r[1] + "' di " + r[6] + " bukan baris jasa; barang ditagih lewat Surat Jalan.");
+                }
+                if (!party.getId().equals(r[4])) {
+                    throw ErpException.business("Sales Order " + r[6] + " milik pelanggan lain.");
+                }
+                if ("Draft".equals(r[5]) || "Cancelled".equals(r[5])) {
+                    throw ErpException.business("Sales Order " + r[6] + " belum disubmit atau sudah dibatalkan.");
+                }
+                BigDecimal remaining = Money.of(r[2]).subtract(Money.of(r[7]));
+                if (soQty.get((String) r[0]).compareTo(remaining.add(new BigDecimal("0.0005"))) > 0) {
+                    throw ErpException.business("Jasa '" + r[1] + "' di " + r[6] + " melebihi sisa yang belum ditagih ("
+                            + remaining.stripTrailingZeros().toPlainString() + ").");
+                }
+            }
+        }
     }
 
     /**
@@ -188,8 +249,13 @@ public class ErpSalesInvoiceSubmitService {
                     lineAccountId,
                     SalesSupport.orNull(item.description()),
                     SalesSupport.orNull(item.deliveryOrderItemId()),
-                    SalesSupport.orNull(item.sourceMovementId())));
+                    SalesSupport.orNull(item.sourceMovementId()),
+                    SalesSupport.orNull(item.tollOrderId()),
+                    SalesSupport.hasText(item.tollOrderId())
+                            ? (SalesSupport.hasText(item.tollChargeType()) ? item.tollChargeType() : "Service") : null,
+                    SalesSupport.orNull(item.salesOrderItemId())));
         }
+        validateServiceLinks(resolvedItems, party);
 
         // Barang keluar hanya lewat Surat Jalan: baris inventori wajib terkait baris DO yang sudah
         // submit (tidak ada stock-out ganda). Baris jasa / akun bebas tidak perlu tautan.
@@ -271,6 +337,9 @@ public class ErpSalesInvoiceSubmitService {
             si.setDescription(ri.description());
             si.setDeliveryOrderItemId(ri.deliveryOrderItemId());
             si.setSourceMovementId(ri.sourceMovementId());
+            si.setTollOrderId(ri.tollOrderId());
+            si.setTollChargeType(ri.tollChargeType());
+            si.setSalesOrderItemId(ri.salesOrderItemId());
             em.persist(si);
             invoiceItems.add(si);
         }

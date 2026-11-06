@@ -822,7 +822,11 @@
       "rateRow": "Harga per unit baris {{row}}",
       "discountRow": "Diskon persen baris {{row}}",
       "removeRow": "Hapus baris {{row}}",
-      "addRow": "Tambah baris"
+      "addRow": "Tambah baris",
+      "typeRow": "Jenis item baris {{row}}",
+      "product": "Barang",
+      "service": "Jasa",
+      "servicePlaceholder": "Pilih jasa…"
     },
     "totals": {
       "subtotal": "Subtotal",
@@ -964,7 +968,8 @@
       "doFailed": "Gagal generate Surat Jalan.",
       "pdfReady_one": "PDF + {{count}} lampiran siap diunduh.",
       "pdfReady_other": "PDF + {{count}} lampiran siap diunduh."
-    }
+    },
+    "invoiceServices": "Tagih jasa"
   },
   "inquiryDetailDrawer": {
     "channels": {

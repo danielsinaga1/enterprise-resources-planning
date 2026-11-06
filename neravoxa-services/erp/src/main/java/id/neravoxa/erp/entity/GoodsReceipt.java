@@ -41,6 +41,10 @@ public class GoodsReceipt {
     @Column(name = "is_customer_owned", nullable = false)
     private Boolean isCustomerOwned = false;
 
+    /** Order Jasa Maklon yang menerima barang titipan ini (opsional, hanya STT titipan). */
+    @Column(name = "toll_order_id")
+    private String tollOrderId;
+
     @Column(name = "purchase_order_id")
     private String purchaseOrderId;
 

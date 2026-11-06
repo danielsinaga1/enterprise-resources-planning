@@ -822,7 +822,11 @@
       "rateRow": "Unit price, row {{row}}",
       "discountRow": "Discount percent, row {{row}}",
       "removeRow": "Remove row {{row}}",
-      "addRow": "Add row"
+      "addRow": "Add row",
+      "typeRow": "Item type row {{row}}",
+      "product": "Goods",
+      "service": "Service",
+      "servicePlaceholder": "Select a service…"
     },
     "totals": {
       "subtotal": "Subtotal",
@@ -964,7 +968,8 @@
       "doFailed": "Could not create the delivery order.",
       "pdfReady_one": "PDF + {{count}} attachment ready to download.",
       "pdfReady_other": "PDF + {{count}} attachments ready to download."
-    }
+    },
+    "invoiceServices": "Invoice services"
   },
   "inquiryDetailDrawer": {
     "channels": {

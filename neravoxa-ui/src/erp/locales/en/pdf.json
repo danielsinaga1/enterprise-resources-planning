@@ -154,7 +154,11 @@
       "sender": "SENDER (SUPPLIER)",
       "driver": "DRIVER",
       "recipient": "RECIPIENT (US)"
-    }
+    },
+    "customerOwnedDocTitle": "Consigned Goods Receipt {{number}}",
+    "customerOwnedTitle": "CONSIGNED GOODS RECEIPT",
+    "fromOwner": "From (Owner)",
+    "ownerSignature": "GOODS OWNER"
   },
   "transfer": {
     "docTitle": "Inter-Warehouse Delivery Order {{number}}",
@@ -662,5 +666,51 @@
   },
   "company": {
     "fallbackName": "Company"
+  },
+  "toll": {
+    "orderRef": "Order: {{number}}",
+    "return": {
+      "docTitle": "Consigned Goods Return Note {{number}}",
+      "title": "CONSIGNED GOODS RETURN NOTE",
+      "date": "Ship Date",
+      "to": "To (Owner)",
+      "driver": "Driver",
+      "recipient": "Received By",
+      "ownershipNote": "Customer-owned goods (consignment / toll-processing output) returned to their owner.",
+      "signatures": {
+        "warehouse": "WAREHOUSE (US)",
+        "driver": "DRIVER",
+        "recipient": "RECIPIENT (CUSTOMER)"
+      }
+    },
+    "report": {
+      "docTitle": "Toll Processing Report {{number}}",
+      "title": "TOLL PROCESSING RESULT REPORT",
+      "customer": "Customer",
+      "orderDate": "Order Date",
+      "status": "Status",
+      "summary": "Processing Summary",
+      "input": "Input",
+      "mainOutput": "Main Output",
+      "byProduct": "By-product",
+      "shrink": "Shrinkage",
+      "yield": "Yield",
+      "target": "Target",
+      "stock": "Consigned Goods Movement",
+      "item": "Item",
+      "received": "Received",
+      "processed": "Processed",
+      "produced": "Produced",
+      "returned": "Returned",
+      "balance": "Balance",
+      "runs": "Production Runs ({{count}})",
+      "runNumber": "Run No.",
+      "runDate": "Date",
+      "factoryByProducts": "By-products kept by the factory as service compensation: {{items}}.",
+      "signatures": {
+        "production": "PRODUCTION (US)",
+        "customer": "CUSTOMER"
+      }
+    }
   }
 }

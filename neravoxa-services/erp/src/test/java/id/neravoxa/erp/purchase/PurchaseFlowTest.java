@@ -271,14 +271,20 @@ class PurchaseFlowTest extends PurchaseTestSupport {
         assertEquals("Supplier wajib dipilih.", call(post("/api/erp/goods-receipts", map("date", today(), "partyId", "x",
                 "items", List.of(map("inventoryItemId", itemId, "warehouseId", wh, "itemName", "X", "quantity", 5, "unit", "kg"))))).error());
 
-        // Barang titipan: stok masuk tanpa jurnal & tanpa WAC.
+        // Barang titipan: masuk buku stok titipan — stok sendiri, WAC, dan jurnal tidak berubah.
         JsonNode owned = ok(post("/api/erp/goods-receipts", map("date", today(), "partyId", sup, "isCustomerOwned", true,
                 "items", List.of(map("inventoryItemId", itemId, "warehouseId", wh, "itemName", "X", "quantity", 5, "unit", "kg")))));
-        assertMoney("5", stock(itemId));
+        assertMoney("0", stock(itemId));
         assertMoney("0", avg(itemId));
         assertEquals(null, jeStatus("JV-" + owned.get("sttNumber").asText()));
+        assertMoney("5", jdbc.queryForObject("SELECT current_stock FROM customer_stocks WHERE party_id = ? AND item_id = ?",
+                BigDecimal.class, sup, itemId));
 
-        // Stok keluar manual (simulasi penjualan) → pembatalan butuh bypass.
+        // STT bernilai lalu stok keluar manual (simulasi penjualan) → pembatalan butuh bypass.
+        owned = ok(post("/api/erp/goods-receipts", map("date", today(), "partyId", sup,
+                "items", List.of(map("inventoryItemId", itemId, "warehouseId", wh, "itemName", "X", "quantity", 5, "unit", "kg",
+                        "lockedUnitCost", 1000)))));
+        assertMoney("5", stock(itemId));
         jdbc.update("UPDATE inventory_items SET current_stock = current_stock - 3 WHERE id = ?", itemId);
         Result insufficient = call(post("/api/erp/goods-receipts/" + owned.get("id").asText() + "/cancel", map()));
         assertEquals(400, insufficient.status());

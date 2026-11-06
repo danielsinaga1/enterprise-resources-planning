@@ -99,6 +99,7 @@ public class ErpProductionRunSubmitService {
         }
 
         support.persistChildren(run, body, warehouseId, snaps, hpp, stamps);
+        support.refreshTollStatus(run.getTollOrderId());
         return new PostedRun(run.getId(), runNumber);
     }
 }

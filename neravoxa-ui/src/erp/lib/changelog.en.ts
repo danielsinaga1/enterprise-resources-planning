@@ -8,6 +8,19 @@ export interface ChangelogTranslation {
 }
 
 export const CHANGELOG_EN: Readonly<Record<string, ChangelogTranslation>> = {
+  '4.2.0': {
+    title: 'Toll Processing & Customer Consignment Stock',
+    changes: [
+      'New module Inventory & Production → Toll Processing & Consignment: a toll order (OJM) ties together consignment receipts, production, return delivery notes and invoices; priced per kg of input, per kg of output or as a flat fee, with a minimum charge, VAT, target yield and a storage rate',
+      'Customer consignment stock now has its own ledger per customer × item × warehouse, kept apart from your own stock, average cost, stock counts and inventory value; existing consignment receipts are moved automatically',
+      'Production runs can select a toll order: inputs come from consignment stock and output goes back to it; conversion costs are reclassified to 5.13 Cost of Toll Services; by-products can be kept by the factory (own stock at NRV against service revenue)',
+      'Consigned goods return notes (SJT), consignment stock card, consignment ageing and warehouse transfers of consignment stock',
+      'Invoices generated from the order: unbilled processing fee, minimum charge adjustment once the order is Completed, and storage fee; customer-specific rates on the service item master',
+      'Toll Processing Yield and Consignment Storage Fee reports; printable consigned goods receipt, processing result report and return delivery note',
+      'Sales orders now support service lines: not shipped through delivery notes, billed directly on a sales invoice (Invoice services button) with the billed quantity tracked',
+      'The AI assistant suggests toll orders not yet billed and consignment stock idle for more than 30 days',
+    ],
+  },
   '4.1.3': {
     title: 'Payment Request Attachments via AIRA',
     changes: [

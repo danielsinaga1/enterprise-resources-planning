@@ -30,6 +30,8 @@ import id.neravoxa.erp.entity.StockMovementType;
 import id.neravoxa.erp.entity.Warehouse;
 import id.neravoxa.erp.purchase.PurchaseRequests.CreateGoodsReceiptRequest;
 import id.neravoxa.erp.purchase.PurchaseRequests.GoodsReceiptItemInput;
+import id.neravoxa.erp.toll.CustomerStockLedger;
+import id.neravoxa.erp.toll.ErpTollOrderService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +57,9 @@ import static id.neravoxa.erp.purchase.PurchaseDb.has;
  * STT: DR Persediaan (per akun persediaan) / CR Hutang Belum Tagih (ACCRUED_PAYABLE) @ harga
  * provisional — PI nanti membalik accrual dan memposting selisih harga aktual.
  * Batal: stok dibalik, jurnal pembalik {@code JV-<STT>-CXL}, qtyReceived PO dikurangi, WAC di-replay.
+ *
+ * <p>STT barang TITIPAN pelanggan (jasa maklon/repros): kuantitas masuk ke buku stok titipan
+ * ({@link CustomerStockLedger}) — bukan stok/WAC/GL perusahaan — dan boleh ditautkan ke Order Jasa Maklon.
  */
 @Slf4j
 @Service
@@ -70,6 +75,8 @@ public class ErpGoodsReceiptService {
     private final ErpGlPostingService gl;
     private final ErpWarehouseStockService stock;
     private final ErpCogsService cogs;
+    private final CustomerStockLedger customerStock;
+    private final ErpTollOrderService tollOrders;
 
     @PersistenceContext(unitName = "erp")
     private EntityManager em;
@@ -99,11 +106,17 @@ public class ErpGoodsReceiptService {
         if (!Boolean.TRUE.equals(party.getIsActive())) {
             throw ErpException.business("Supplier '" + party.getName() + "' tidak aktif.");
         }
-        if (party.getPartyType() != PartyType.Supplier && party.getPartyType() != PartyType.Both) {
+        boolean isCustomerOwned = Boolean.TRUE.equals(body.isCustomerOwned());
+        // Barang titipan: pihaknya = pelanggan pemilik barang (Customer/Both); pembelian biasa: supplier.
+        if (!isCustomerOwned && party.getPartyType() != PartyType.Supplier && party.getPartyType() != PartyType.Both) {
             throw ErpException.business("Party '" + party.getName() + "' bukan supplier.");
         }
-
-        boolean isCustomerOwned = Boolean.TRUE.equals(body.isCustomerOwned());
+        String tollOrderId = has(body.tollOrderId()) ? body.tollOrderId() : null;
+        if (tollOrderId != null && !isCustomerOwned) {
+            throw ErpException.business("Order Jasa Maklon hanya bisa ditautkan ke STT barang titipan pelanggan.");
+        }
+        ErpTollOrderService.OrderRef tollOrder = tollOrderId == null ? null
+                : tollOrders.requireUsable(tollOrderId, body.partyId(), ErpTollOrderService.Use.RECEIVE);
         String purchaseOrderId = has(body.purchaseOrderId()) ? body.purchaseOrderId() : null;
         if (isCustomerOwned && purchaseOrderId != null) {
             throw ErpException.business("STT barang titipan tidak boleh terkait Purchase Order.");
@@ -174,6 +187,7 @@ public class ErpGoodsReceiptService {
         gr.setPartyId(body.partyId());
         gr.setPurchaseOrderId(purchaseOrderId);
         gr.setIsCustomerOwned(isCustomerOwned);
+        gr.setTollOrderId(tollOrderId);
         gr.setStatus(DocumentStatus.Submitted);
         gr.setNotes(body.notes());
         gr.setNomorMobil(body.nomorMobil());
@@ -202,20 +216,37 @@ public class ErpGoodsReceiptService {
             if (wh == null) {
                 throw ErpException.business("Gudang tidak ditemukan untuk '" + line.itemName() + "'.");
             }
+            BigDecimal qty = line.quantity();
+            if (isCustomerOwned) {
+                // Barang milik pelanggan: hanya buku stok titipan (tanpa stok/WAC/jurnal perusahaan).
+                GoodsReceiptItem grItem = new GoodsReceiptItem();
+                grItem.setGoodsReceiptId(gr.getId());
+                grItem.setInventoryItemId(invItem.getId());
+                grItem.setWarehouseId(wh.getId());
+                grItem.setItemName(line.itemName());
+                grItem.setQuantity(Money.round(qty, 3));
+                grItem.setUnit(line.unit());
+                grItem.setLockedUnitCost(BigDecimal.ZERO);
+                grItem.setDescription(line.description());
+                em.persist(grItem);
+                PurchaseDb.flush(em);
+                customerStock.post(new CustomerStockLedger.Move(body.partyId(), invItem.getId(), wh.getId(),
+                        CustomerStockLedger.IN, qty, parsedDate, CustomerStockLedger.SRC_GOODS_RECEIPT, gr.getId(), sttNumber,
+                        grItem.getId(), tollOrderId, "Titipan dari " + party.getName() + " (" + sttNumber
+                        + (tollOrder == null ? "" : ", " + tollOrder.orderNumber()) + ")", userId));
+                continue;
+            }
             // Nilai stok & avg dibaca langsung dari DB (baris sebelumnya bisa sudah mengubahnya).
             ErpWarehouseStockService.ItemStock current = stock.currentItemStock(invItem.getId());
 
-            BigDecimal qty = line.quantity();
             // Form STT tanpa harga → avg cost saat ini sebagai harga provisional; PI nanti
             // menetapkan harga aktual dan memposting selisihnya.
             BigDecimal provided = Money.nz(line.lockedUnitCost());
-            // Barang titipan dinilai 0 (bukan aset kita) → jurnal dilewati (totalCr = 0).
-            BigDecimal unitCost = isCustomerOwned ? BigDecimal.ZERO
-                    : provided.signum() > 0 ? provided : current.averageCost();
+            BigDecimal unitCost = provided.signum() > 0 ? provided : current.averageCost();
 
             // Barang sendiri tidak boleh masuk dengan harga 0: WAC jadi 0 dan Out berikutnya membuat
-            // saldo GL persediaan minus. Barang titipan dikecualikan.
-            if (!isCustomerOwned && unitCost.signum() <= 0) {
+            // saldo GL persediaan minus.
+            if (unitCost.signum() <= 0) {
                 throw ErpException.business("Harga satuan untuk '" + invItem.getName() + "' belum ada (nilai 0). "
                         + "Isi harga di STT, atau tandai STT ini sebagai Barang Titipan Customer "
                         + "bila barang bukan milik perusahaan.");
@@ -243,11 +274,8 @@ public class ErpGoodsReceiptService {
             em.persist(movement);
             PurchaseDb.flush(em);
 
-            // Barang titipan tidak mengubah averageCost (qty berharga 0 akan mengencerkan WAC stok sendiri).
-            if (!isCustomerOwned) {
-                stock.setAverageCost(invItem.getId(),
-                        WeightedAverage.calc(current.currentStock(), current.averageCost(), qty, unitCost));
-            }
+            stock.setAverageCost(invItem.getId(),
+                    WeightedAverage.calc(current.currentStock(), current.averageCost(), qty, unitCost));
             stock.adjustItemStock(invItem.getId(), qty);
             stock.adjustWarehouseStock(invItem.getId(), wh.getId(), qty);
 
@@ -298,6 +326,9 @@ public class ErpGoodsReceiptService {
             je.post();
         }
 
+        if (tollOrderId != null) {
+            tollOrders.refreshStatus(tollOrderId);
+        }
         log.info("Goods receipt submitted sttId={} sttNumber={} partyId={} totalValue={} lines={}",
                 gr.getId(), sttNumber, body.partyId(), totalCr, body.items().size());
         return PurchaseShape.scalars().of(gr);
@@ -335,6 +366,10 @@ public class ErpGoodsReceiptService {
                             + " (Submitted, belum dibayar). Batalkan invoice tersebut dulu.");
                 }
             }
+        }
+
+        if (Boolean.TRUE.equals(stt.getIsCustomerOwned())) {
+            return cancelCustomerOwned(stt);
         }
 
         List<GoodsReceiptItem> items = em.createQuery("select gi from GoodsReceiptItem gi left join fetch gi.stockMovement "
@@ -396,11 +431,9 @@ public class ErpGoodsReceiptService {
         }
         PurchaseDb.flush(em);
 
-        // averageCost diturunkan ulang dengan replay gerakan aktif. STT titipan dilewati (submit-nya tidak menyentuh WAC).
-        if (!Boolean.TRUE.equals(stt.getIsCustomerOwned())) {
-            for (String itemId : affectedItemIds) {
-                cogs.recomputeAverageCostFromReplay(itemId);
-            }
+        // averageCost diturunkan ulang dengan replay gerakan aktif.
+        for (String itemId : affectedItemIds) {
+            cogs.recomputeAverageCostFromReplay(itemId);
         }
 
         List<JournalEntry> originals = em.createQuery("select j from JournalEntry j where j.entryNumber = :n", JournalEntry.class)
@@ -433,6 +466,25 @@ public class ErpGoodsReceiptService {
         stt.setUpdatedAt(now);
         PurchaseDb.flush(em);
         log.info("Goods receipt cancelled (stock reversed + JV flipped) sttId={} sttNumber={}", sttId, stt.getSttNumber());
+        return PurchaseShape.scalars().of(stt);
+    }
+
+    /**
+     * Batal STT titipan: mutasi buku stok titipan dibalik (ditolak bila barangnya sudah diproses/dikembalikan —
+     * batalkan dokumen pemakainya dulu). Tidak ada stok/jurnal perusahaan yang perlu dibalik. STT titipan lama
+     * (sebelum buku stok titipan) sudah dimigrasikan ke buku yang sama oleh {@code 06_toll_service.sql}.
+     */
+    private ObjectNode cancelCustomerOwned(GoodsReceipt stt) {
+        customerStock.reverseSource(CustomerStockLedger.SRC_GOODS_RECEIPT, stt.getId(), "STT " + stt.getSttNumber());
+        Instant now = Instant.now();
+        stt.setStatus(DocumentStatus.Cancelled);
+        stt.setCancelledAt(now);
+        stt.setUpdatedAt(now);
+        PurchaseDb.flush(em);
+        if (has(stt.getTollOrderId())) {
+            tollOrders.refreshStatus(stt.getTollOrderId());
+        }
+        log.info("Customer-owned goods receipt cancelled (titipan reversed) sttId={} sttNumber={}", stt.getId(), stt.getSttNumber());
         return PurchaseShape.scalars().of(stt);
     }
 }

@@ -25,6 +25,9 @@ import { toast } from 'sonner';
 
 interface SOItem {
   id: string;
+  /** product = dikirim lewat Surat Jalan; service = jasa, langsung ditagih di invoice. */
+  itemType: 'product' | 'service';
+  serviceItemId: string;
   inventoryItemId: string;
   itemName: string;
   quantity: number;
@@ -38,6 +41,8 @@ const UNITS = ['Kg', 'Ton', 'Sak', 'Liter', 'Pcs', 'Box', 'Unit', 'Set', 'Meter'
 
 const defaultItem = (): SOItem => ({
   id: crypto.randomUUID(),
+  itemType: 'product',
+  serviceItemId: '',
   inventoryItemId: '',
   itemName: '',
   quantity: 1,
@@ -85,6 +90,25 @@ const SalesOrderModal: React.FC<Props> = ({ isOpen, onClose, editTarget }) => {
     },
   });
 
+  const { data: serviceItems } = useQuery({
+    queryKey: ['service-items', 'so-picker'],
+    queryFn: async () => {
+      const res = await api.get('/service-items', { params: { limit: 500 } });
+      const all: any[] = res.data.data ?? res.data;
+      return all.filter((s: any) => s.isActive !== false);
+    },
+    enabled: isOpen,
+  });
+  const serviceOptions = useMemo(
+    () => (serviceItems || []).map((s: any) => ({ value: s.id, label: s.name, subtitle: s.code })),
+    [serviceItems],
+  );
+  const onPickService = (rowId: string, svcId: string) => {
+    const svc = serviceItems?.find((s: any) => s.id === svcId);
+    if (!svc) return;
+    updateItem(rowId, { serviceItemId: svcId, itemName: svc.name, unit: svc.unit || 'Jasa', rate: Number(svc.defaultRate) || 0 });
+  };
+
   useEffect(() => {
     if (!isOpen) return;
     if (editTarget) {
@@ -101,6 +125,8 @@ const SalesOrderModal: React.FC<Props> = ({ isOpen, onClose, editTarget }) => {
       if (editTarget.items?.length) {
         setItems(editTarget.items.map((it: any) => ({
           id: crypto.randomUUID(),
+          itemType: it.itemType === 'service' ? 'service' : 'product',
+          serviceItemId: it.serviceItemId || '',
           inventoryItemId: it.inventoryItemId || '',
           itemName: it.itemName || '',
           quantity: Number(it.quantity) || 1,
@@ -175,7 +201,9 @@ const SalesOrderModal: React.FC<Props> = ({ isOpen, onClose, editTarget }) => {
         biayaLain,
         taxPct,
         items: items.map((it) => ({
-          inventoryItemId: it.inventoryItemId || null,
+          itemType: it.itemType,
+          serviceItemId: it.itemType === 'service' ? (it.serviceItemId || null) : null,
+          inventoryItemId: it.itemType === 'service' ? null : (it.inventoryItemId || null),
           itemName: it.itemName,
           quantity: it.quantity,
           unit: it.unit,
@@ -264,7 +292,7 @@ const SalesOrderModal: React.FC<Props> = ({ isOpen, onClose, editTarget }) => {
 
             <div className="overflow-hidden rounded-lg border border-border">
               <TableRegion label={t('salesOrderModal.table.label')} className="rounded-none border-0">
-                <table className="min-w-[760px] w-full text-sm">
+                <table className="min-w-[880px] w-full text-sm">
                   <thead className="bg-muted/50">
                     <tr>
                       <th scope="col" className="px-3 py-2 text-left text-xs font-medium">{t('salesOrderModal.table.item')}</th>
@@ -280,13 +308,39 @@ const SalesOrderModal: React.FC<Props> = ({ isOpen, onClose, editTarget }) => {
                     {items.map((it, idx) => (
                       <tr key={it.id} className="border-t border-border">
                         <td className="px-3 py-2">
-                          <PickerSelect
-                            aria-label={t('salesOrderModal.table.itemRow', { row: idx + 1 })}
-                            value={it.inventoryItemId}
-                            onChange={(v) => onPickInventory(it.id, v)}
-                            options={itemOptions}
-                            placeholder={t('salesOrderModal.table.itemPlaceholder')}
-                          />
+                          <div className="flex gap-2">
+                            <OptionSelect
+                              aria-label={t('salesOrderModal.table.typeRow', { row: idx + 1 })}
+                              value={it.itemType}
+                              onChange={(v) => updateItem(it.id, v === 'service'
+                                ? { itemType: 'service', inventoryItemId: '', unit: 'Jasa' }
+                                : { itemType: 'product', serviceItemId: '' })}
+                              options={[
+                                { value: 'product', label: t('salesOrderModal.table.product') },
+                                { value: 'service', label: t('salesOrderModal.table.service') },
+                              ]}
+                              className="w-28 shrink-0"
+                            />
+                            <div className="min-w-0 flex-1">
+                              {it.itemType === 'service' ? (
+                                <PickerSelect
+                                  aria-label={t('salesOrderModal.table.itemRow', { row: idx + 1 })}
+                                  value={it.serviceItemId}
+                                  onChange={(v) => onPickService(it.id, v)}
+                                  options={serviceOptions}
+                                  placeholder={t('salesOrderModal.table.servicePlaceholder')}
+                                />
+                              ) : (
+                                <PickerSelect
+                                  aria-label={t('salesOrderModal.table.itemRow', { row: idx + 1 })}
+                                  value={it.inventoryItemId}
+                                  onChange={(v) => onPickInventory(it.id, v)}
+                                  options={itemOptions}
+                                  placeholder={t('salesOrderModal.table.itemPlaceholder')}
+                                />
+                              )}
+                            </div>
+                          </div>
                         </td>
                         <td className="px-3 py-2">
                           <NumberInput

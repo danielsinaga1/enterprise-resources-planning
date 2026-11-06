@@ -148,9 +148,11 @@ public class ErpProductionRunQueryService {
                 itemsByRun.computeIfAbsent(x.getProductionRunId(), k -> new ArrayList<>()).add(j);
             }
         }
+        Map<String, Map<String, Object>> tollById = tollOrders(runs.stream().map(ProductionRun::getTollOrderId).toList());
         List<Map<String, Object>> data = new ArrayList<>();
         for (ProductionRun r : runs) {
             Map<String, Object> m = ProdJson.scalars(r);
+            m.put("tollOrder", r.getTollOrderId() == null ? null : tollById.get(r.getTollOrderId()));
             m.put("items", itemsByRun.getOrDefault(r.getId(), List.of()));
             m.put("machine", ProdJson.pick(r.getMachine(), "id", "code", "name"));
             m.put("createdBy", ProdJson.pick(r.getCreatedBy(), "id", "fullName"));
@@ -310,6 +312,8 @@ public class ErpProductionRunQueryService {
         }
 
         Map<String, Object> out = ProdJson.scalars(run);
+        out.put("tollOrder", run.getTollOrderId() == null ? null
+                : tollOrders(List.of(run.getTollOrderId())).get(run.getTollOrderId()));
         out.put("items", itemRows);
         out.put("runCosts", costRows);
         out.put("runProcesses", processRows);
@@ -319,6 +323,24 @@ public class ErpProductionRunQueryService {
         out.put("createdBy", ProdJson.pick(run.getCreatedBy(), "id", "fullName"));
         out.put("journal", activeJournal("JV-" + run.getRunNumber()));
         out.put("glSummary", glSummary(id, mainItemIds));
+        return out;
+    }
+
+    /** Ringkasan Order Jasa Maklon {id, orderNumber, partyId, partyName, byProductOwner, status} per id. */
+    @SuppressWarnings("unchecked")
+    private Map<String, Map<String, Object>> tollOrders(List<String> ids) {
+        Map<String, Map<String, Object>> out = new HashMap<>();
+        List<String> wanted = ids.stream().filter(java.util.Objects::nonNull).distinct().toList();
+        if (wanted.isEmpty()) {
+            return out;
+        }
+        List<Object[]> rows = em.createNativeQuery("SELECT o.id, o.order_number, o.party_id, p.name, o.by_product_owner, o.status "
+                + "FROM toll_orders o JOIN parties p ON p.id = o.party_id WHERE o.id IN (:ids)").setParameter("ids", wanted)
+                .getResultList();
+        for (Object[] r : rows) {
+            out.put((String) r[0], ErpProductionRunPostingSupport.map("id", r[0], "orderNumber", r[1], "partyId", r[2],
+                    "partyName", r[3], "byProductOwner", r[4], "status", r[5]));
+        }
         return out;
     }
 

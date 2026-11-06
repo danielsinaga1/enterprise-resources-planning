@@ -18,6 +18,7 @@ import id.neravoxa.erp.entity.DeliveryOrderItem;
 import id.neravoxa.erp.entity.DocumentStatus;
 import id.neravoxa.erp.entity.FiscalYear;
 import id.neravoxa.erp.entity.InventoryItem;
+import id.neravoxa.erp.entity.InvoiceStatus;
 import id.neravoxa.erp.entity.Party;
 import id.neravoxa.erp.entity.Payment;
 import id.neravoxa.erp.entity.PaymentType;
@@ -211,9 +212,25 @@ public class ErpSalesOrderService {
                         "select i from SalesOrderItem i left join fetch i.inventoryItem where i.salesOrderId = :id "
                                 + "order by i.createdAt, i.id", SalesOrderItem.class)
                 .setParameter("id", id).getResultList();
+        // Baris jasa: qty yang sudah ditagih (invoice aktif bertaut baris SO ini).
+        Map<String, BigDecimal> invoiced = new LinkedHashMap<>();
+        List<String> serviceIds = items.stream().filter(i -> "service".equals(i.getItemType())).map(SalesOrderItem::getId).toList();
+        if (!serviceIds.isEmpty()) {
+            for (Object[] r : em.createQuery("select x.salesOrderItemId, sum(x.quantity) from SalesInvoiceItem x "
+                            + "join x.salesInvoice v where x.salesOrderItemId in :ids and v.status <> :cancelled "
+                            + "group by x.salesOrderItemId", Object[].class)
+                    .setParameter("ids", serviceIds)
+                    .setParameter("cancelled", InvoiceStatus.Cancelled)
+                    .getResultList()) {
+                invoiced.put((String) r[0], Money.nz((BigDecimal) r[1]));
+            }
+        }
         ArrayNode itemNodes = ErpJson.arrayNode();
         for (SalesOrderItem it : items) {
             ObjectNode line = FulfillmentJson.obj(it);
+            if ("service".equals(it.getItemType())) {
+                line.put("invoicedQty", invoiced.getOrDefault(it.getId(), BigDecimal.ZERO));
+            }
             InventoryItem inv = it.getInventoryItemId() == null ? null : it.getInventoryItem();
             line.set("inventoryItem", inv == null ? ErpJson.tree(null) : ErpJson.tree(ErpJson.map(
                     "id", inv.getId(), "code", inv.getCode(), "name", inv.getName(), "unit", inv.getUnit(),
@@ -334,6 +351,8 @@ public class ErpSalesOrderService {
             it.setDiscount(i.discount());
             it.setAmount(i.amount());
             it.setDescription(i.description());
+            it.setItemType(i.itemType());
+            it.setServiceItemId(i.serviceItemId());
             it.setDeliveredQty(BigDecimal.ZERO);
             it.setCreatedAt(base.plusMillis(seq++));
             em.persist(it);
@@ -489,6 +508,10 @@ public class ErpSalesOrderService {
             SalesOrderItem soItem = soItems.get(b.salesOrderItemId());
             if (soItem == null) {
                 throw ErpException.business("SO item " + b.salesOrderItemId() + " tidak ditemukan di SO ini.");
+            }
+            if ("service".equals(soItem.getItemType())) {
+                throw ErpException.business("Baris jasa '" + soItem.getItemName()
+                        + "' tidak dikirim lewat Surat Jalan; tagihkan langsung di Invoice Penjualan.");
             }
             BigDecimal remaining = Money.nz(soItem.getQuantity()).subtract(Money.nz(soItem.getDeliveredQty()));
             if (b.quantity().compareTo(remaining) > 0) {

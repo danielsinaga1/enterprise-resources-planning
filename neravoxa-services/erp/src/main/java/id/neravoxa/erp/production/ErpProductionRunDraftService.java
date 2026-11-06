@@ -56,6 +56,8 @@ public class ErpProductionRunDraftService {
     private final ErpApprovalGateService approvalGate;
     private final ErpProductionRunSubmitService submitter;
     private final ErpProductionRunPostingSupport support;
+    private final id.neravoxa.erp.toll.CustomerStockLedger customerStock;
+    private final id.neravoxa.erp.toll.ErpTollOrderService tollOrders;
 
     @PersistenceContext(unitName = "erp")
     private EntityManager em;
@@ -224,8 +226,38 @@ public class ErpProductionRunDraftService {
         Map<String, String> names = new HashMap<>();
         info.forEach((k, v) -> names.put(k, v.name()));
         Map<String, Object> summary = summarize(body, names);
-        List<String> warnings = body.negativeStock() ? List.of() : stockWarnings(body.inputs(), info);
+        List<String> warnings = ErpProductionRunPostingSupport.isToll(body) ? tollWarnings(body, info)
+                : body.negativeStock() ? List.of() : stockWarnings(body.inputs(), info);
         return new Described(summary, warnings);
+    }
+
+    /** Run maklon: bahan dicek terhadap stok titipan pelanggan order di gudang produksi (bukan stok sendiri). */
+    private List<String> tollWarnings(ProductionRunRequest body, Map<String, StockInfo> info) {
+        var order = tollOrders.ref(body.tollOrderId());
+        if (order == null) {
+            return List.of("Order jasa maklon tidak ditemukan.");
+        }
+        List<String> out = new ArrayList<>();
+        if (!"Open".equals(order.status()) && !"InProgress".equals(order.status())) {
+            out.add("Order " + order.orderNumber() + " berstatus " + order.status() + "; buka kembali sebelum posting.");
+        }
+        String warehouseId = body.warehouseId() == null || body.warehouseId().isEmpty() ? null : body.warehouseId();
+        if (warehouseId == null) {
+            return out;
+        }
+        Map<String, BigDecimal> need = new LinkedHashMap<>();
+        for (InputLine i : body.inputs()) {
+            need.merge(i.itemId(), i.quantity(), BigDecimal::add);
+        }
+        need.forEach((itemId, qty) -> {
+            BigDecimal have = customerStock.balance(order.partyId(), itemId, warehouseId);
+            StockInfo s = info.get(itemId);
+            if (s != null && have.compareTo(qty) < 0) {
+                out.add("Stok titipan '" + s.name() + "' di gudang produksi " + ProdJson.idNum(have, 3) + " " + s.unit()
+                        + ", dibutuhkan " + ProdJson.idNum(qty, 3) + " " + s.unit() + ". Dicek ulang saat posting.");
+            }
+        });
+        return out;
     }
 
     // ───────────────────────────── tulis ─────────────────────────────

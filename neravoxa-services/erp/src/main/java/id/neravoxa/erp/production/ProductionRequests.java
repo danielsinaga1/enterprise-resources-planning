@@ -195,7 +195,9 @@ public final class ProductionRequests {
             @JsDate String startAt,
             @JsDate String endAt,
             Boolean allowNegativeStock,
-            @Size(max = 500, message = "Too big: expected string to have <=500 characters") String negativeStockReason) {
+            @Size(max = 500, message = "Too big: expected string to have <=500 characters") String negativeStockReason,
+            /** Jasa Maklon: bahan & hasil keluar-masuk stok titipan pelanggan order ini, bukan stok sendiri. */
+            @Pattern(regexp = UUID, message = "Order jasa maklon tidak valid.") String tollOrderId) {
 
         public ProductionRunRequest {
             costs = costs == null ? List.of() : costs;

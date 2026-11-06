@@ -19,8 +19,9 @@ Purchase Order → (persetujuan bila melewati batas) → Penerimaan Barang (STT/
 - Stok bertambah saat STT dibuat dan hutang dicatat; harga aktual diinput saat Invoice Pembelian dibuat dari STT.
   Sementara harga belum ada, sistem memakai harga rata-rata item sebagai biaya provisional.
 - Sejak 20 Mei 2026, stok masuk dari pembelian wajib lewat STT; invoice pembelian hanya berfungsi sebagai tagihan.
-- Barang milik customer (untuk diproses ulang) dicatat qty-nya saja tanpa nilai persediaan/hutang dan tidak bisa
-  dijadikan Invoice Pembelian; tagih jasanya lewat Invoice Penjualan baris jasa.
+- Barang milik pelanggan (titipan untuk diproses/maklon): centang "Barang Titipan Pelanggan", pilih pelanggan pemilik
+  barang dan (disarankan) Order Jasa Maklon-nya. Kuantitasnya masuk Stok Titipan, BUKAN stok/nilai persediaan sendiri,
+  tanpa hutang, dan tidak bisa dijadikan Invoice Pembelian. Tagih ongkosnya dari halaman Jasa Maklon.
 - Pembatalan STT yang membuat stok minus perlu alasan paksa (minimal 10 karakter) dan hak khusus.
 - Langkah berikutnya: buat Invoice Pembelian dari STT saat tagihan supplier diterima.
 

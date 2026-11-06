@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Field } from '@/components/shared';
 import { PinnedBody, PinnedFooter, PinnedHeader, pinnedDialogClass } from '@/components/overlays/dialog-parts';
 import { errorMessage, type ServiceItemRow } from './inventory-rows';
+import ServicePartyRates from '../toll/ServicePartyRates';
 
 interface ServiceItemModalProps {
   /** null = create. */
@@ -41,8 +42,10 @@ const initialForm = (svc: ServiceItemRow | null) =>
         defaultRate: svc.defaultRate ? String(Number(svc.defaultRate)) : '',
         accountId: svc.accountId || svc.account?.id || '',
         description: svc.description || '',
+        pricingBasis: svc.pricingBasis || '',
+        minimumCharge: svc.minimumCharge != null ? String(Number(svc.minimumCharge)) : '',
       }
-    : { code: '', name: '', unit: 'Jasa', defaultRate: '', accountId: '', description: '' };
+    : { code: '', name: '', unit: 'Jasa', defaultRate: '', accountId: '', description: '', pricingBasis: '', minimumCharge: '' };
 
 export function ServiceItemModal({ editService, onClose }: ServiceItemModalProps) {
   const { t } = useTranslation('inventory');
@@ -71,6 +74,8 @@ export function ServiceItemModal({ editService, onClose }: ServiceItemModalProps
       const payload = {
         ...serviceForm,
         defaultRate: serviceForm.defaultRate ? Number(serviceForm.defaultRate) : undefined,
+        pricingBasis: serviceForm.pricingBasis || null,
+        minimumCharge: serviceForm.minimumCharge.trim() === '' ? null : Number(serviceForm.minimumCharge),
       };
       if (editService) {
         await api.patch(`/service-items/${editService.id}`, payload);
@@ -148,6 +153,25 @@ export function ServiceItemModal({ editService, onClose }: ServiceItemModalProps
                 </Select>
               )}
             </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label={t('serviceItemModal.fields.pricingBasis')} hint={t('serviceItemModal.hints.pricingBasis')}>
+                {(control) => (
+                  <Select value={serviceForm.pricingBasis || NO_ACCOUNT} onValueChange={(v) => set({ pricingBasis: v === NO_ACCOUNT ? '' : v })}>
+                    <SelectTrigger {...control}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_ACCOUNT}>{t('serviceItemModal.pricingBasis.manual')}</SelectItem>
+                      <SelectItem value="InputQty">{t('serviceItemModal.pricingBasis.InputQty')}</SelectItem>
+                      <SelectItem value="OutputQty">{t('serviceItemModal.pricingBasis.OutputQty')}</SelectItem>
+                      <SelectItem value="Flat">{t('serviceItemModal.pricingBasis.Flat')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </Field>
+              <Field label={t('serviceItemModal.fields.minimumCharge')}>
+                <NumberInput value={serviceForm.minimumCharge} onChange={(e) => set({ minimumCharge: e.target.value })}
+                  inputMode="decimal" min={0} className="h-10 text-right tabular-nums" />
+              </Field>
+            </div>
             <Field label={t('serviceItemModal.fields.description')}>
               <Input
                 value={serviceForm.description}
@@ -155,6 +179,7 @@ export function ServiceItemModal({ editService, onClose }: ServiceItemModalProps
                 placeholder={t('serviceItemModal.placeholders.description')}
               />
             </Field>
+            {editService && <ServicePartyRates serviceItemId={editService.id} />}
           </PinnedBody>
           <PinnedFooter>
             <Button type="button" variant="ghost" onClick={onClose} disabled={serviceSaving}>

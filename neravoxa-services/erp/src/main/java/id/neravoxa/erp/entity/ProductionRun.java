@@ -42,6 +42,10 @@ public class ProductionRun {
     @Column(name = "reference_number")
     private String referenceNumber;
 
+    /** Order Jasa Maklon: bahan & hasil keluar-masuk buku stok titipan pelanggan, bukan stok sendiri. */
+    @Column(name = "toll_order_id")
+    private String tollOrderId;
+
     @Column(name = "yield_pct", precision = 5, scale = 2)
     private BigDecimal yieldPct;
 

@@ -13,6 +13,7 @@ import {
   Boxes,
   Building,
   Building2,
+  Factory,
   Car,
   ClipboardCheck,
   ClipboardList,
@@ -197,6 +198,7 @@ export const ROUTES: readonly RouteEntry[] = [
 
   // Persediaan & Produksi
   r({ path: '/inventory', labelKey: 'nav.inventory', section: 'inventory', icon: Warehouse, module: 'inventory', keywords: ['stok', 'inventory', 'persediaan', 'produksi', 'barang', 'gudang'] }),
+  r({ path: '/toll-service', labelKey: 'nav.tollService', section: 'inventory', icon: Factory, module: 'toll_service', keywords: ['maklon', 'jasa maklon', 'titipan', 'stok titipan', 'repros', 'jasa giling', 'toll', 'toll processing', 'consignment'] }),
   r({ path: '/warehouse-stock', labelKey: 'nav.warehouseStock', section: 'inventory', icon: LayoutDashboard, module: 'inventory', keywords: ['dashboard gudang', 'stok gudang', 'warehouse stock'] }),
   r({ path: '/stock-opname', labelKey: 'nav.stockOpname', section: 'inventory', icon: ClipboardCheck, module: 'stock_opname', keywords: ['opname', 'hitung fisik', 'stock opname'] }),
   r({ path: '/stock-transfers', labelKey: 'nav.stockTransfers', section: 'inventory', icon: ArrowLeftRight, module: 'stock_transfer', keywords: ['mutasi', 'pindah gudang', 'stock transfer'] }),

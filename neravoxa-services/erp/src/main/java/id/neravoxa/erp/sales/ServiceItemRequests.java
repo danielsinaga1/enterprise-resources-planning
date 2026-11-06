@@ -30,7 +30,12 @@ public final class ServiceItemRequests {
             @NotNull(message = "Akun pendapatan wajib dipilih.")
             @Pattern(regexp = ZodText.UUID_REGEX, message = "Akun pendapatan wajib dipilih.")
             String accountId,
-            String description) {
+            String description,
+            /** Dasar tarif default order jasa maklon: InputQty | OutputQty | Flat (kosong = qty manual). */
+            @Pattern(regexp = "InputQty|OutputQty|Flat", message = "Dasar tarif harus InputQty, OutputQty, atau Flat.")
+            String pricingBasis,
+            @DecimalMin(value = "0", message = ZodText.NUMBER_GTE_0)
+            BigDecimal minimumCharge) {
     }
 
     /**
@@ -51,7 +56,29 @@ public final class ServiceItemRequests {
         private String accountId;
         private String description;
         private Boolean isActive;
+        @Pattern(regexp = "InputQty|OutputQty|Flat", message = "Dasar tarif harus InputQty, OutputQty, atau Flat.")
+        private String pricingBasis;
+        @DecimalMin(value = "0", message = ZodText.NUMBER_GTE_0)
+        private BigDecimal minimumCharge;
         private final transient Set<String> present = new HashSet<>();
+
+        public void setPricingBasis(String v) {
+            pricingBasis = v == null || v.isBlank() ? null : v;
+            present.add("pricingBasis");
+        }
+
+        public void setMinimumCharge(BigDecimal v) {
+            minimumCharge = v;
+            present.add("minimumCharge");
+        }
+
+        String pricingBasis() {
+            return pricingBasis;
+        }
+
+        BigDecimal minimumCharge() {
+            return minimumCharge;
+        }
 
         public void setCode(String v) {
             code = v;

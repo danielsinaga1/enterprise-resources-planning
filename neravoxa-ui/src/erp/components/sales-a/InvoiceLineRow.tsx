@@ -36,6 +36,10 @@ export interface InvoiceItem {
   deliveryOrderNumber?: string;
   // Optional batch pick: the server locks COGS to the batch's unit cost instead of WAC.
   sourceMovementId?: string;
+  /** Baris jasa Sales Order yang ditagih baris ini (qty tertagih dilacak per baris SO). */
+  salesOrderItemId?: string | null;
+  /** SO asal baris jasa (untuk melepas baris saat Surat Jalan SO tersebut tidak dipilih lagi). */
+  sourceSalesOrderId?: string;
 }
 
 interface InvoiceLineRowProps {

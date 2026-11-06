@@ -57,5 +57,14 @@ public record SalesItemRequest(
         String deliveryOrderItemId,
         /** Batch picker: baris terkait batch masuk tertentu. */
         @Pattern(regexp = ZodText.UUID_REGEX, message = ZodText.INVALID_UUID)
-        String sourceMovementId) {
+        String sourceMovementId,
+        /** Jasa Maklon: baris tagihan Order Jasa Maklon (pelanggan wajib sama). */
+        @Pattern(regexp = ZodText.UUID_REGEX, message = ZodText.INVALID_UUID)
+        String tollOrderId,
+        /** Service | Minimum | Storage — jenis tagihan maklon (default Service bila tollOrderId diisi). */
+        @Pattern(regexp = "Service|Minimum|Storage", message = "Jenis tagihan maklon tidak dikenal.")
+        String tollChargeType,
+        /** Baris jasa Sales Order yang ditagihkan baris ini. */
+        @Pattern(regexp = ZodText.UUID_REGEX, message = ZodText.INVALID_UUID)
+        String salesOrderItemId) {
 }

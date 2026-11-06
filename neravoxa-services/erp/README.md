@@ -41,6 +41,7 @@ Uji: `./gradlew :erp:test` (PostgreSQL embedded, tanpa Docker).
 | `purchase` | `purchase/invoices`, `purchase-orders`, `goods-receipts`, `reports/po-outstanding`, `reports/supplier-performance` |
 | `inventory` | `inventory/items`, `inventory/movements`, `inventory/dashboard`, `warehouses`, `stock-transfers`, `stock-opname` |
 | `production` | `inventory/machines`, `inventory/production-processes`, `inventory/production-cost-standards`, `inventory/production-runs` (+ draf) |
+| `toll` | `toll/orders`, `toll/stock`, `toll/returns`, `toll/reports`, `toll/rates` — jasa maklon & buku stok titipan pelanggan (tabel `06_toll_service.sql`, SQL native tanpa entity) |
 | `cashbank` | `payments`, `reconciliation`, `project-guarantees` |
 | `deposit` | `customer-deposits`, `vendor-deposits` |
 | `cashbook` | `cash-book-drafts`, `import` |

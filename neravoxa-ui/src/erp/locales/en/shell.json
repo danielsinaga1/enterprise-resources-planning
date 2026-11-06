@@ -38,6 +38,7 @@
     "projectGuarantees": "Project guarantees",
     "inventory": "Stock & production",
     "warehouseStock": "Stock by warehouse",
+    "tollService": "Toll processing & consignment",
     "stockOpname": "Stock count",
     "stockTransfers": "Stock transfers",
     "warehouses": "Warehouses",

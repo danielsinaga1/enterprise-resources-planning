@@ -36,6 +36,13 @@ public class ServiceItem {
     @Column(name = "default_rate", precision = 15, scale = 2)
     private BigDecimal defaultRate;
 
+    /** Dasar tarif default Order Jasa Maklon: InputQty | OutputQty | Flat (null = qty manual). */
+    @Column(name = "pricing_basis")
+    private String pricingBasis;
+
+    @Column(name = "minimum_charge", precision = 15, scale = 2)
+    private BigDecimal minimumCharge;
+
     @Column(name = "account_id", nullable = false)
     private String accountId;
 

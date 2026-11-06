@@ -82,6 +82,7 @@ public class ErpProductionRunEditService {
             throw ErpException.business(CANCELLED_NOT_EDITABLE);
         }
         String runNumber = oldRun.getRunNumber();
+        String previousTollOrderId = oldRun.getTollOrderId();
 
         Set<String> affected = support.reverseRunMovements(runId, body.negativeStock(), body.negativeStockReason(), true);
         // WAC di-replay dari gerakan aktif tersisa (termasuk item input: stok yang dipulihkan mengubah
@@ -159,6 +160,7 @@ public class ErpProductionRunEditService {
         support.recalcBalances(support.journalAccountIds(oldJvNumber, false));
 
         support.persistChildren(oldRun, body, warehouseId, snaps, hpp, stamps);
+        support.refreshTollStatus(previousTollOrderId, oldRun.getTollOrderId());
         return new PostedRun(runId, runNumber);
     }
 

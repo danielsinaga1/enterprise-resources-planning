@@ -176,13 +176,23 @@ public class ErpGoodsReceiptQueryService {
         if (found.isEmpty()) {
             throw ErpException.notFound("STT tidak ditemukan.");
         }
-        return PurchaseShape.scalars()
+        GoodsReceipt gr = found.get(0);
+        ObjectNode out = PurchaseShape.scalars()
                 .with("items", PurchaseShape.scalars().with("inventoryItem").with("warehouse").with("stockMovement")
                         .with("purchaseOrderItem"))
                 .with("supplier")
                 .with("invoice", PurchaseShape.select("id", "invoiceNumber", "status", "grandTotal"))
                 .with("purchaseOrder", PurchaseShape.select("id", "poNumber", "date"))
                 .with("user", PurchaseShape.select("id", "fullName"))
-                .of(found.get(0));
+                .of(gr);
+        // Jasa maklon: order penerima barang titipan.
+        if (gr.getTollOrderId() != null) {
+            List<?> rows = em.createNativeQuery("SELECT order_number FROM toll_orders WHERE id = :id")
+                    .setParameter("id", gr.getTollOrderId()).getResultList();
+            ObjectNode toll = out.putObject("tollOrder");
+            toll.put("id", gr.getTollOrderId());
+            toll.put("orderNumber", rows.isEmpty() ? null : String.valueOf(rows.get(0)));
+        }
+        return out;
     }
 }

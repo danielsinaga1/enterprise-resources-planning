@@ -1,0 +1,357 @@
+{
+  "page": {
+    "title": "Jasa Maklon & Stok Titipan",
+    "description": {
+      "orders": "Order jasa proses barang milik pelanggan: terima titipan, proses, kembalikan hasil, lalu tagih ongkosnya.",
+      "stock": "Barang milik pelanggan di gudang pabrik — terpisah dari stok & nilai persediaan sendiri.",
+      "returns": "Surat jalan pengembalian hasil proses / sisa titipan ke pelanggan.",
+      "reports": "Rendemen proses maklon dan biaya simpan titipan per periode."
+    },
+    "tabsLabel": "Bagian Jasa Maklon",
+    "tabs": {
+      "orders": "Order Jasa",
+      "stock": "Stok Titipan",
+      "returns": "Pengembalian",
+      "reports": "Laporan"
+    }
+  },
+  "status": {
+    "Open": "Terbuka",
+    "InProgress": "Diproses",
+    "Completed": "Selesai",
+    "Cancelled": "Dibatalkan",
+    "Submitted": "Terkirim"
+  },
+  "basis": {
+    "InputQty": "Per kg bahan diproses",
+    "OutputQty": "Per kg hasil utama",
+    "Flat": "Borongan (flat)"
+  },
+  "basisShort": {
+    "InputQty": "/kg input",
+    "OutputQty": "/kg hasil",
+    "Flat": "borongan"
+  },
+  "owner": {
+    "Customer": "Pelanggan (ikut dikembalikan)",
+    "Factory": "Pabrik (kompensasi jasa)"
+  },
+  "chargeType": {
+    "Service": "Ongkos proses",
+    "Minimum": "Penyesuaian ongkos minimum",
+    "Storage": "Biaya simpan"
+  },
+  "orders": {
+    "create": "Order Baru",
+    "searchLabel": "Cari order",
+    "searchPlaceholder": "Nomor order / pelanggan…",
+    "dateRange": "Tanggal order",
+    "party": "Pelanggan",
+    "allParties": "Semua pelanggan",
+    "partySearch": "Cari pelanggan…",
+    "tableLabel": "Daftar order jasa maklon",
+    "itemLabel": "order",
+    "rowActions": "Aksi untuk {{number}}",
+    "columns": {
+      "number": "No. Order",
+      "date": "Tanggal",
+      "party": "Pelanggan",
+      "tariff": "Tarif",
+      "received": "Diterima",
+      "processed": "Diproses",
+      "balance": "Sisa Titipan",
+      "billed": "Ditagih",
+      "status": "Status",
+      "actions": "Aksi"
+    },
+    "empty": {
+      "title": "Belum ada order jasa maklon",
+      "description": "Buat order untuk mencatat titipan, proses, pengembalian, dan tagihan jasa pelanggan.",
+      "action": "Buat order"
+    },
+    "actions": {
+      "view": "Lihat detail",
+      "edit": "Ubah",
+      "complete": "Tandai selesai",
+      "reopen": "Buka kembali",
+      "cancel": "Batalkan",
+      "invoice": "Buat invoice"
+    },
+    "toast": {
+      "saved": "Order disimpan.",
+      "completed": "Order ditandai selesai.",
+      "reopened": "Order dibuka kembali.",
+      "cancelled": "Order dibatalkan.",
+      "invoiced": "Invoice {{number}} dibuat.",
+      "failed": "Gagal memproses order."
+    },
+    "cancelDialog": {
+      "title": "Batalkan order?",
+      "description": "Order {{number}} akan dibatalkan. Hanya bisa bila tidak ada STT, produksi, pengembalian, maupun invoice aktif.",
+      "confirm": "Batalkan order"
+    },
+    "completeDialog": {
+      "title": "Tandai order selesai?",
+      "description": "Order {{number}} ditutup: tidak menerima STT/produksi baru dan ongkos minimum mulai bisa ditagih. Sisa titipan: {{balance}}.",
+      "confirm": "Tandai selesai"
+    }
+  },
+  "form": {
+    "titleCreate": "Order Jasa Maklon Baru",
+    "titleEdit": "Ubah Order {{number}}",
+    "description": "Tarif kosong diisi otomatis dari tarif khusus pelanggan atau tarif item jasa.",
+    "date": "Tanggal",
+    "party": "Pelanggan",
+    "partyPlaceholder": "Pilih pelanggan pemilik barang…",
+    "serviceItem": "Item jasa",
+    "serviceItemPlaceholder": "Pilih item jasa (akun pendapatan)…",
+    "noServiceItem": "Tanpa item jasa (akun Pendapatan Jasa default)",
+    "pricingBasis": "Dasar tarif",
+    "rate": "Tarif (Rp)",
+    "rateHint": "Default: {{source}}",
+    "rateSource": {
+      "party": "tarif khusus pelanggan",
+      "service": "tarif item jasa",
+      "none": "belum ada tarif"
+    },
+    "minimumCharge": "Ongkos minimum (Rp)",
+    "minimumHint": "Selisihnya ditagih setelah order selesai.",
+    "taxPct": "PPN (%)",
+    "byProductOwner": "Pemilik produk samping",
+    "plannedQty": "Rencana kuantitas (kg)",
+    "expectedYieldPct": "Target rendemen (%)",
+    "storageRate": "Tarif simpan (Rp/satuan/hari)",
+    "storageFreeDays": "Bebas simpan (hari)",
+    "notes": "Catatan",
+    "save": "Simpan",
+    "saving": "Menyimpan…",
+    "cancel": "Batal",
+    "saveFailed": "Gagal menyimpan order."
+  },
+  "detail": {
+    "title": "Order {{number}}",
+    "party": "Pelanggan",
+    "date": "Tanggal",
+    "service": "Item jasa",
+    "tariff": "Tarif",
+    "minimum": "Ongkos minimum",
+    "owner": "Produk samping",
+    "storage": "Biaya simpan",
+    "storageValue": "Rp {{rate}}/satuan/hari, bebas {{days}} hari",
+    "stockTitle": "Barang titipan order",
+    "stockCols": {
+      "item": "Item",
+      "received": "Diterima",
+      "processed": "Diproses",
+      "produced": "Hasil",
+      "returned": "Dikembalikan",
+      "balance": "Sisa"
+    },
+    "noStock": "Belum ada barang titipan untuk order ini.",
+    "byWarehouse": "Sisa per gudang",
+    "productionTitle": "Hasil proses",
+    "runs": "{{count}} run produksi",
+    "input": "Input",
+    "mainOutput": "Hasil utama",
+    "byProduct": "Produk samping",
+    "shrink": "Susut",
+    "yield": "Rendemen",
+    "target": "Target {{pct}}",
+    "factoryByProducts": "Produk samping milik pabrik (stok sendiri)",
+    "billingTitle": "Tagihan",
+    "basisQty": "Dasar tagih",
+    "serviceAmount": "Ongkos proses total",
+    "billed": "Sudah ditagih",
+    "unbilled": "Belum ditagih",
+    "minimumPending": "Ongkos minimum ditagih setelah order Selesai.",
+    "storageLine": "{{qtyDays}} satuan·hari s.d. {{until}} → {{fee}}",
+    "proposed": "Usulan baris invoice",
+    "nothingToBill": "Tidak ada yang perlu ditagih saat ini.",
+    "documents": "Dokumen tertaut",
+    "receipts": "STT titipan",
+    "runsDocs": "Data produksi",
+    "returnsDocs": "Pengembalian",
+    "invoices": "Invoice",
+    "none": "—",
+    "printReport": "Berita Acara Hasil Proses",
+    "newReceipt": "Terima titipan (STT)",
+    "newReturn": "Kembalikan barang",
+    "close": "Tutup"
+  },
+  "invoice": {
+    "title": "Buat Invoice dari {{number}}",
+    "description": "Invoice penjualan dibuat & diposting dari baris tagihan yang belum ditagih.",
+    "date": "Tanggal invoice",
+    "dueDate": "Jatuh tempo",
+    "notes": "Catatan",
+    "includeStorage": "Sertakan biaya simpan",
+    "includeMinimum": "Sertakan penyesuaian ongkos minimum",
+    "total": "Total sebelum PPN",
+    "submit": "Buat invoice",
+    "submitting": "Membuat…"
+  },
+  "returns": {
+    "create": "Surat Jalan Pengembalian",
+    "searchLabel": "Cari pengembalian",
+    "searchPlaceholder": "Nomor / pelanggan / no. mobil…",
+    "tableLabel": "Daftar surat jalan pengembalian titipan",
+    "itemLabel": "surat jalan",
+    "columns": {
+      "number": "No. SJT",
+      "date": "Tanggal",
+      "party": "Pelanggan",
+      "order": "Order",
+      "items": "Barang",
+      "vehicle": "No. Mobil",
+      "status": "Status",
+      "actions": "Aksi"
+    },
+    "empty": {
+      "title": "Belum ada pengembalian titipan",
+      "description": "Kembalikan hasil proses atau sisa titipan ke pelanggan dengan surat jalan pengembalian."
+    },
+    "actions": {
+      "print": "Cetak surat jalan",
+      "cancel": "Batalkan"
+    },
+    "cancelDialog": {
+      "title": "Batalkan surat jalan pengembalian?",
+      "description": "{{number}} dibatalkan dan kuantitasnya kembali ke stok titipan pelanggan.",
+      "confirm": "Batalkan"
+    },
+    "toast": {
+      "saved": "Surat jalan {{number}} dibuat.",
+      "cancelled": "Surat jalan dibatalkan.",
+      "failed": "Gagal memproses surat jalan."
+    }
+  },
+  "returnForm": {
+    "title": "Surat Jalan Pengembalian Titipan",
+    "description": "Barang milik pelanggan keluar dari stok titipan (tanpa nilai & tanpa jurnal).",
+    "date": "Tanggal",
+    "party": "Pelanggan",
+    "order": "Order jasa maklon",
+    "noOrder": "Tanpa order",
+    "vehicle": "No. mobil",
+    "driver": "Sopir",
+    "recipient": "Penerima",
+    "notes": "Catatan",
+    "items": "Barang dikembalikan",
+    "item": "Item",
+    "warehouse": "Gudang",
+    "quantity": "Jumlah",
+    "available": "Tersedia {{qty}}",
+    "addRow": "Tambah baris",
+    "removeRow": "Hapus baris {{n}}",
+    "fillFromBalance": "Isi dari sisa titipan",
+    "save": "Simpan & cetak",
+    "saving": "Menyimpan…",
+    "cancel": "Batal",
+    "saveFailed": "Gagal menyimpan surat jalan."
+  },
+  "stock": {
+    "party": "Pelanggan",
+    "allParties": "Semua pelanggan",
+    "partySearch": "Cari pelanggan…",
+    "warehouse": "Gudang",
+    "allWarehouses": "Semua gudang",
+    "tableLabel": "Saldo stok titipan pelanggan",
+    "columns": {
+      "party": "Pelanggan",
+      "item": "Item",
+      "warehouse": "Gudang",
+      "quantity": "Saldo",
+      "age": "Umur lot tertua",
+      "actions": "Aksi"
+    },
+    "ageDays": "{{count}} hari",
+    "summary": {
+      "rows": "Saldo aktif",
+      "parties": "Pelanggan",
+      "total": "Total kuantitas",
+      "aging": "Mengendap > 30 hari"
+    },
+    "empty": {
+      "title": "Tidak ada stok titipan",
+      "description": "Barang titipan masuk lewat STT dengan centang \"Barang Titipan Pelanggan\"."
+    },
+    "actions": {
+      "card": "Kartu stok",
+      "transfer": "Pindah gudang"
+    },
+    "cardTitle": "Kartu Stok Titipan",
+    "cardSubtitle": "{{item}} · {{party}}",
+    "cardCols": {
+      "date": "Tanggal",
+      "doc": "Dokumen",
+      "order": "Order",
+      "warehouse": "Gudang",
+      "in": "Masuk",
+      "out": "Keluar",
+      "balance": "Saldo"
+    },
+    "opening": "Saldo awal",
+    "closing": "Saldo akhir",
+    "source": {
+      "GoodsReceipt": "STT titipan",
+      "ProductionRun": "Produksi maklon",
+      "CustomerGoodsReturn": "Pengembalian",
+      "Transfer": "Transfer gudang"
+    },
+    "transferTitle": "Pindah Stok Titipan Antar Gudang",
+    "transferFrom": "Dari gudang",
+    "transferTo": "Ke gudang",
+    "transferQty": "Jumlah",
+    "transferSave": "Pindahkan",
+    "transferDone": "Stok titipan dipindahkan.",
+    "transferFailed": "Gagal memindahkan stok titipan.",
+    "cancelTransfer": "Batalkan transfer",
+    "transferCancelled": "Transfer dibatalkan."
+  },
+  "reports": {
+    "yieldTitle": "Rendemen Maklon",
+    "yieldDescription": "Produksi maklon aktif dalam periode: input, hasil utama, produk samping, susut, dan rendemen vs target.",
+    "storageTitle": "Biaya Simpan Titipan",
+    "storageDescription": "Satuan·hari setelah masa bebas simpan × tarif simpan order, dalam periode.",
+    "period": "Periode",
+    "byParty": "Per pelanggan",
+    "byOrder": "Per order",
+    "cols": {
+      "party": "Pelanggan",
+      "order": "Order",
+      "runs": "Run",
+      "input": "Input",
+      "output": "Hasil utama",
+      "byProduct": "Samping",
+      "shrink": "Susut",
+      "yield": "Rendemen",
+      "variance": "vs Target",
+      "rate": "Tarif/hari",
+      "freeDays": "Bebas",
+      "qtyDays": "Satuan·hari",
+      "days": "Hari",
+      "fee": "Biaya"
+    },
+    "total": "Total",
+    "empty": "Tidak ada data pada periode ini."
+  },
+  "picker": {
+    "order": "Order jasa maklon",
+    "orderHint": "Barang diambil dari / masuk ke stok titipan pelanggan order ini.",
+    "noOrder": "Bukan maklon (stok sendiri)",
+    "orderPlaceholder": "Pilih order…"
+  },
+  "rates": {
+    "title": "Tarif khusus pelanggan",
+    "description": "Menimpa tarif default saat membuat Order Jasa Maklon untuk pelanggan tersebut.",
+    "empty": "Belum ada tarif khusus.",
+    "party": "Pelanggan",
+    "rate": "Tarif (Rp)",
+    "minimum": "Minimum (Rp)",
+    "add": "Simpan",
+    "delete": "Hapus tarif {{name}}",
+    "minShort": "min {{amount}}",
+    "saved": "Tarif pelanggan disimpan.",
+    "failed": "Gagal menyimpan tarif."
+  }
+}
